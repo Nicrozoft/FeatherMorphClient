@@ -2,11 +2,13 @@ package xyz.nifeather.morph.server;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 import xiamomc.morph.network.commands.S2C.S2CCurrentCommand;
 import xiamomc.morph.network.commands.S2C.clientrender.S2CRenderMapAddCommand;
@@ -14,22 +16,23 @@ import xiamomc.morph.network.commands.S2C.clientrender.S2CRenderMapRemoveCommand
 import xiamomc.morph.network.commands.S2C.map.S2CMapRemoveCommand;
 import xiamomc.morph.network.commands.S2C.map.S2CPartialMapCommand;
 import xiamomc.morph.network.commands.S2C.set.S2CSetAvailableAnimationsCommand;
+import xiamomc.pluginbase.Annotations.Resolved;
 import xyz.nifeather.morph.client.AnimationNames;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class FabricMorphManager
+public class FabricMorphManager extends ServerPluginObject
 {
     private final List<String> availableDisguises = new ObjectArrayList<>();
 
     private void listEntityTypes()
     {
-        var server = MorphServer.server;
+        var server = MorphServerLoader.mcserver;
         if (server == null)
         {
-            MorphServer.LOGGER.warn("Server is NULL, not listing entity types!");
+            logger.warn("Server is NULL, not listing entity types!");
             return;
         }
 
@@ -39,7 +42,7 @@ public class FabricMorphManager
 
         if (entityTypeRegistry == null)
         {
-            MorphServer.LOGGER.warn("Entity type registry is NULL, not listing entity types!");
+            logger.warn("Entity type registry is NULL, not listing entity types!");
             return;
         }
 
@@ -64,7 +67,7 @@ public class FabricMorphManager
                 "player:Nahida"
         ));
 
-        MorphServer.LOGGER.info("Done init valid entity types.");
+        logger.info("Done init valid entity types.");
     }
 
     public List<String> getUnlockedDisguises(PlayerEntity player)
@@ -87,11 +90,35 @@ public class FabricMorphManager
         return new ObjectArrayList<>(disguiseSessionMap.values());
     }
 
+    @Resolved
+    private FabricClientHandler clientHandler;
+
     public void morph(ServerPlayerEntity player, String identifier)
     {
         disguiseSessionMap.put(player, new FabricDisguiseSession(player, identifier));
 
-        var clientHandler = MorphServer.instance.clientHandler;
+        if (identifier.startsWith("minecraft"))
+        {
+            var type = EntityType.get(identifier);
+
+            if (type.isEmpty())
+            {
+                player.sendMessage(Text.literal("No such entity!"));
+                return;
+            }
+
+            if (!type.get().getBaseClass().isAssignableFrom(LivingEntity.class))
+            {
+                player.sendMessage(Text.literal("Not a living entity!"));
+                return;
+            }
+        }
+        else if (!identifier.startsWith("player"))
+        {
+            player.sendMessage(Text.literal("Invalid id '%s'".formatted(identifier)));
+            return;
+        }
+
         clientHandler.sendCommand(player, new S2CCurrentCommand(identifier));
         clientHandler.sendCommand(player, new S2CSetAvailableAnimationsCommand(
                 AnimationNames.CRAWL,
@@ -106,32 +133,35 @@ public class FabricMorphManager
         revealMap.put(player.getId(), player.getName().getString());
 
         var cmdReveal = new S2CPartialMapCommand(revealMap);
-        for (ServerPlayerEntity serverPlayerEntity : MorphServer.server.getPlayerManager().getPlayerList())
+        for (ServerPlayerEntity serverPlayerEntity : MorphServerLoader.mcserver.getPlayerManager().getPlayerList())
         {
             clientHandler.sendCommand(serverPlayerEntity, cmd);
             clientHandler.sendCommand(serverPlayerEntity, cmdReveal);
         }
+
+        player.sendMessage(Text.literal("Disguising as '%s'".formatted(identifier)));
     }
 
     public void unMorph(ServerPlayerEntity player)
     {
         disguiseSessionMap.remove(player);
 
-        var clientHandler = MorphServer.instance.clientHandler;
         clientHandler.sendCommand(player, new S2CCurrentCommand(null));
 
         var cmd = new S2CRenderMapRemoveCommand(player.getId());
         var cmdReveal = new S2CMapRemoveCommand(player.getId());
-        for (ServerPlayerEntity serverPlayerEntity : MorphServer.server.getPlayerManager().getPlayerList())
+        for (ServerPlayerEntity serverPlayerEntity : MorphServerLoader.mcserver.getPlayerManager().getPlayerList())
         {
             clientHandler.sendCommand(serverPlayerEntity, cmd);
             clientHandler.sendCommand(serverPlayerEntity, cmdReveal);
         }
+
+        player.sendMessage(Text.literal("Undisguised"));
     }
 
     public void dispose()
     {
-        MorphServer.LOGGER.info("Disposing FabricMorphManager");
+        logger.info("Disposing FabricMorphManager");
         availableDisguises.clear();
     }
 }
