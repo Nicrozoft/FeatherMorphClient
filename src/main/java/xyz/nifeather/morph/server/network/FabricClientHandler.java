@@ -1,10 +1,9 @@
-package xyz.nifeather.morph.server;
+package xyz.nifeather.morph.server.network;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
 import xiamomc.morph.network.BasicClientHandler;
 import xiamomc.morph.network.InitializeState;
 import xiamomc.morph.network.PlayerOptions;
@@ -19,6 +18,9 @@ import xiamomc.morph.network.commands.S2C.query.S2CQueryCommand;
 import xiamomc.morph.network.commands.S2C.set.S2CSetSelfViewingCommand;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xiamomc.pluginbase.Bindables.Bindable;
+import xyz.nifeather.morph.server.ServerPluginObject;
+import xyz.nifeather.morph.server.morphs.FabricDisguiseSession;
+import xyz.nifeather.morph.server.morphs.FabricMorphManager;
 import xyz.nifeather.morph.shared.payload.MorphCommandPayload;
 
 import java.util.List;

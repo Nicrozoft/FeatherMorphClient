@@ -1,20 +1,17 @@
 package xyz.nifeather.morph.server;
 
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xiamomc.morph.network.Constants;
 import xiamomc.pluginbase.XiaMoJavaPlugin;
+import xyz.nifeather.morph.server.commands.CommandRegistrationContext;
+import xyz.nifeather.morph.server.commands.FabricCommandHub;
+import xyz.nifeather.morph.server.morphs.FabricMorphManager;
+import xyz.nifeather.morph.server.network.FabricClientHandler;
 import xyz.nifeather.morph.shared.SharedValues;
 import xyz.nifeather.morph.shared.payload.MorphCommandPayload;
 import xyz.nifeather.morph.shared.payload.MorphInitChannelPayload;
@@ -69,6 +66,8 @@ public class FeatherMorphFabricMain extends XiaMoJavaPlugin
 
         dependencyManager.cache(morphManager = new FabricMorphManager());
         dependencyManager.cache(clientHandler = new FabricClientHandler());
+
+        commandHub = new FabricCommandHub();
     }
 
     @Override
@@ -83,50 +82,14 @@ public class FeatherMorphFabricMain extends XiaMoJavaPlugin
 
     //region Command register
 
-    public void onCommandRegister(CommandDispatcher<ServerCommandSource> dispatcher,
-                                   CommandRegistryAccess registryAccess,
-                                   CommandManager.RegistrationEnvironment environment)
+    private FabricCommandHub commandHub;
+
+    public void onCommandRegister(CommandRegistrationContext context)
     {
-        dispatcher.register(
-                CommandManager.literal("morph")
-                        .then(
-                                CommandManager.argument("id", StringArgumentType.greedyString())
-                                        .executes(ctx ->
-                                        {
-                                            if (!ctx.getSource().isExecutedByPlayer())
-                                            {
-                                                ctx.getSource().sendError(Text.literal("You must be a player to use this command"));
-                                                return 0;
-                                            }
-
-                                            var executor = ctx.getSource().getPlayerOrThrow();
-
-                                            String id = StringArgumentType.getString(ctx, "id");
-
-                                            morphManager.morph(executor, id);
-
-                                            return 1;
-                                        })
-                        )
-        );
-
-        dispatcher.register(
-                CommandManager.literal("unmorph")
-                        .executes(ctx ->
-                        {
-                            if (!ctx.getSource().isExecutedByPlayer())
-                            {
-                                ctx.getSource().sendError(Text.literal("You must be a player to use this command"));
-                                return 0;
-                            }
-
-                            var executor = ctx.getSource().getPlayerOrThrow();
-
-                            morphManager.unMorph(executor);
-
-                            return 1;
-                        })
-        );
+        if (commandHub != null)
+            commandHub.registerCommands(context);
+        else
+            LOGGER.warn("NULL commandHub?! This shouldn't happen!");
     }
 
 

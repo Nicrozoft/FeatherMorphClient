@@ -1,4 +1,4 @@
-package xyz.nifeather.morph.server;
+package xyz.nifeather.morph.server.morphs;
 
 import net.minecraft.entity.player.PlayerEntity;
 

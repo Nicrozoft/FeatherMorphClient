@@ -4,14 +4,17 @@ import com.mojang.brigadier.CommandDispatcher;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.nifeather.morph.server.commands.CommandRegistrationContext;
 import xyz.nifeather.morph.shared.SharedValues;
 
 public class MorphServerLoader
@@ -21,7 +24,9 @@ public class MorphServerLoader
     public void onModLoad()
     {
         ServerLifecycleEvents.SERVER_STOPPING.register(this::onServerStop);
-        ServerLifecycleEvents.SERVER_STARTING.register(this::onServerStart);
+        //ServerLifecycleEvents.SERVER_STARTING.register(this::onServerStart);
+
+        ServerWorldEvents.LOAD.register(this::onServerStart);
 
         CommandRegistrationCallback.EVENT.register(this::onCommandRegister);
 
@@ -46,8 +51,13 @@ public class MorphServerLoader
     @Nullable
     private FeatherMorphFabricMain fabricMain;
 
-    private void onServerStart(MinecraftServer startingServer)
+    private void onServerStart(MinecraftServer startingServer, ServerWorld world)
     {
+        if (mcserver == startingServer)
+            return;
+
+        mcserver = startingServer;
+
         if (!SharedValues.allowSinglePlayerDebugging)
         {
             LOGGER.error("SinglePlayer debug is disabled.");
@@ -58,15 +68,10 @@ public class MorphServerLoader
         newInstance.enablePlugin();
 
         if (this.registrationContext != null)
-        {
-            newInstance.onCommandRegister(registrationContext.dispatcher(),
-                    registrationContext.registryAccess(),
-                    registrationContext.environment());
-        }
+            newInstance.onCommandRegister(registrationContext);
 
         this.registrationContext = null;
         this.fabricMain = newInstance;
-        mcserver = startingServer;
     }
 
     private void onServerTick(MinecraftServer minecraftServer)
