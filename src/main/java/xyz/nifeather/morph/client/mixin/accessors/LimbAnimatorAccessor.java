@@ -14,7 +14,7 @@ public interface LimbAnimatorAccessor
     public void setSpeed(float spd);
 
     @Accessor
-    public void setPos(float pos);
+    public void setAnimationProgress(float pos);
 
     @Accessor
     public float getLastSpeed();

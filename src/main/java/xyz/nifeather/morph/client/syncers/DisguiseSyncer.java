@@ -501,7 +501,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
         var playerLimb = bindingPlayer.limbAnimator;
 
         entitylimbAnimatorAccessor.setLastSpeed(playerLimbAccessor.getLastSpeed());
-        entitylimbAnimatorAccessor.setPos(playerLimb.getPos());
+        entitylimbAnimatorAccessor.setAnimationProgress(playerLimb.getAnimationProgress());
         entitylimbAnimatorAccessor.setSpeed(playerLimb.getSpeed());
 
         // Sleep Pos
