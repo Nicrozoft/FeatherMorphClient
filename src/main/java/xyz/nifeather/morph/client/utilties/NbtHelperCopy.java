@@ -6,7 +6,7 @@ import net.minecraft.nbt.*;
 import net.minecraft.util.Util;
 import net.minecraft.util.Uuids;
 import org.jetbrains.annotations.Nullable;
-import xyz.nifeather.morph.client.MorphClient;
+import xyz.nifeather.morph.client.FeatherMorphClient;
 
 import java.util.Iterator;
 import java.util.UUID;
@@ -20,7 +20,7 @@ public class NbtHelperCopy
 
         if (element.getNbtType() != NbtIntArray.TYPE)
         {
-            MorphClient.LOGGER.warn("Given element is not a int array, can't convert to UUID");
+            FeatherMorphClient.LOGGER.warn("Given element is not a int array, can't convert to UUID");
             return null;
         }
 
@@ -28,7 +28,7 @@ public class NbtHelperCopy
 
         if (is.length != 4)
         {
-            MorphClient.LOGGER.warn("Given int array is not of length 4, can't convert to UUID");
+            FeatherMorphClient.LOGGER.warn("Given int array is not of length 4, can't convert to UUID");
             return null;
         }
 
@@ -45,7 +45,7 @@ public class NbtHelperCopy
         String name = nbt.getString("Name").orElse(null);
         if (name == null)
         {
-            MorphClient.LOGGER.warn("Given NBT does not contain a name, can't convert to GameProfile");
+            FeatherMorphClient.LOGGER.warn("Given NBT does not contain a name, can't convert to GameProfile");
             return null;
         }
 
@@ -79,7 +79,7 @@ public class NbtHelperCopy
         }
         catch (Throwable var11)
         {
-            MorphClient.LOGGER.warn("Failed parsing compound to GameProfile: " + var11.getMessage());
+            FeatherMorphClient.LOGGER.warn("Failed parsing compound to GameProfile: " + var11.getMessage());
             var11.printStackTrace();
 
             return null;
