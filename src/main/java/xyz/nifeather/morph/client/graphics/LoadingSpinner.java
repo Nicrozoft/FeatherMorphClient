@@ -18,7 +18,7 @@ public class LoadingSpinner extends MDrawable
     @Override
     protected void onRender(DrawContext context, int mouseX, int mouseY, float delta)
     {
-        RenderSystem.enableBlend();
+        //RenderSystem.enableBlend();
 
         context.drawGuiTexture(RenderLayer::getGuiTextured, LOADING_TEX, 0, 0, this.renderWidth, this.renderHeight);
         super.onRender(context, mouseX, mouseY, delta);

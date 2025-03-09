@@ -17,20 +17,4 @@ public class ClientNbtUtils
         var dataSource = new EntityDataObject(entity);
         return dataSource.getNbt();
     }
-
-    /**
-     * 将目标NBT序列化为字符串
-     * @param compound 目标NBT
-     * @return 由此NBT序列化的字符串，当compound为null时返回null
-     */
-    public static String getCompoundString(NbtCompound compound)
-    {
-        if (compound == null) return null;
-
-        //StringNbtWriter
-        var visitor = new StringNbtWriter();
-
-        //StringNbtWriter#apply(NbtElement)
-        return visitor.apply(compound);
-    }
 }

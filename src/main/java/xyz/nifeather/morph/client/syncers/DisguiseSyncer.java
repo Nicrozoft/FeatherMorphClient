@@ -214,11 +214,11 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
         if (entity instanceof HorseEntity horse)
         {
-            var haveSaddle = nbtCompound.contains("SaddleItem", 10);
+            var haveSaddle = nbtCompound.contains("SaddleItem");
 
             if (haveSaddle)
             {
-                ItemStack itemStack = ItemStack.fromNbt(bindingPlayer.getWorld().getRegistryManager(), nbtCompound.getCompound("SaddleItem"))
+                ItemStack itemStack = ItemStack.fromNbt(bindingPlayer.getWorld().getRegistryManager(), nbtCompound.getCompound("SaddleItem").orElseThrow())
                         .orElse(air);
 
                 var isSaddle = itemStack.isOf(Items.SADDLE);
@@ -227,9 +227,9 @@ public abstract class DisguiseSyncer extends MorphClientObject
             }
 
             //Doesn't work for unknown reason
-            if (nbtCompound.contains("ArmorItem", NbtElement.COMPOUND_TYPE))
+            if (nbtCompound.contains("ArmorItem"))
             {
-                ItemStack armorItem = ItemStack.fromNbt(bindingPlayer.getWorld().getRegistryManager(), nbtCompound.getCompound("ArmorItem"))
+                ItemStack armorItem = ItemStack.fromNbt(bindingPlayer.getWorld().getRegistryManager(), nbtCompound.getCompound("ArmorItem").orElseThrow())
                         .orElse(air);
 
                 horse.equipBodyArmor(armorItem);
@@ -238,7 +238,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
         bindingPlayer.calculateDimensions();
 
-        var crystalPosition = nbtCompound.getInt("BeamTarget");
+        var crystalPosition = nbtCompound.getInt("BeamTarget").orElse(-1);
         crystalId = crystalPosition;
         this.beamTarget = findCrystalBy(crystalPosition);
 

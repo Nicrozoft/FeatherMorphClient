@@ -2,46 +2,84 @@ package xyz.nifeather.morph.client.utilties;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.*;
 import net.minecraft.util.Util;
+import net.minecraft.util.Uuids;
 import org.jetbrains.annotations.Nullable;
+import xyz.nifeather.morph.client.MorphClient;
 
 import java.util.Iterator;
 import java.util.UUID;
 
 public class NbtHelperCopy
 {
+    public static UUID readUUID(@Nullable NbtElement element)
+    {
+        if (element == null)
+            return null;
+
+        if (element.getNbtType() != NbtIntArray.TYPE)
+        {
+            MorphClient.LOGGER.warn("Given element is not a int array, can't convert to UUID");
+            return null;
+        }
+
+        int[] is = ((NbtIntArray)element).getIntArray();
+
+        if (is.length != 4)
+        {
+            MorphClient.LOGGER.warn("Given int array is not of length 4, can't convert to UUID");
+            return null;
+        }
+
+        return Uuids.toUuid(is);
+    }
+
     @Nullable
-    public static GameProfile toGameProfile(NbtCompound nbt) {
-        UUID uUID = nbt.containsUuid("Id") ? nbt.getUuid("Id") : Util.NIL_UUID;
-        String string = nbt.getString("Name");
+    public static GameProfile toGameProfile(NbtCompound nbt)
+    {
+        UUID uuid = readUUID(nbt.get("Id"));
+        if (uuid == null)
+            uuid = Util.NIL_UUID;
 
-        try {
-            GameProfile gameProfile = new GameProfile(uUID, string);
-            if (nbt.contains("Properties", 10)) {
-                NbtCompound nbtCompound = nbt.getCompound("Properties");
-                Iterator var5 = nbtCompound.getKeys().iterator();
+        String name = nbt.getString("Name").orElse(null);
+        if (name == null)
+        {
+            MorphClient.LOGGER.warn("Given NBT does not contain a name, can't convert to GameProfile");
+            return null;
+        }
 
-                while(var5.hasNext()) {
-                    String string2 = (String)var5.next();
-                    NbtList nbtList = nbtCompound.getList(string2, 10);
+        try
+        {
+            GameProfile gameProfile = new GameProfile(uuid, name);
 
-                    for(int i = 0; i < nbtList.size(); ++i) {
-                        NbtCompound nbtCompound2 = nbtList.getCompound(i);
-                        String string3 = nbtCompound2.getString("Value");
-                        if (nbtCompound2.contains("Signature", 8)) {
-                            gameProfile.getProperties().put(string2, new Property(string2, string3, nbtCompound2.getString("Signature")));
-                        } else {
-                            gameProfile.getProperties().put(string2, new Property(string2, string3));
-                        }
-                    }
+            if (!nbt.contains("Properties"))
+                return gameProfile;
+
+            NbtCompound nbtCompound = nbt.getCompound("Properties").orElseThrow();
+
+            for (String subKey : nbtCompound.getKeys())
+            {
+                NbtList nbtList = nbtCompound.getList(subKey).orElseThrow();
+
+                for (int i = 0; i < nbtList.size(); ++i)
+                {
+                    NbtCompound nbtCompound2 = nbtList.getCompound(i).orElseThrow();
+
+                    String base64Url = nbtCompound2.getString("Value").orElse("");
+
+                    if (nbtCompound2.contains("Signature"))
+                        gameProfile.getProperties().put(subKey, new Property(subKey, base64Url, nbtCompound2.getString("Signature").orElseThrow()));
+                    else
+                        gameProfile.getProperties().put(subKey, new Property(subKey, base64Url));
                 }
             }
 
             return gameProfile;
-        } catch (Throwable var11) {
-            System.err.println("[FeatherMorph] Failed parsing compound to GameProfile: " + var11.getMessage());
+        }
+        catch (Throwable var11)
+        {
+            MorphClient.LOGGER.warn("Failed parsing compound to GameProfile: " + var11.getMessage());
             var11.printStackTrace();
 
             return null;

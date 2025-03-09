@@ -16,9 +16,9 @@ public class NbtUtils
     {
         //MinecraftClient.getInstance().world.getRegistryManager()
 
-        var ops = MinecraftClient.getInstance().world.getRegistryManager().getOps(NbtOps.INSTANCE);
+        //var ops = MinecraftClient.getInstance().world.getRegistryManager().getOps(NbtOps.INSTANCE);
 
-        if (StringNbtReader.read(ops, snbt) instanceof NbtCompound compound)
+        if (StringNbtReader.readCompound(snbt) instanceof NbtCompound compound)
             return compound;
 
         throw new RuntimeException("Unable to read compound! The return value of StringNbtReader.read was not an NbtCompound");

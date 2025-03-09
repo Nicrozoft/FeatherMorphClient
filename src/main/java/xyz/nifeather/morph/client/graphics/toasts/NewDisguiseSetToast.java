@@ -59,8 +59,8 @@ public class NewDisguiseSetToast extends LinedToast
     {
         super.postBackgroundDrawing(context, startTime);
 
-        RenderSystem.enableBlend();
-        RenderSystem.setShaderTexture(0, TEX);
+        //RenderSystem.enableBlend();
+        //RenderSystem.setShaderTexture(0, TEX);
 
         context.drawGuiTexture(RenderLayer::getGuiTextured, TEX, this.getWidth() / 16 - 2, 6, 20, 20);
     }
