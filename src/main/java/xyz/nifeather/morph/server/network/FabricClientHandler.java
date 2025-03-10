@@ -208,7 +208,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     {
         ServerPlayerEntity player = command.getOwner();
 
-        var unlocked = morphManager.getUnlockedDisguises(player);
+        var unlocked = morphManager.getUnlockedDisguiseIds(player);
         var cmd = new S2CQueryCommand(QueryType.SET, unlocked.toArray(new String[0]));
 
         this.sendCommand(player, cmd);

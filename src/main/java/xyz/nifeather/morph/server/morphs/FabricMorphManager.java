@@ -2,22 +2,14 @@ package xyz.nifeather.morph.server.morphs;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.client.particle.Particle;
-import net.minecraft.command.argument.ParticleEffectArgumentType;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import org.jetbrains.annotations.Nullable;
 import xiamomc.morph.network.commands.S2C.S2CCurrentCommand;
@@ -26,7 +18,6 @@ import xiamomc.morph.network.commands.S2C.clientrender.S2CRenderMapRemoveCommand
 import xiamomc.morph.network.commands.S2C.map.S2CMapRemoveCommand;
 import xiamomc.morph.network.commands.S2C.map.S2CPartialMapCommand;
 import xiamomc.morph.network.commands.S2C.set.S2CSetAvailableAnimationsCommand;
-import xiamomc.pluginbase.Annotations.Initializer;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xyz.nifeather.morph.client.AnimationNames;
 import xyz.nifeather.morph.server.misc.DisguiseMeta;
@@ -102,6 +93,11 @@ public class FabricMorphManager extends ServerPluginObject
         return disguiseProviders.values().stream().filter(p -> p.namespace().equals(splitedId[0])).findFirst().orElse(fallbackProvider);
     }
 
+    public List<AbstractDisguiseProvider> listProviders()
+    {
+        return new ObjectArrayList<>(disguiseProviders.values());
+    }
+
     //endregion Disguise provider
 
     //region DisguiseMeta
@@ -129,7 +125,7 @@ public class FabricMorphManager extends ServerPluginObject
 
     private final PlayerDataStoreNew dataStore = new PlayerDataStoreNew();
 
-    public List<String> getUnlockedDisguises(ServerPlayerEntity player)
+    public List<String> getUnlockedDisguiseIds(PlayerEntity player)
     {
         var meta = dataStore.getPlayerMeta(player.getUuid());
 

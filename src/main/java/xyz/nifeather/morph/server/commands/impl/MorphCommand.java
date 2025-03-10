@@ -6,6 +6,7 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import xiamomc.pluginbase.Annotations.Resolved;
+import xyz.nifeather.morph.server.commands.arguments.DisguiseIdentifierArgumentType;
 import xyz.nifeather.morph.server.morphs.FabricMorphManager;
 import xyz.nifeather.morph.server.ServerPluginObject;
 import xyz.nifeather.morph.server.commands.IBrigadierCommand;
@@ -21,7 +22,7 @@ public class MorphCommand extends ServerPluginObject implements IBrigadierComman
         dispatcher.register(
                 CommandManager.literal("morph")
                         .then(
-                                CommandManager.argument("id", StringArgumentType.greedyString())
+                                CommandManager.argument("id", DisguiseIdentifierArgumentType.INSTANCE)
                                         .executes(ctx ->
                                         {
                                             if (!ctx.getSource().isExecutedByPlayer())

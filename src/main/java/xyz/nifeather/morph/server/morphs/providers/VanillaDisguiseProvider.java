@@ -65,7 +65,7 @@ public class VanillaDisguiseProvider extends AbstractDisguiseProvider
 
             entity.discard();
 
-            list.add(EntityType.getId(eT).toString());
+            list.add(EntityType.getId(eT).getPath());
         });
 
         availableIdentifiers = new ObjectImmutableList<>(list);
