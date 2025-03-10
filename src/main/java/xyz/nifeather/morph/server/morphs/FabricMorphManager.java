@@ -208,6 +208,13 @@ public class FabricMorphManager extends ServerPluginObject
             return;
         }
 
+        var available = getUnlockedDisguiseIds(player);
+        if (!available.contains(identifier))
+        {
+            player.sendMessage(Text.translatableWithFallback("morph.error.not_unlocked", "Error: That disguise is not unlocked yet"), false);
+            return;
+        }
+
         // todo: Morph stuffs
 
         disguiseSessionMap.put(player, new FabricDisguiseSession(player, identifier));

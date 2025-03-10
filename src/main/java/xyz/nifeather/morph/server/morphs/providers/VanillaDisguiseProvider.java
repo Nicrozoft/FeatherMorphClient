@@ -34,7 +34,7 @@ public class VanillaDisguiseProvider extends AbstractDisguiseProvider
         if (asIdentifier == null)
             return false;
 
-        return availableIdentifiers.contains(identifier);
+        return availableIdentifiers.contains(asIdentifier.getPath());
     }
 
     public VanillaDisguiseProvider()
