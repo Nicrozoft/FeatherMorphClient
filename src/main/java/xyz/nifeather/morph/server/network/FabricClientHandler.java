@@ -42,7 +42,6 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
                 .registerC2S("animation", C2SAnimationCommand::new);
     }
 
-    private final Bindable<Boolean> allowClient = new Bindable<>(true);
     private final Bindable<Boolean> logInComingPackets = new Bindable<>(true);
 
     private void logPacket(boolean isOutGoingPacket, ServerPlayerEntity player, String channel, String data, int size)
@@ -60,8 +59,6 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
 
     public void onCommandPayload(MorphCommandPayload morphCommandPayload, ServerPlayNetworking.Context context)
     {
-        if (!allowClient.get()) return;
-
         var player = context.player();
         var input = morphCommandPayload.content();
 /*
@@ -96,7 +93,8 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
         }
     }
 
-    protected boolean clientConnected(ServerPlayerEntity player)
+    // todo: Implement this
+    public boolean clientConnected(ServerPlayerEntity player)
     {
         return true;
     }
@@ -105,8 +103,6 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     {
         var cmd = command.buildCommand();
         if (cmd == null || cmd.isEmpty() || cmd.isBlank()) return false;
-
-        if ((!allowClient.get() || !this.clientConnected(player)) && !forceSend) return false;
 
         logPacket(true, player, MorphCommandPayload.id.id().toString(), cmd, cmd.length());
 
@@ -283,5 +279,21 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     {
         ServerPlayerEntity player = command.getOwner();
         this.sendCommand(player, new S2CAnimationCommand(command.getAnimationId()));
+    }
+
+    /**
+     * 向某个玩家的客户端发送差异信息
+     *
+     * @param addits 添加
+     * @param removal 删除
+     * @param player 目标玩家
+     */
+    public void sendDiff(@Nullable List<String> addits, @Nullable List<String> removal, ServerPlayerEntity player)
+    {
+        if (addits != null)
+            this.sendCommand(player, new S2CQueryCommand(QueryType.ADD, addits.toArray(new String[]{})));
+
+        if (removal != null)
+            this.sendCommand(player, new S2CQueryCommand(QueryType.REMOVE, removal.toArray(new String[]{})));
     }
 }

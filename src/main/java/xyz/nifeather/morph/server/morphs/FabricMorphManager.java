@@ -29,12 +29,16 @@ import xiamomc.morph.network.commands.S2C.set.S2CSetAvailableAnimationsCommand;
 import xiamomc.pluginbase.Annotations.Initializer;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xyz.nifeather.morph.client.AnimationNames;
+import xyz.nifeather.morph.server.misc.DisguiseMeta;
+import xyz.nifeather.morph.server.misc.DisguiseTypes;
 import xyz.nifeather.morph.server.morphs.providers.AbstractDisguiseProvider;
+import xyz.nifeather.morph.server.morphs.providers.FallbackDisguiseProvider;
 import xyz.nifeather.morph.server.morphs.providers.PlayerDisguiseProvider;
 import xyz.nifeather.morph.server.morphs.providers.VanillaDisguiseProvider;
 import xyz.nifeather.morph.server.network.FabricClientHandler;
 import xyz.nifeather.morph.server.MorphServerLoader;
 import xyz.nifeather.morph.server.ServerPluginObject;
+import xyz.nifeather.morph.server.storage.playerdata.paper.PlayerDataStoreNew;
 import xyz.nifeather.morph.shared.exceptions.AlreadyRegisteredException;
 
 import java.util.List;
@@ -45,23 +49,11 @@ public class FabricMorphManager extends ServerPluginObject
 {
     public FabricMorphManager()
     {
-    }
+        fallbackProvider = new FallbackDisguiseProvider();
 
-    @Initializer
-    private void load()
-    {
         registerDisguiseProvider(new VanillaDisguiseProvider());
         registerDisguiseProvider(new PlayerDisguiseProvider());
-    }
-
-    public List<String> getUnlockedDisguises(PlayerEntity player)
-    {
-        var list = new ObjectArrayList<String>();
-
-        for (AbstractDisguiseProvider provider : disguiseProviders.values())
-            list.addAll(provider.availableDisguises());
-
-        return list;
+        registerDisguiseProvider(fallbackProvider);
     }
 
     private final Map<PlayerEntity, FabricDisguiseSession> disguiseSessionMap = new ConcurrentHashMap<>();
@@ -97,7 +89,110 @@ public class FabricMorphManager extends ServerPluginObject
         disguiseProviders.put(provider.namespace(), provider);
     }
 
+    private final FallbackDisguiseProvider fallbackProvider;
+
+    public AbstractDisguiseProvider getProvider(String id)
+    {
+        if (id == null)
+            return fallbackProvider;
+
+        id += ":";
+        var splitedId = id.split(":", 2);
+
+        return disguiseProviders.values().stream().filter(p -> p.namespace().equals(splitedId[0])).findFirst().orElse(fallbackProvider);
+    }
+
     //endregion Disguise provider
+
+    //region DisguiseMeta
+
+    private final Map<String, DisguiseMeta> disguiseMetaCache = new ConcurrentHashMap<>();
+
+    public DisguiseMeta getDisguiseMetaFrom(String identifier)
+    {
+        var cached = disguiseMetaCache.getOrDefault(identifier, null);
+        if (cached != null)
+            return cached;
+
+        var provider = this.getProvider(identifier);
+        var type = DisguiseTypes.fromId(identifier);
+
+        var newInstance = new DisguiseMeta(identifier, type, provider);
+        disguiseMetaCache.put(identifier, newInstance);
+
+        return newInstance;
+    }
+
+    //endregion DisguiseMeta
+
+    //region Data Access
+
+    private final PlayerDataStoreNew dataStore = new PlayerDataStoreNew();
+
+    public List<String> getUnlockedDisguises(ServerPlayerEntity player)
+    {
+        var meta = dataStore.getPlayerMeta(player.getUuid());
+
+        return meta.getUnlockedDisguiseIdentifiers();
+    }
+
+    public boolean grantDisguiseToPlayer(ServerPlayerEntity player, String disguiseIdentifier)
+    {
+        var success = dataStore.grantMorphToPlayer(player, disguiseIdentifier);
+
+        if (!success)
+            return false;
+
+        clientHandler.sendDiff(List.of(disguiseIdentifier), null, player);
+        //multiInstanceService.notifyDisguiseMetaChange(player.getUniqueId(), Operation.ADD_IF_ABSENT, disguiseIdentifier);
+
+        var meta = this.getDisguiseMetaFrom(disguiseIdentifier);
+
+        var message = Text.translatableWithFallback("morph.disguise_unlocked", "Unlocked disguise of %s!", meta.asComponent());
+        player.sendMessage(message);
+
+/*
+        var config = dataStore.getPlayerMeta(player.getUuid());
+        if (clientHandler.clientConnected(player))
+        {
+            if (!config.shownMorphClientHint)
+            {
+                player.sendMessage(MessageUtils.prefixes(player, HintStrings.firstGrantClientHintString()));
+                config.shownMorphClientHint = true;
+            }
+        }
+        else if (!config.shownMorphHint)
+        {
+            player.sendMessage(MessageUtils.prefixes(player, HintStrings.firstGrantHintString()));
+            config.shownMorphHint = true;
+        }
+*/
+        return success;
+    }
+
+    public boolean revokeDisguiseFromPlayer(ServerPlayerEntity player, String disguiseIdentifier)
+    {
+        var success = dataStore.revokeMorphFromPlayer(player, disguiseIdentifier);
+
+        if (success)
+        {
+            clientHandler.sendDiff(null, List.of(disguiseIdentifier), player);
+            //multiInstanceService.notifyDisguiseMetaChange(player.getUniqueId(), Operation.REMOVE, disguiseIdentifier);
+
+            var meta = this.getDisguiseMetaFrom(disguiseIdentifier);
+
+            var message = Text.translatableWithFallback("morph.disguise_lost", "Lost disguise of %s!", meta.asComponent());
+            player.sendMessage(message);
+
+            var disguiseState = this.getSessionFor(player);
+            if (disguiseState != null && disguiseState.disguiseIdentifier().equalsIgnoreCase(disguiseIdentifier))
+                this.unMorph(player);
+        }
+
+        return success;
+    }
+
+    //endregion Data Access
 
     public void morph(ServerPlayerEntity player, String identifier)
     {

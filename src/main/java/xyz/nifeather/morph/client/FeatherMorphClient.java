@@ -13,6 +13,7 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.option.KeyBinding;
@@ -22,6 +23,7 @@ import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.random.Random;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
@@ -43,6 +45,7 @@ import xiamomc.morph.network.commands.C2S.*;
 import xiamomc.morph.network.commands.S2C.S2CRequestCommand;
 import xyz.nifeather.morph.shared.SharedValues;
 
+import java.io.File;
 import java.util.List;
 
 @Environment(EnvType.CLIENT)
@@ -94,6 +97,12 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
     public void runAsync(Runnable r)
     {
         Util.getMainWorkerExecutor().execute(r);
+    }
+
+    @Override
+    public @NotNull File getDataFolder()
+    {
+        return new File(FabricLoader.getInstance().getConfigDir().toFile(), "feathermorphclient-fabric");
     }
 
     public ClientMorphManager morphManager;

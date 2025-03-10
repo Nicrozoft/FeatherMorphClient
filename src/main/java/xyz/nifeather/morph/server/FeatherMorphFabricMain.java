@@ -1,8 +1,12 @@
 package xyz.nifeather.morph.server;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Util;
+import net.minecraft.util.WorldSavePath;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,12 +14,15 @@ import xiamomc.morph.network.Constants;
 import xiamomc.pluginbase.XiaMoJavaPlugin;
 import xyz.nifeather.morph.server.commands.CommandRegistrationContext;
 import xyz.nifeather.morph.server.commands.FabricCommandHub;
+import xyz.nifeather.morph.server.events.CommonEventProcessor;
 import xyz.nifeather.morph.server.morphs.FabricMorphManager;
 import xyz.nifeather.morph.server.network.FabricClientHandler;
 import xyz.nifeather.morph.shared.SharedValues;
 import xyz.nifeather.morph.shared.payload.MorphCommandPayload;
 import xyz.nifeather.morph.shared.payload.MorphInitChannelPayload;
 import xyz.nifeather.morph.shared.payload.MorphVersionChannelPayload;
+
+import java.io.File;
 
 public class FeatherMorphFabricMain extends XiaMoJavaPlugin
 {
@@ -30,7 +37,7 @@ public class FeatherMorphFabricMain extends XiaMoJavaPlugin
         return pluginNamespace();
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger("FeatherMorph$FabricMain");
+    private static final Logger LOGGER = LoggerFactory.getLogger("FeatherMorph$FabricServer");
 
     @Override
     protected Logger getSLF4JLogger()
@@ -64,9 +71,15 @@ public class FeatherMorphFabricMain extends XiaMoJavaPlugin
         ServerPlayNetworking.registerGlobalReceiver(MorphVersionChannelPayload.id, this::onApiPayload);
         ServerPlayNetworking.registerGlobalReceiver(MorphCommandPayload.id, this::onPlayCommandPayload);
 
+        // Global dependencies
         dependencyManager.cache(morphManager = new FabricMorphManager());
         dependencyManager.cache(clientHandler = new FabricClientHandler());
 
+        // Events
+        var events = new CommonEventProcessor();
+        events.initListener();
+
+        // Commands
         commandHub = new FabricCommandHub();
     }
 
@@ -78,6 +91,23 @@ public class FeatherMorphFabricMain extends XiaMoJavaPlugin
         ServerPlayNetworking.unregisterGlobalReceiver(MorphCommandPayload.id.id());
 
         morphManager.dispose();
+    }
+
+    @Nullable
+    private File dataFolder;
+
+    @Override
+    public @NotNull File getDataFolder()
+    {
+        if (dataFolder == null)
+        {
+            ServerWorld serverWorld = MorphServerLoader.mcserver.getOverworld();
+
+            var dataFile = new File(serverWorld.getServer().getSavePath(WorldSavePath.ROOT).toFile(), "data");
+            dataFolder = new File(dataFile, "feathermorph-fabric");
+        }
+
+        return dataFolder;
     }
 
     //region Command register
