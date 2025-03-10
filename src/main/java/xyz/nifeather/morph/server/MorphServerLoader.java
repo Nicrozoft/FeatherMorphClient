@@ -1,13 +1,11 @@
 package xyz.nifeather.morph.server;
 
 import com.mojang.brigadier.CommandDispatcher;
-import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.serialize.ConstantArgumentSerializer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -17,7 +15,6 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.nifeather.morph.server.commands.CommandRegistrationContext;
-import xyz.nifeather.morph.server.commands.arguments.DisguiseIdentifierArgumentType;
 import xyz.nifeather.morph.shared.SharedValues;
 
 public class MorphServerLoader
