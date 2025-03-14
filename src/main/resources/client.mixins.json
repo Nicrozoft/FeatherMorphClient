@@ -20,6 +20,8 @@
     "ClientWorldMixin",
     "CreativeInventoryMixin",
     "EntityRenderDispatcherMixin",
+    "EntityRendererMixin",
+    "EntityRenderStateMixin",
     "HeldItemRendererMixin",
     "InventoryScreenMixin",
     "MinecraftClientMixin",

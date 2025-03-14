@@ -19,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
+import xyz.nifeather.morph.client.entities.IDisguiseRenderState;
 import xyz.nifeather.morph.client.graphics.EntityRendererHelper;
 import xyz.nifeather.morph.client.graphics.PlayerRenderHelper;
 
@@ -82,14 +83,19 @@ public abstract class EntityRenderDispatcherMixin
     }
 
     @Inject(
-            method = "render(Lnet/minecraft/entity/Entity;DDDFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/client/render/entity/EntityRenderer;)V",
+            method = "method_68834",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/util/math/MatrixStack;pop()V"
             )
     )
-    public <E extends Entity, S extends EntityRenderState> void morphclient$tryRenderRevealName(E entity, double x, double y, double z, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, EntityRenderer<? super E, S> renderer, CallbackInfo ci)
+    public <S extends EntityRenderState> void morphclient$tryRenderRevealName(S entityRenderState,
+                                                                              double x, double y, double z,
+                                                                              MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider,
+                                                                              int light,
+                                                                              EntityRenderer<?, S> entityRenderer,
+                                                                              CallbackInfo ci)
     {
-        EntityRendererHelper.instance.renderRevealNameIfPossible((EntityRenderDispatcher)(Object) this, entity, textRenderer, matrices, vertexConsumers);
+        EntityRendererHelper.instance.renderRevealNameIfPossible((EntityRenderDispatcher)(Object) this, entityRenderState, textRenderer, matrices, vertexConsumerProvider);
     }
 }

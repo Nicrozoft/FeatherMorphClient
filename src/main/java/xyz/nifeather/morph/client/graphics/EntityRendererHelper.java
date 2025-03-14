@@ -5,16 +5,15 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
+import net.minecraft.client.render.entity.state.EntityRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityAttachmentType;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
 import xyz.nifeather.morph.client.FeatherMorphClient;
+import xyz.nifeather.morph.client.entities.IDisguiseRenderState;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
-import xyz.nifeather.morph.client.entities.MorphLocalPlayer;
 import xyz.nifeather.morph.client.graphics.color.ColorUtils;
 import xyz.nifeather.morph.client.graphics.color.MaterialColors;
 
@@ -35,28 +34,21 @@ public class EntityRendererHelper
     public final int textColorTransparent = ColorUtils.forOpacity(MaterialColors.Orange500, 0).getColor();
 
     @Nullable
-    public final Map.Entry<Integer, String> getEntry(Integer id)
+    public final Map.Entry<Integer, String> getRevealNameEntry(Integer id)
     {
         return DisguiseInstanceTracker.getInstance().playerMap.entrySet().stream()
                 .filter(set -> id.equals(set.getKey()))
                 .findFirst().orElse(null);
     }
 
-    public void cacheReveal()
+    public final void setupEntityState(Entity renderingEntity, IDisguiseRenderState renderState)
     {
-    }
+        // Reset render state
+        renderState.morphclient$setClientPlayer(false);
+        renderState.morphclient$setRevealName(null);
+        renderState.morphclient$setMasterPosition(null);
 
-    public final void renderRevealNameIfPossible(EntityRenderDispatcher dispatcher,
-                                           Entity renderingEntity, TextRenderer textRenderer,
-                                           MatrixStack matrices, VertexConsumerProvider vertexConsumers)
-    {
-        if (!doRenderRealName) return;
-
-        // 服务器发送来的揭示数据是 玩家ID <-> 玩家名 的格式
-        // 因此当客户端玩家有伪装时，渲染其本体也会显示揭示标签
-        // 但我们不想这样，所以跳过此实体的渲染
-        if (renderingEntity == MinecraftClient.getInstance().player)
-            return;
+        // then do setup
 
         int id = renderingEntity.getId();
         Entity masterEntity = null;
@@ -65,53 +57,74 @@ public class EntityRendererHelper
         if (renderingEntity instanceof IMorphClientEntity iMorphEntity && iMorphEntity.featherMorph$isDisguiseEntity())
         {
             var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(iMorphEntity.featherMorph$getMasterEntityId());
+
             if (syncer != null)
             {
                 masterEntity = syncer.getBindingPlayer();
                 id = syncer.getBindingPlayer().getId();
+
+                renderState.morphclient$setMasterPosition(masterEntity.getPos());
             }
         }
 
-        var entrySet = getEntry(id);
-        if (entrySet == null) return;
+        var entrySet = getRevealNameEntry(id);
+        if (entrySet == null)
+            return;
 
         String revealName = entrySet.getValue();
         var disguiseEntityName = renderingEntity.getName().getString();
 
         String text = "%s(%s)".formatted(disguiseEntityName, revealName);
 
-        renderLabelOnTop(matrices, vertexConsumers, textRenderer, renderingEntity, dispatcher, text, masterEntity);
+        renderState.morphclient$setRevealName(text);
+        renderState.morphclient$setClientPlayer(renderingEntity == MinecraftClient.getInstance().player);
+    }
+
+    public final void renderRevealNameIfPossible(EntityRenderDispatcher dispatcher,
+                                                 EntityRenderState state, TextRenderer textRenderer,
+                                           MatrixStack matrices, VertexConsumerProvider vertexConsumers)
+    {
+        if (!doRenderRealName) return;
+
+        if (!(state instanceof IDisguiseRenderState asDisguiseRenderState))
+            return;
+
+        // 服务器发送来的揭示数据是 玩家ID <-> 玩家名 的格式
+        // 因此当客户端玩家有伪装时，渲染其本体也会显示揭示标签
+        // 但我们不想这样，所以跳过此实体的渲染
+        if (asDisguiseRenderState.morphclient$isClientPlayer())
+            return;
+
+        if (asDisguiseRenderState.morphclient$getRevealName() == null)
+            return;
+
+        renderLabelOnTop(matrices, vertexConsumers, textRenderer, state, dispatcher,
+                asDisguiseRenderState.morphclient$getRevealName(), asDisguiseRenderState.morphclient$masterPosition());
     }
 
     public void renderLabelOnTop(MatrixStack matrices, VertexConsumerProvider vertexConsumers,
                                  TextRenderer textRenderer,
-                                 Entity entity, EntityRenderDispatcher dispatcher,
+                                 EntityRenderState renderState, EntityRenderDispatcher dispatcher,
                                  String textToRender,
-                                 @Nullable Entity masterEntity)
+                                 @Nullable Vec3d anchorPosition)
     {
         matrices.push();
 
-        var nametagOffset = (entity.hasCustomName() || entity instanceof PlayerEntity) ? 0.25f : 0;
-        if (entity instanceof MorphLocalPlayer morphLocalPlayer
-            && morphLocalPlayer.getBindingPlayer() == MinecraftClient.getInstance().player)
-        {
-            nametagOffset = morphLocalPlayer.shouldRenderName() ? 0.25f : 0;
-        }
-
-        Vec3d labelRelativePosition = entity.getAttachments().getPointNullable(EntityAttachmentType.NAME_TAG, 0, 0);
+        Vec3d labelRelativePosition = renderState.nameLabelPos;
 
         if (labelRelativePosition == null)
-            labelRelativePosition = new Vec3d(0, entity.getHeight(), 0);
+            labelRelativePosition = new Vec3d(0, 0.25, 0);
 
-        matrices.translate(labelRelativePosition.x, labelRelativePosition.y + 0.5f + nametagOffset, labelRelativePosition.z);
+        labelRelativePosition.add(renderState.height);
+
+        matrices.translate(labelRelativePosition.x, labelRelativePosition.y + 0.5f, labelRelativePosition.z);
 
         matrices.multiply(dispatcher.getRotation());
         matrices.scale(0.025F, -0.025F, 0.025F);
 
-        if (FeatherMorphClient.getInstance().getModConfigData().scaleNameTag)
+        if (FeatherMorphClient.getInstance().getModConfigData().scaleNameTag && anchorPosition != null)
         {
-            var entityToLookup = masterEntity != null ? masterEntity : entity;
-            var labelWorldPosition = entityToLookup.getPos().add(labelRelativePosition);
+            var labelWorldPosition = anchorPosition.add(labelRelativePosition);
             var distance = dispatcher.camera.getPos().distanceTo(labelWorldPosition);
             var scale = Math.max(1, (float)distance / 7.5f);
             matrices.scale(scale, scale, scale);
