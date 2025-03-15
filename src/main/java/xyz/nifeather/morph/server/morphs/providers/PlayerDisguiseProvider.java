@@ -23,8 +23,7 @@ public class PlayerDisguiseProvider extends AbstractDisguiseProvider
         assert MorphServerLoader.mcserver != null;
 
         var list = new ObjectArrayList<String>();
-        for (String playerName : MorphServerLoader.mcserver.getPlayerNames())
-            list.add("player:" + playerName);
+        list.addAll(Arrays.asList(MorphServerLoader.mcserver.getPlayerNames()));
 
         return list;
     }

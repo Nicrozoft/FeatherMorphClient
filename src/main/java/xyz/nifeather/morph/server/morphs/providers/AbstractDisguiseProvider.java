@@ -32,5 +32,10 @@ public abstract class AbstractDisguiseProvider extends ServerPluginObject
     {
     }
 
+    public String wrapId(String input)
+    {
+        return namespace() + ":" + input;
+    }
+
     public abstract Text getDisplayName(String disguiseIdentifier);
 }

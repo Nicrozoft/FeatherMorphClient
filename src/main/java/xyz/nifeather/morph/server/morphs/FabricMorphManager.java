@@ -190,7 +190,14 @@ public class FabricMorphManager extends ServerPluginObject
 
     //endregion Data Access
 
-    public void morph(ServerPlayerEntity player, String identifier)
+    public boolean morph(ServerPlayerEntity player, String identifier)
+    {
+        return morph(player, identifier, false);
+    }
+
+    public boolean morph(ServerPlayerEntity player,
+                      String identifier,
+                      boolean bypassAvailableCheck)
     {
         var idSplit = identifier.split(":", 2);
         var idNamespace = idSplit.length == 2 ? idSplit[0] : "minecraft";
@@ -199,20 +206,20 @@ public class FabricMorphManager extends ServerPluginObject
         if (provider == null)
         {
             player.sendMessage(Text.translatableWithFallback("morph.error.invalid_namespace", "Error: Invalid namespace \"%s\"", idNamespace), false);
-            return;
+            return false;
         }
 
         if (!provider.isValid(identifier))
         {
             player.sendMessage(Text.translatableWithFallback("morph.error.invalid_id", "Error: Identifier \"%s\" not valid for \"%s\"", identifier, idNamespace), false);
-            return;
+            return false;
         }
 
         var available = getUnlockedDisguiseIds(player);
-        if (!available.contains(identifier))
+        if (!bypassAvailableCheck && !available.contains(identifier))
         {
             player.sendMessage(Text.translatableWithFallback("morph.error.not_unlocked", "Error: That disguise is not unlocked yet"), false);
-            return;
+            return false;
         }
 
         // todo: Morph stuffs
@@ -250,6 +257,8 @@ public class FabricMorphManager extends ServerPluginObject
         );
 
         player.sendMessage(Text.translatableWithFallback("morph.disguising_as", "Disguising as %s", provider.getDisplayName(identifier)));
+
+        return true;
     }
 
     public void spawnParticle(ServerPlayerEntity player)

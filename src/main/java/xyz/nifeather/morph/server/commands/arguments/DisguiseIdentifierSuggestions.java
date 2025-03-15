@@ -1,12 +1,14 @@
 package xyz.nifeather.morph.server.commands.arguments;
 
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientCommandSource;
+import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import xiamomc.pluginbase.Managers.DependencyManager;
@@ -20,6 +22,40 @@ import java.util.concurrent.CompletableFuture;
 
 public class DisguiseIdentifierSuggestions
 {
+    // Only available in fabric
+    // For plugin platform we need to use `allAvailable` instead.
+    public static CompletableFuture<Suggestions> forInputPlayer(final CommandContext<ServerCommandSource> context,
+                                                                    final SuggestionsBuilder builder,
+                                                                    String playerArgumentName) throws CommandSyntaxException
+    {
+        var dependencies = DependencyManager.getInstance(FeatherMorphFabricMain.pluginNamespace());
+        if (dependencies == null)
+            return builder.buildFuture();
+
+        var morphManager = dependencies.get(FabricMorphManager.class, false);
+        if (morphManager == null)
+            return builder.buildFuture();
+
+        var player = EntityArgumentType.getPlayer(context, playerArgumentName);
+
+        var availableDisguises = morphManager.getUnlockedDisguiseIds(player);
+
+        String input = builder.getRemainingLowerCase();
+
+        return CompletableFuture.supplyAsync(() ->
+        {
+            for (String identifier : availableDisguises)
+            {
+                if (!identifier.contains(input))
+                    continue;
+
+                builder.suggest(identifier);
+            }
+
+            return builder.build();
+        });
+    }
+
     public static <S> CompletableFuture<Suggestions> forPlayer(final CommandContext<S> context, final SuggestionsBuilder builder)
     {
         var dependencies = DependencyManager.getInstance(FeatherMorphFabricMain.pluginNamespace());
