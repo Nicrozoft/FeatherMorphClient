@@ -77,6 +77,8 @@ public abstract class EntityRenderDispatcherMixin
         var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(source);
         if (syncer == null) return source;
 
+        syncer.onGameRender();
+
         var morphclient$instance = syncer.getDisguiseInstance();
         return morphclient$instance == null ? source : morphclient$instance;
     }

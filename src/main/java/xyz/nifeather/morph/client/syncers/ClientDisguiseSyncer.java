@@ -43,25 +43,16 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
 
     private final Bindable<NbtCompound> currentNbtCompound = new Bindable<>(null);
 
-    private final Bindable<Boolean> isThirdPerson = new Bindable<>(false);
-
     @Initializer
     private void load(ServerHandler serverHandler)
     {
         currentNbtCompound.bindTo(morphManager.currentNbtCompound);
-        isThirdPerson.bindTo(CameraHelper.isThirdPerson);
 
         currentNbtCompound.onValueChanged((o, n) ->
         {
             if (n != null) FeatherMorphClient.getInstance().schedule(() -> this.mergeNbt(n));
         }, true);
-
-        isThirdPerson.onValueChanged((o, n) -> this.onThirdPersonChange(disguiseInstance, MinecraftClient.getInstance().player));
-
-        //ServerHandler.spiderEnabled.onValueChanged((o, n) -> this.isSpider = n);
     }
-
-    private World prevWorld;
 
     @Override
     protected @NotNull EntityCache getEntityCache()
@@ -70,14 +61,18 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     }
 
     @Override
-    public void refreshEntity()
+    public boolean refreshEntity()
     {
-        super.refreshEntity();
+        if (!super.refreshEntity())
+            return false;
+
         beamTarget = null;
 
         var clientPlayer = MinecraftClient.getInstance().player;
         if (clientPlayer != null)
             clientPlayer.calculateDimensions();
+
+        return true;
     }
 
     @Override
@@ -104,6 +99,8 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
         var clientPlayer = MinecraftClient.getInstance().player;
         assert clientPlayer != null;
 
+        acceptSyncing = false;
+
         FeatherMorphClient.getInstance().updateClientView(true, false);
 
         clientPlayer.sendMessage(Text.translatable("text.morphclient.error.update_disguise1").formatted(Formatting.RED), false);
@@ -116,19 +113,12 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
         return beamTarget;
     }
 
-    private void onThirdPersonChange(LivingEntity entity, AbstractClientPlayerEntity clientPlayer)
-    {
-        if (entity == null || clientPlayer == null) return;
-
-        syncYawPitch();
-    }
-
     //private boolean isSpider = false;
 
     @Override
     public void syncDraw()
     {
-        if (disguiseInstance == null || bindingPlayer == null) return;
+        if (disguiseInstance == null || !acceptSyncing) return;
 
         syncYawPitch();
     }
@@ -138,6 +128,8 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     {
         var entity = disguiseInstance;
         var clientPlayer = bindingPlayer;
+
+        assert disguiseInstance != null;
 
         //更新prevXYZ和披风
         entity.prevX = clientPlayer.prevX;
@@ -167,11 +159,16 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
         disguiseInstance.setPosition(playerPos.x, playerPos.y - 4096, playerPos.z);
     }
 
+    private boolean acceptSyncing;
+
     @Override
     public void syncTick()
     {
         if (this.disposed())
             throw new RuntimeException("May not update a disposed DisguiseSyncer");
+
+        if (!acceptSyncing)
+            return;
 
         var clientPlayer = MinecraftClient.getInstance().player;
         if (bindingPlayer != clientPlayer && clientPlayer != null)
@@ -179,14 +176,13 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
 
         if (disguiseInstance == null || disguiseInstance.isRemoved() || disguiseInstance.getWorld() == null)
         {
-            logger.warn("Trying to update an removed entity " + disguiseInstance);
+            if (!this.refreshEntity())
+                acceptSyncing = false;
 
-            this.refreshEntity();
             return;
         }
 
         baseSync();
-        syncYawPitch();
     }
 
     @Override
@@ -238,7 +234,7 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
         currentNbtCompound.unBindFromTarget();
         currentNbtCompound.unBindBindings();
 
-        isThirdPerson.unBindFromTarget();
-        isThirdPerson.unBindBindings();
+        //isThirdPerson.unBindFromTarget();
+        //isThirdPerson.unBindBindings();
     }
 }

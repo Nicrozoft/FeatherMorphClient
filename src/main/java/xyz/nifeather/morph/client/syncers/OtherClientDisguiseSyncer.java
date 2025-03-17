@@ -60,8 +60,6 @@ public class OtherClientDisguiseSyncer extends DisguiseSyncer
             disguiseInstance.setGlowing(bindingPlayer.isGlowing());
     }
 
-    private boolean dimensionsRefreshed;
-
     @Override
     public void syncDraw()
     {
