@@ -412,7 +412,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
         var disguiseEquip = meta.convertedEquipment;
 
         // In case the server returned a bad meta...
-        if (disguiseEquip == null)
+        if (disguiseEquip == null && showOverridedEquips)
             return;
 
         var headStack = showOverridedEquips ? disguiseEquip.head : bindingPlayer.getEquippedStack(EquipmentSlot.HEAD);

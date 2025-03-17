@@ -64,8 +64,12 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     public boolean refreshEntity()
     {
         if (!super.refreshEntity())
+        {
+            acceptSyncing = false;
             return false;
+        }
 
+        acceptSyncing = true;
         beamTarget = null;
 
         var clientPlayer = MinecraftClient.getInstance().player;
