@@ -1,4 +1,4 @@
-package xyz.nifeather.morph.server.morphs.providers;
+package xyz.nifeather.morph.server.disguise.providers;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -6,6 +6,7 @@ import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.server.ServerPluginObject;
 import xyz.nifeather.morph.server.morphs.FabricDisguiseSession;
+import xyz.nifeather.morph.server.disguise.animations.AnimationProvider;
 
 import java.util.List;
 
@@ -31,6 +32,8 @@ public abstract class AbstractDisguiseProvider extends ServerPluginObject
     public void onPostConstructDisguise(FabricDisguiseSession state, @Nullable Entity targetEntity)
     {
     }
+
+    public abstract AnimationProvider getAnimationProvider();
 
     public String wrapId(String input)
     {

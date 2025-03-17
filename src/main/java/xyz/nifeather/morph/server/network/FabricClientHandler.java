@@ -3,6 +3,7 @@ package xyz.nifeather.morph.server.network;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 import xiamomc.morph.network.BasicClientHandler;
 import xiamomc.morph.network.InitializeState;
@@ -278,7 +279,20 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     public void onAnimationCommand(C2SAnimationCommand command)
     {
         ServerPlayerEntity player = command.getOwner();
-        this.sendCommand(player, new S2CAnimationCommand(command.getAnimationId()));
+
+        var session = morphManager.getSessionFor(player);
+        if (session == null)
+        {
+            player.sendMessage(Text.literal("Session is NULL, you are not disguised!"));
+            return;
+        }
+
+        var animationProvider = session.disguiseProvider().getAnimationProvider();
+        var animationId = command.getAnimationId();
+        var seqPair = animationProvider.getAnimationSetFor(session.disguiseIdentifier()).sequenceOf(animationId);
+
+        if (!session.tryScheduleSequence(animationId, seqPair.left()))
+            player.sendMessage(Text.literal("Playing Animation is not available now."));
     }
 
     /**

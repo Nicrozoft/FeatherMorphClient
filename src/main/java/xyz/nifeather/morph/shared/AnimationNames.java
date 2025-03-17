@@ -1,4 +1,4 @@
-package xyz.nifeather.morph.client;
+package xyz.nifeather.morph.shared;
 
 public class AnimationNames
 {
@@ -46,11 +46,19 @@ public class AnimationNames
 
     public static final String CRAWL = "crawl";
 
+    /**
+     * 无论如何都重置动作数据
+     */
     public static final String RESET = "reset";
+
+    /**
+     * 尝试重置动作数据，如果当前情况允许的话。
+     */
     public static final String TRY_RESET = "try_reset";
+
     public static final String NONE = "none";
 
-    public static final String INTERNAL_VANISH = "vanish";
+    public static final String VANISH = "vanish";
 
     public static final String MAKE_ACTIVE = "make_active";
     public static final String MAKE_INACTIVE = "make_inactive";

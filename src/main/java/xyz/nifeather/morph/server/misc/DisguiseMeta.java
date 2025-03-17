@@ -7,8 +7,7 @@ import net.minecraft.text.Text;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import xyz.nifeather.morph.server.morphs.FabricMorphManager;
-import xyz.nifeather.morph.server.morphs.providers.AbstractDisguiseProvider;
+import xyz.nifeather.morph.server.disguise.providers.AbstractDisguiseProvider;
 
 public class DisguiseMeta
 {

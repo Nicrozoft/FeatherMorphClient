@@ -1,4 +1,4 @@
-package xyz.nifeather.morph.server.morphs.providers;
+package xyz.nifeather.morph.server.disguise.providers;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
@@ -14,6 +14,7 @@ import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.server.MorphServerLoader;
 import xyz.nifeather.morph.server.morphs.FabricDisguiseSession;
+import xyz.nifeather.morph.server.disguise.animations.provider.VanillaAnimationProvider;
 
 import java.util.List;
 
@@ -115,5 +116,13 @@ public class VanillaDisguiseProvider extends AbstractDisguiseProvider
             return Text.of("???(%s)".formatted(disguiseIdentifier));
 
         return Text.translatable(entityType.getTranslationKey());
+    }
+
+    private final VanillaAnimationProvider animationProvider = new VanillaAnimationProvider();
+
+    @Override
+    public VanillaAnimationProvider getAnimationProvider()
+    {
+        return animationProvider;
     }
 }

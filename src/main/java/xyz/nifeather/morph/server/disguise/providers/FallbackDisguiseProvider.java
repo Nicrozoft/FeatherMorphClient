@@ -1,55 +1,49 @@
-package xyz.nifeather.morph.server.morphs.providers;
+package xyz.nifeather.morph.server.disguise.providers;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
-import xyz.nifeather.morph.server.MorphServerLoader;
 import xyz.nifeather.morph.server.morphs.FabricDisguiseSession;
+import xyz.nifeather.morph.server.disguise.animations.AnimationProvider;
+import xyz.nifeather.morph.server.disguise.animations.provider.FallbackAnimationProvider;
 
-import java.util.Arrays;
 import java.util.List;
 
-public class PlayerDisguiseProvider extends AbstractDisguiseProvider
+public class FallbackDisguiseProvider extends AbstractDisguiseProvider
 {
     @Override
     public String namespace()
     {
-        return "player";
+        return "fallback";
     }
 
     @Override
     public List<String> availableDisguises()
     {
-        assert MorphServerLoader.mcserver != null;
-
-        var list = new ObjectArrayList<String>();
-        list.addAll(Arrays.asList(MorphServerLoader.mcserver.getPlayerNames()));
-
-        return list;
+        return List.of();
     }
 
     @Override
     public boolean isValid(String identifier)
     {
-        return identifier.startsWith("player:");
+        return false;
     }
 
     @Override
     public boolean disguise(PlayerEntity player, String disguiseIdentifier)
     {
-        return true;
+        return false;
     }
 
     @Override
     public boolean unDisguise(PlayerEntity player)
     {
-        return true;
+        return false;
     }
 
     @Override
     public boolean updateDisguise(PlayerEntity player, FabricDisguiseSession disguiseSession)
     {
-        return true;
+        return false;
     }
 
     @Override
@@ -60,6 +54,14 @@ public class PlayerDisguiseProvider extends AbstractDisguiseProvider
     @Override
     public Text getDisplayName(String disguiseIdentifier)
     {
-        return Text.literal(disguiseIdentifier.replace("player:", ""));
+        return Text.literal("[Fallback: %s]".formatted(disguiseIdentifier));
+    }
+
+    private final AnimationProvider animationProvider = new FallbackAnimationProvider();
+
+    @Override
+    public AnimationProvider getAnimationProvider()
+    {
+        return animationProvider;
     }
 }

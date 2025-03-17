@@ -12,6 +12,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 import org.jetbrains.annotations.Nullable;
+import xiamomc.morph.network.commands.S2C.S2CAnimationCommand;
 import xiamomc.morph.network.commands.S2C.S2CCurrentCommand;
 import xiamomc.morph.network.commands.S2C.clientrender.S2CRenderMapAddCommand;
 import xiamomc.morph.network.commands.S2C.clientrender.S2CRenderMapRemoveCommand;
@@ -19,13 +20,12 @@ import xiamomc.morph.network.commands.S2C.map.S2CMapRemoveCommand;
 import xiamomc.morph.network.commands.S2C.map.S2CPartialMapCommand;
 import xiamomc.morph.network.commands.S2C.set.S2CSetAvailableAnimationsCommand;
 import xiamomc.pluginbase.Annotations.Resolved;
-import xyz.nifeather.morph.client.AnimationNames;
 import xyz.nifeather.morph.server.misc.DisguiseMeta;
 import xyz.nifeather.morph.server.misc.DisguiseTypes;
-import xyz.nifeather.morph.server.morphs.providers.AbstractDisguiseProvider;
-import xyz.nifeather.morph.server.morphs.providers.FallbackDisguiseProvider;
-import xyz.nifeather.morph.server.morphs.providers.PlayerDisguiseProvider;
-import xyz.nifeather.morph.server.morphs.providers.VanillaDisguiseProvider;
+import xyz.nifeather.morph.server.disguise.providers.AbstractDisguiseProvider;
+import xyz.nifeather.morph.server.disguise.providers.FallbackDisguiseProvider;
+import xyz.nifeather.morph.server.disguise.providers.PlayerDisguiseProvider;
+import xyz.nifeather.morph.server.disguise.providers.VanillaDisguiseProvider;
 import xyz.nifeather.morph.server.network.FabricClientHandler;
 import xyz.nifeather.morph.server.MorphServerLoader;
 import xyz.nifeather.morph.server.ServerPluginObject;
@@ -45,17 +45,19 @@ public class FabricMorphManager extends ServerPluginObject
         registerDisguiseProvider(new VanillaDisguiseProvider());
         registerDisguiseProvider(new PlayerDisguiseProvider());
         registerDisguiseProvider(fallbackProvider);
+
+        this.addSchedule(this::update);
     }
 
-    private final Map<PlayerEntity, FabricDisguiseSession> disguiseSessionMap = new ConcurrentHashMap<>();
+    private final Map<ServerPlayerEntity, FabricDisguiseSession> disguiseSessionMap = new ConcurrentHashMap<>();
 
-    public boolean playerDisguised(PlayerEntity player)
+    public boolean playerDisguised(ServerPlayerEntity player)
     {
         return disguiseSessionMap.containsKey(player);
     }
 
     @Nullable
-    public FabricDisguiseSession getSessionFor(PlayerEntity player)
+    public FabricDisguiseSession getSessionFor(ServerPlayerEntity player)
     {
         return disguiseSessionMap.getOrDefault(player, null);
     }
@@ -224,15 +226,12 @@ public class FabricMorphManager extends ServerPluginObject
 
         // todo: Morph stuffs
 
-        disguiseSessionMap.put(player, new FabricDisguiseSession(player, identifier));
+        disguiseSessionMap.put(player, new FabricDisguiseSession(player, identifier, provider));
+
+        var availableAnimations = provider.getAnimationProvider().getAnimationSetFor(identifier).getAvailableAnimationsForClient();
 
         clientHandler.sendCommand(player, new S2CCurrentCommand(identifier));
-        clientHandler.sendCommand(player, new S2CSetAvailableAnimationsCommand(
-                AnimationNames.CRAWL,
-                AnimationNames.DIGDOWN,
-                AnimationNames.LAY,
-                AnimationNames.DANCE
-        ));
+        clientHandler.sendCommand(player, new S2CSetAvailableAnimationsCommand(availableAnimations));
 
         var cmd = new S2CRenderMapAddCommand(player.getId(), identifier);
 
@@ -303,7 +302,11 @@ public class FabricMorphManager extends ServerPluginObject
 
         disguiseSessionMap.remove(player);
 
+        if (player.isDisconnected())
+            return;
+
         clientHandler.sendCommand(player, new S2CCurrentCommand(null));
+        clientHandler.sendCommand(player, new S2CSetAvailableAnimationsCommand());
 
         var cmd = new S2CRenderMapRemoveCommand(player.getId());
         var cmdReveal = new S2CMapRemoveCommand(player.getId());
@@ -316,6 +319,19 @@ public class FabricMorphManager extends ServerPluginObject
         spawnParticle(player);
 
         player.sendMessage(Text.literal("Undisguised"));
+    }
+
+    public void update()
+    {
+        this.addSchedule(this::update);
+
+        disguiseSessionMap.forEach((player, session) ->
+        {
+            if (player.isDisconnected())
+                unMorph(player);
+            else
+                session.update();
+        });
     }
 
     public void dispose()
