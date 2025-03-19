@@ -29,6 +29,7 @@ import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xiamomc.pluginbase.XiaMoJavaPlugin;
+import xyz.nifeather.morph.FeatherMorphFabricInitializer;
 import xyz.nifeather.morph.client.config.ModConfigData;
 import xyz.nifeather.morph.client.graphics.EntityRendererHelper;
 import xyz.nifeather.morph.client.graphics.ModelWorkarounds;
@@ -123,25 +124,12 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
 
         this.registerKeys();
 
-        //初始化配置
-        if (modConfigData == null)
-        {
-            AutoConfig.register(ModConfigData.class, GsonConfigSerializer::new);
-
-            configHolder = AutoConfig.getConfigHolder(ModConfigData.class);
-            configHolder.load();
-
-            modConfigData = configHolder.getConfig();
-        }
-
-        SharedValues.allowSinglePlayerDebugging = debugToasts || modConfigData.singlePlayerDebugging;
-
         dependencyManager.cache(this);
         dependencyManager.cache(disguiseTracker = new DisguiseInstanceTracker());
         dependencyManager.cache(morphManager = new ClientMorphManager());
         dependencyManager.cache(serverHandler = new ServerHandler(this));
         dependencyManager.cache(skillHandler = new ClientSkillHandler());
-        dependencyManager.cache(modConfigData);
+        dependencyManager.cache(getModConfigData());
         dependencyManager.cache(new ClientRequestManager());
         dependencyManager.cache(new EntityRendererHelper());
         dependencyManager.cache(animHandlerIndex);
@@ -366,7 +354,7 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
 
         serverHandler.sendCommand(new C2SToggleSelfCommand(C2SToggleSelfCommand.SelfViewMode.fromBoolean(selfViewVisible)));
 
-        modConfigData.allowClientView = clientViewEnabled;
+        getModConfigData().allowClientView = clientViewEnabled;
     }
 
     public void sendMorphCommand(String id)
@@ -381,17 +369,14 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
 
     //region Config
 
-    private ModConfigData modConfigData;
-    private ConfigHolder<ModConfigData> configHolder;
-
     private void onConfigSave()
     {
-        configHolder.save();
+        FeatherMorphFabricInitializer.instance().configHolder.save();
     }
 
     public ModConfigData getModConfigData()
     {
-        return modConfigData;
+        return FeatherMorphFabricInitializer.instance().modConfigData;
     }
 
     public ConfigBuilder getFactory(Screen parent)
@@ -399,6 +384,8 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
         ConfigBuilder builder = ConfigBuilder.create();
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
         ConfigCategory categoryGeneral = builder.getOrCreateCategory(Text.translatable("stat.generalButton"));
+
+        var modConfigData = getModConfigData();
 
         categoryGeneral.addEntry(
                 entryBuilder.startBooleanToggle(Text.translatable("option.morphclient.previewInInventory.name"), modConfigData.alwaysShowPreviewInInventory)
@@ -487,7 +474,7 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
 
         debugCategory.addEntry(
                 entryBuilder.startBooleanToggle(Text.translatable("option.morphclient.singleplayer_debug"), SharedValues.allowSinglePlayerDebugging)
-                        .setTooltip()
+                        .setTooltip(Text.translatable("option.morphclient.singleplayer_debug.tooltip"))
                         .setDefaultValue(false)
                         .setSaveConsumer(v ->
                                 {

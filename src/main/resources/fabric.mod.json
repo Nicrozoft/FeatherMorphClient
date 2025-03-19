@@ -21,15 +21,15 @@
       "xyz.nifeather.morph.client.ModMenuApiImpl"
     ],
     "main":[
-      "xyz.nifeather.morph.MorphFabricInitializer"
+      "xyz.nifeather.morph.FeatherMorphFabricInitializer"
     ]
   },
   "mixins": [
     "client.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.12.9",
+    "fabricloader": ">=${loader_version}",
     "fabric": "*",
-    "minecraft": ">=1.21.3"
+    "minecraft": ">=${mc_version}"
   }
 }

@@ -1,5 +1,5 @@
 plugins {
-    id("fabric-loom") version "1.8.9"
+    id("fabric-loom") version "1.10.4"
     id("maven-publish")
 }
 
@@ -11,6 +11,20 @@ repositories {
     maven { url = uri("https://maven.shedaniel.me/") }
     maven { url = uri("https://maven.terraformersmc.com/") }
     maven { url = uri("https://jitpack.io") }
+}
+
+tasks.processResources {
+    val replaces = mapOf(
+        Pair("version", project.version),
+        Pair("mc_version", project.property("minecraft_version")),
+        Pair("loader_version", project.property("loader_version"))
+    );
+
+    inputs.properties(replaces);
+
+    filesMatching("fabric.mod.json") {
+        expand(replaces);
+    }
 }
 
 dependencies {
