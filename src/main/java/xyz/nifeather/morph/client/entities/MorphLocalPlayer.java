@@ -12,6 +12,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerModelPart;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.*;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -280,6 +281,23 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
                 skinTextureUrl,
                 cape, cape,
                 model, false);
+    }
+
+    @Nullable
+    private BlockPos overrideSleepPos;
+
+    @Override
+    public Optional<BlockPos> getSleepingPosition()
+    {
+        if (overrideSleepPos != null)
+            return Optional.of(overrideSleepPos);
+
+        return super.getSleepingPosition();
+    }
+
+    public void overrideSleepPos(BlockPos pos)
+    {
+        this.overrideSleepPos = pos;
     }
 
     @Override

@@ -376,11 +376,15 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
         var player = bindingPlayer;
 
-        //幻翼的pitch需要倒转
-        if (disguiseInstance.getType() == EntityType.PHANTOM)
-            disguiseInstance.setPitch(-player.getPitch());
-        else
-            disguiseInstance.setPitch(player.getPitch());
+        // 幻翼的pitch需要倒转
+        // Don't sync pitch when sleeping position is present -- Match plugin behavior (maybe?)
+        if (disguiseInstance.getSleepingPosition().isEmpty())
+        {
+            if (disguiseInstance.getType() == EntityType.PHANTOM)
+                disguiseInstance.setPitch(-player.getPitch());
+            else
+                disguiseInstance.setPitch(player.getPitch());
+        }
 
         //末影龙的Yaw和玩家是反的
         if (disguiseInstance.getType() == EntityType.ENDER_DRAGON)
