@@ -276,10 +276,6 @@ public class FabricMorphManager extends ServerPluginObject
         //缩放为碰撞箱体积的1/15，最小为1
         var particleScale = Math.max(1, (collX * collY * collZ) / 15);
 
-        player.getWorld().addParticle(ParticleTypes.CLOUD,
-                location.x, location.y, location.z,
-                0.05, 0.05, 0.05);
-
         ((ServerWorld)player.getWorld()).spawnParticles(ParticleTypes.CLOUD,
                 false,
                 false,

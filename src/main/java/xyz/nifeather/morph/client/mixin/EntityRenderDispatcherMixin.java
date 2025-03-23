@@ -85,7 +85,7 @@ public abstract class EntityRenderDispatcherMixin
     }
 
     @Inject(
-            method = "method_68834",
+            method = "render(Lnet/minecraft/client/render/entity/state/EntityRenderState;DDDLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/client/render/entity/EntityRenderer;)V",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/util/math/MatrixStack;pop()V"
