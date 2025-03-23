@@ -1,9 +1,11 @@
 package xiamomc.pluginbase;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import xiamomc.pluginbase.Managers.DependencyManager;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,9 +43,7 @@ public abstract class XiaMoJavaPlugin implements ISchedulablePlugin
         instances.put(namespace(), this);
     }
 
-    protected void enable()
-    {
-    }
+    protected void enable() { }
 
     public final void enablePlugin()
     {
@@ -70,9 +70,7 @@ public abstract class XiaMoJavaPlugin implements ISchedulablePlugin
     public abstract void startMainLoop(Runnable r);
     public abstract void runAsync(Runnable r);
 
-    protected void disable()
-    {
-    }
+    protected void disable() { }
 
     public final void disablePlugin()
     {
@@ -86,6 +84,8 @@ public abstract class XiaMoJavaPlugin implements ISchedulablePlugin
         dependencyManager.unCacheAll();
         dependencyManager.unRegisterPluginInstance(this);
     }
+
+    public abstract @NotNull File getDataFolder();
 
     public boolean doInternalDebugOutput = false;
 

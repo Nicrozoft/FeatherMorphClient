@@ -3,12 +3,25 @@ package xyz.nifeather.morph.client.syncers;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import org.jetbrains.annotations.NotNull;
 import xyz.nifeather.morph.client.EntityCache;
+import xyz.nifeather.morph.client.entities.MorphLocalPlayer;
 
 public class OtherClientDisguiseSyncer extends DisguiseSyncer
 {
-    public OtherClientDisguiseSyncer(AbstractClientPlayerEntity clientPlayer, String morphId, int networkId)
+    public OtherClientDisguiseSyncer(AbstractClientPlayerEntity bindingPlayer, String morphId, int networkId)
     {
-        super(clientPlayer, morphId, networkId);
+        super(bindingPlayer, morphId, networkId);
+    }
+
+    @Override
+    public boolean refreshEntity()
+    {
+        if (!super.refreshEntity())
+            return false;
+
+        if (disguiseInstance instanceof MorphLocalPlayer localPlayer)
+            localPlayer.setBindingPlayer(this.bindingPlayer);
+
+        return true;
     }
 
     @Override
@@ -59,8 +72,6 @@ public class OtherClientDisguiseSyncer extends DisguiseSyncer
         if (disguiseInstance.isGlowing() != bindingPlayer.isGlowing())
             disguiseInstance.setGlowing(bindingPlayer.isGlowing());
     }
-
-    private boolean dimensionsRefreshed;
 
     @Override
     public void syncDraw()

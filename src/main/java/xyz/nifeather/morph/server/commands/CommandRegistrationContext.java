@@ -1,4 +1,4 @@
-package xyz.nifeather.morph.server;
+package xyz.nifeather.morph.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.command.CommandRegistryAccess;

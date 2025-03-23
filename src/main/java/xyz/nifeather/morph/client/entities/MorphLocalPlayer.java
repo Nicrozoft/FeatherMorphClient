@@ -7,12 +7,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.client.util.SkinTextures;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerModelPart;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.*;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -67,6 +67,7 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
         this.skinTextureUrl = prevPlayer.skinTextureUrl;
     }
 
+    @Nullable
     private PlayerEntity bindingPlayer;
 
     @Nullable
@@ -80,17 +81,19 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
         return bindingPlayer != null;
     }
 
-    public void setBindingPlayer(PlayerEntity newInstance)
+    public void setBindingPlayer(@Nullable PlayerEntity newInstance)
     {
         bindingPlayer = newInstance;
     }
 
-    public MorphLocalPlayer(ClientWorld clientWorld, GameProfile profile, PlayerEntity bindingPlayer)
+    public MorphLocalPlayer(ClientWorld clientWorld, GameProfile profile, @Nullable PlayerEntity bindingPlayer)
     {
         super(clientWorld, profile);
 
-        if (bindingPlayer == null) bindingPlayer = MinecraftClient.getInstance().player;
-        this.bindingPlayer = bindingPlayer;
+        this.setBindingPlayer(bindingPlayer);
+
+        //if (bindingPlayer == null) bindingPlayer = MinecraftClient.getInstance().player;
+        //this.bindingPlayer = bindingPlayer;
 
         this.playerName = profile.getName();
 
@@ -280,54 +283,75 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
                 model, false);
     }
 
+    @Nullable
+    private BlockPos overrideSleepPos;
+
+    @Override
+    public Optional<BlockPos> getSleepingPosition()
+    {
+        if (overrideSleepPos != null)
+            return Optional.of(overrideSleepPos);
+
+        return super.getSleepingPosition();
+    }
+
+    public void overrideSleepPos(BlockPos pos)
+    {
+        this.overrideSleepPos = pos;
+    }
+
     @Override
     public boolean isSpectator()
     {
         return bindingPlayer != null && bindingPlayer.isSpectator();
     }
 
-    public void setActiveItem(ItemStack stack)
+    @Override
+    public Arm getMainArm()
     {
-        this.activeItemStack = stack;
+        return bindingPlayer == null ? super.getMainArm() : bindingPlayer.getMainArm();
     }
 
     @Override
-    public boolean isUsingItem() {
-        return itemUseTime > 0;
+    public boolean isGliding()
+    {
+        return bindingPlayer == null ? super.isGliding() : bindingPlayer.isGliding();
     }
 
-    public int itemUseTime;
+    @Override
+    public ItemStack getActiveItem()
+    {
+        return bindingPlayer == null ? super.getActiveItem() : bindingPlayer.getActiveItem();
+    }
+
+    @Override
+    public boolean isUsingItem()
+    {
+        return bindingPlayer == null ? super.isUsingItem() : bindingPlayer.isUsingItem();
+    }
 
     @Override
     public int getItemUseTime()
     {
-        return itemUseTime;
+        return bindingPlayer == null ? super.getItemUseTime() : bindingPlayer.getItemUseTime();
     }
-
-    public int itemUseTimeLeft;
 
     @Override
-    public int getItemUseTimeLeft() {
-        return itemUseTimeLeft;
+    public int getItemUseTimeLeft()
+    {
+        return bindingPlayer == null ? super.getItemUseTimeLeft() : bindingPlayer.getItemUseTimeLeft();
     }
-
-    public boolean usingRiptide;
 
     @Override
     public boolean isUsingRiptide()
     {
-        return usingRiptide;
+        return bindingPlayer == null ? super.isUsingRiptide() : bindingPlayer.isUsingRiptide();
     }
 
     @Override
     public Vec3d getPos()
     {
-        var clientPlayer = bindingPlayer;
-
-        if (clientPlayer != null)
-            return clientPlayer.getPos();
-
-        return super.getPos();
+        return bindingPlayer == null ? super.getPos() : bindingPlayer.getPos();
     }
 
     @Override
@@ -339,7 +363,7 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
     @Override
     public boolean isPartVisible(PlayerModelPart modelPart)
     {
-        return bindingPlayer.isPartVisible(modelPart);
+        return bindingPlayer == null || bindingPlayer.isPartVisible(modelPart);
     }
 
     @Nullable
@@ -359,31 +383,16 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
     @Override
     public boolean shouldRenderName()
     {
-        return hasBindingPlayer() && bindingPlayer != MinecraftClient.getInstance().player;
+        return hasBindingPlayer() && (MinecraftClient.getInstance().cameraEntity != bindingPlayer || bindingPlayer != MinecraftClient.getInstance().player);
     }
 
     @Override
     public double squaredDistanceTo(Vec3d vector)
     {
+        // compat with 3d skin layers
         if (vector.equals(MinecraftClient.getInstance().gameRenderer.getCamera().getPos()))
             return 0d;
 
         return super.squaredDistanceTo(vector);
-    }
-
-    @Nullable
-    private EntityPose overridePose;
-
-    public void setOverridePose(@Nullable EntityPose newPose)
-    {
-        this.overridePose = newPose;
-    }
-
-    @Override
-    public EntityPose getPose()
-    {
-        if (overridePose != null) return overridePose;
-
-        return super.getPose();
     }
 }

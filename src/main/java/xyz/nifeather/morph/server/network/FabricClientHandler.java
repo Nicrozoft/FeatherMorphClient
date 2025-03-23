@@ -1,10 +1,10 @@
-package xyz.nifeather.morph.server;
+package xyz.nifeather.morph.server.network;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
 import xiamomc.morph.network.BasicClientHandler;
 import xiamomc.morph.network.InitializeState;
 import xiamomc.morph.network.PlayerOptions;
@@ -19,6 +19,9 @@ import xiamomc.morph.network.commands.S2C.query.S2CQueryCommand;
 import xiamomc.morph.network.commands.S2C.set.S2CSetSelfViewingCommand;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xiamomc.pluginbase.Bindables.Bindable;
+import xyz.nifeather.morph.server.ServerPluginObject;
+import xyz.nifeather.morph.server.morphs.FabricDisguiseSession;
+import xyz.nifeather.morph.server.morphs.FabricMorphManager;
 import xyz.nifeather.morph.shared.payload.MorphCommandPayload;
 
 import java.util.List;
@@ -40,7 +43,6 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
                 .registerC2S("animation", C2SAnimationCommand::new);
     }
 
-    private final Bindable<Boolean> allowClient = new Bindable<>(true);
     private final Bindable<Boolean> logInComingPackets = new Bindable<>(true);
 
     private void logPacket(boolean isOutGoingPacket, ServerPlayerEntity player, String channel, String data, int size)
@@ -58,8 +60,6 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
 
     public void onCommandPayload(MorphCommandPayload morphCommandPayload, ServerPlayNetworking.Context context)
     {
-        if (!allowClient.get()) return;
-
         var player = context.player();
         var input = morphCommandPayload.content();
 /*
@@ -94,7 +94,8 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
         }
     }
 
-    protected boolean clientConnected(ServerPlayerEntity player)
+    // todo: Implement this
+    public boolean clientConnected(ServerPlayerEntity player)
     {
         return true;
     }
@@ -103,8 +104,6 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     {
         var cmd = command.buildCommand();
         if (cmd == null || cmd.isEmpty() || cmd.isBlank()) return false;
-
-        if ((!allowClient.get() || !this.clientConnected(player)) && !forceSend) return false;
 
         logPacket(true, player, MorphCommandPayload.id.id().toString(), cmd, cmd.length());
 
@@ -210,7 +209,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     {
         ServerPlayerEntity player = command.getOwner();
 
-        var unlocked = morphManager.getUnlockedDisguises(player);
+        var unlocked = morphManager.getUnlockedDisguiseIds(player);
         var cmd = new S2CQueryCommand(QueryType.SET, unlocked.toArray(new String[0]));
 
         this.sendCommand(player, cmd);
@@ -280,6 +279,35 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     public void onAnimationCommand(C2SAnimationCommand command)
     {
         ServerPlayerEntity player = command.getOwner();
-        this.sendCommand(player, new S2CAnimationCommand(command.getAnimationId()));
+
+        var session = morphManager.getSessionFor(player);
+        if (session == null)
+        {
+            player.sendMessage(Text.literal("Session is NULL, you are not disguised!"));
+            return;
+        }
+
+        var animationProvider = session.disguiseProvider().getAnimationProvider();
+        var animationId = command.getAnimationId();
+        var seqPair = animationProvider.getAnimationSetFor(session.disguiseIdentifier()).sequenceOf(animationId);
+
+        if (!session.tryScheduleSequence(animationId, seqPair.left()))
+            player.sendMessage(Text.literal("Playing Animation is not available now."));
+    }
+
+    /**
+     * 向某个玩家的客户端发送差异信息
+     *
+     * @param addits 添加
+     * @param removal 删除
+     * @param player 目标玩家
+     */
+    public void sendDiff(@Nullable List<String> addits, @Nullable List<String> removal, ServerPlayerEntity player)
+    {
+        if (addits != null)
+            this.sendCommand(player, new S2CQueryCommand(QueryType.ADD, addits.toArray(new String[]{})));
+
+        if (removal != null)
+            this.sendCommand(player, new S2CQueryCommand(QueryType.REMOVE, removal.toArray(new String[]{})));
     }
 }

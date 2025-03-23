@@ -4,7 +4,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
-import xyz.nifeather.morph.client.AnimationNames;
+import xyz.nifeather.morph.shared.AnimationNames;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.FeatherMorphClient;
 import xyz.nifeather.morph.client.ServerHandler;
@@ -150,7 +150,7 @@ public class EmoteScreen extends SpinnerScreen<SingleEmoteWidget>
 
     private Text getEmoteText(@Nullable String identifier)
     {
-        if (identifier == null || identifier.equals(AnimationNames.INTERNAL_VANISH) || identifier.equals(AnimationNames.NONE))
+        if (identifier == null || identifier.equals(AnimationNames.VANISH) || identifier.equals(AnimationNames.NONE))
              return Text.translatable("gui.none");
 
         return Text.translatable("emote.morphclient." + identifier);

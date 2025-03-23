@@ -1,7 +1,7 @@
 package xyz.nifeather.morph.client.syncers.animations.impl;
 
 import net.minecraft.entity.Entity;
-import xyz.nifeather.morph.client.AnimationNames;
+import xyz.nifeather.morph.shared.AnimationNames;
 import xyz.nifeather.morph.client.entities.IAllay;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 

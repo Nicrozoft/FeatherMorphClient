@@ -27,6 +27,7 @@ import xiamomc.pluginbase.Annotations.Initializer;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xiamomc.pluginbase.Bindables.Bindable;
 import xiamomc.pluginbase.Exceptions.NullDependencyException;
+import xyz.nifeather.morph.shared.AnimationNames;
 
 import java.util.List;
 import java.util.Map;

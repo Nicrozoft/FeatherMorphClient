@@ -10,6 +10,7 @@ public class SharedValues
     public static final Logger LOGGER = LoggerFactory.getLogger("FeatherMorph");
 
     private static final String morphNameSpace = "morphplugin";
+    public static final String MOD_ID = "feathermorph-client";
 
     public static Identifier initializeChannelIdentifier = Identifier.of(morphNameSpace, "init");
     public static Identifier versionChannelIdentifier = Identifier.of(morphNameSpace, "version_v2");

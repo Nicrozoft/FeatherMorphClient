@@ -2,6 +2,7 @@ package xyz.nifeather.morph.client.graphics.hud;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.shedaniel.math.Color;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderTickCounter;
 import xyz.nifeather.morph.client.ClientMorphManager;
@@ -96,7 +97,7 @@ public class HudRenderHelper extends MorphClientObject
 
     public void onRender(DrawContext context, RenderTickCounter renderTickCounter)
     {
-        if (manager == null || drawAlpha.get() == 0f) return;
+        if (manager == null || drawAlpha.get() == 0f || MinecraftClient.getInstance().options.hudHidden) return;
 
         var matrices = context.getMatrices();
 
