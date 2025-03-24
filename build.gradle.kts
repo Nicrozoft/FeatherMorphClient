@@ -17,7 +17,8 @@ tasks.processResources {
     val replaces = mapOf(
         Pair("version", project.version),
         Pair("mc_version", project.property("minecraft_version")),
-        Pair("loader_version", project.property("loader_version"))
+        Pair("loader_version", project.property("loader_version")),
+        Pair("clothconfig_version", project.property("clothconfig_version"))
     );
 
     inputs.properties(replaces);
@@ -43,12 +44,11 @@ dependencies {
     }
 
     modImplementation("com.github.XiaMoZhiShi:feathermorph-protocols:$protocolVersion")
-    include("com.github.XiaMoZhiShi:feathermorph-protocols:$protocolVersion")
-    include("me.shedaniel.cloth:cloth-config-fabric:${project.property("clothconfig_version")}")
-
+    modImplementation("me.shedaniel.cloth:cloth-config-fabric:${project.property("clothconfig_version")}")
     modImplementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
-
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
+
+    include("com.github.XiaMoZhiShi:feathermorph-protocols:$protocolVersion")
 }
 
 loom {
