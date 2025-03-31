@@ -122,9 +122,7 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     @Override
     public void syncDraw()
     {
-        if (disguiseInstance == null || !acceptSyncing) return;
-
-        syncYawPitch();
+        //if (disguiseInstance == null || !acceptSyncing) return;
     }
 
     @Override
@@ -187,6 +185,7 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
         }
 
         baseSync();
+        syncYawPitch();
     }
 
     @Override
