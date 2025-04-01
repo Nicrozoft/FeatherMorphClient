@@ -74,11 +74,37 @@ public class OtherClientDisguiseSyncer extends DisguiseSyncer
     }
 
     @Override
-    public void syncDraw()
+    public void postEntityRender()
+    {
+        if (disguiseInstance == null)
+            return;
+
+        var playerPos = bindingPlayer.getPos();
+        disguiseInstance.setPos(playerPos.x, playerPos.y - 4096, playerPos.z);
+        disguiseInstance.lastRenderX = playerPos.x;
+        disguiseInstance.lastRenderY = playerPos.y - 4096;
+        disguiseInstance.lastRenderZ = playerPos.z;
+    }
+
+    @Override
+    public void preEntityRender()
     {
         if (disposed()) return;
 
-        syncYawPitch();
+        if (disguiseInstance == null)
+            return;
+
+        // From ClientDisguiseSyncer
+
+        // workaround: When an entity is far away from the player, EMF will reduce the update rate for it.
+        var playerPos = bindingPlayer.getPos();
+        disguiseInstance.setPos(playerPos.x, playerPos.y, playerPos.z);
+
+        // And this is for 3d skin layer compatibility
+        // See https://github.com/tr7zw/3d-Skin-Layers/blob/bd8637d2fedd0b9d836b3932b5b0e2415337a40c/src/main/java/dev/tr7zw/skinlayers/mixin/CustomHeadLayerMixin.java#L49
+        disguiseInstance.lastRenderX = playerPos.x;
+        disguiseInstance.lastRenderY = playerPos.y;
+        disguiseInstance.lastRenderZ = playerPos.z;
     }
 
     @Override

@@ -119,20 +119,6 @@ public abstract class MorphClientEntityMixin implements IMorphClientEntity
         return disguise.equals(this);
     }
 
-    @Inject(method = "squaredDistanceTo(Lnet/minecraft/entity/Entity;)D", at = @At("HEAD"), cancellable = true)
-    private void morphClient$onSquaredDistanceCallEntity(Entity entity, CallbackInfoReturnable<Double> cir)
-    {
-        if (featherMorph$isDisguiseInstance())
-            cir.setReturnValue(1d);
-    }
-
-    @Inject(method = "squaredDistanceTo(Lnet/minecraft/util/math/Vec3d;)D", at = @At("HEAD"), cancellable = true)
-    private void morphClient$onSquaredDistanceCallVec3d(Vec3d vector, CallbackInfoReturnable<Double> cir)
-    {
-        if (featherMorph$isDisguiseInstance())
-            cir.setReturnValue(1d);
-    }
-
     @Inject(method = "setRemoved", at = @At("RETURN"))
     private void morphClient$onRemoved(CallbackInfo ci)
     {

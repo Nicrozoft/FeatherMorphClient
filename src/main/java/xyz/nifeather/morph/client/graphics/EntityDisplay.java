@@ -281,9 +281,12 @@ public class EntityDisplay extends MDrawable
             scale = Math.round((Math.min(this.getRenderHeight(), this.getRenderWidth()) * 0.8f) / scaledMaxEntityBorder);
             scale = Math.max(1, scale);
 
-            drawEntity(context,
+            InventoryScreen.drawEntity(context,
                     0, 0, renderWidth, renderHeight,
-                    scale * initialEntitySize.get(), 0.0625f + entityYOffset, mouseX, mouseY, displayingEntity);
+                    scale * initialEntitySize.get(),
+                    0.0625f + entityYOffset,
+                    (float)mouseX - getScreenSpaceX(), (float)mouseY - getScreenSpaceY(),
+                    displayingEntity);
 
             PlayerRenderHelper.instance().skipRender = false;
         }
@@ -293,49 +296,5 @@ public class EntityDisplay extends MDrawable
             LoggerFactory.getLogger("morph").error(t.getMessage());
             t.printStackTrace();
         }
-    }
-
-    /**
-     * Copied from {@link InventoryScreen#drawEntity(DrawContext, int, int, int, int, int, float, float, float, LivingEntity)}
-     * Because they introduced scissor that is not compatible with our gui impl.
-     */
-    public void drawEntity(DrawContext context,
-                                  int x1, int y1,
-                                  int x2, int y2,
-                                  int size, float f,
-                                  float mouseX, float mouseY,
-                                  LivingEntity entity)
-    {
-        float regionXCenter = (float)(x1 + x2) / 2.0f;
-        float regionYCenter = (float)(y1 + y2) / 2.0f;
-
-        //context.drawText(MinecraftClient.getInstance().textRenderer, Text.literal("mX %s, mY %s".formatted(mouseX, mouseY)), 0, 0, -1, true);
-
-        float xAtan = (float) Math.atan((getScreenSpaceX() + regionXCenter - mouseX) / 40.0f);
-        float yAtan = (float) Math.atan((getScreenSpaceY() + regionYCenter - mouseY) / 40.0f);
-
-        Quaternionf quaternionf = new Quaternionf().rotateZ((float)Math.PI);
-        Quaternionf quaternionf2 = new Quaternionf().rotateX(yAtan * 20.0f * ((float)Math.PI / 180));
-        quaternionf.mul(quaternionf2);
-        float k = entity.bodyYaw;
-        float l = entity.getYaw();
-        float m = entity.getPitch();
-        float n = entity.lastHeadYaw;
-        float o = entity.headYaw;
-        entity.bodyYaw = 180.0f + xAtan * 20.0f;
-        entity.setYaw(180.0f + xAtan * 40.0f);
-        entity.setPitch(-yAtan * 20.0f);
-        entity.headYaw = entity.getYaw();
-        entity.lastHeadYaw = entity.getYaw();
-        Vector3f vector3f = new Vector3f(0.0f, entity.getHeight() / 2.0f + f, 0.0f);
-
-        InventoryScreen.drawEntity(context, regionXCenter, regionYCenter, size, vector3f, quaternionf, quaternionf2, entity);
-
-        entity.bodyYaw = k;
-        entity.setYaw(l);
-        entity.setPitch(m);
-        entity.lastHeadYaw = n;
-        entity.headYaw = o;
-        //context.disableScissor();
     }
 }

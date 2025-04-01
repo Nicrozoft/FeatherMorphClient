@@ -2,21 +2,21 @@ package xyz.nifeather.morph.client.syncers;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.render.entity.state.EntityRenderState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.world.World;
+import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.EntityCache;
 import xyz.nifeather.morph.client.FeatherMorphClient;
 import xyz.nifeather.morph.client.ServerHandler;
+import xyz.nifeather.morph.client.entities.IDisguiseRenderState;
 import xyz.nifeather.morph.client.entities.MorphLocalPlayer;
-import xyz.nifeather.morph.client.graphics.CameraHelper;
 import xiamomc.pluginbase.Annotations.Initializer;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xiamomc.pluginbase.Bindables.Bindable;
@@ -120,9 +120,47 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     //private boolean isSpider = false;
 
     @Override
-    public void syncDraw()
+    public void postEntityRender()
     {
-        //if (disguiseInstance == null || !acceptSyncing) return;
+        if (disguiseInstance == null)
+            return;
+
+        var playerPos = bindingPlayer.getPos();
+        disguiseInstance.setPos(playerPos.x, playerPos.y - 4096, playerPos.z);
+        disguiseInstance.lastRenderX = playerPos.x;
+        disguiseInstance.lastRenderY = playerPos.y - 4096;
+        disguiseInstance.lastRenderZ = playerPos.z;
+    }
+
+    @Override
+    public void onEntityRenderStateSetup(EntityRenderState state, IDisguiseRenderState asDisguiseRenderState)
+    {
+        super.onEntityRenderStateSetup(state, asDisguiseRenderState);
+
+        var tickManager = MinecraftClient.getInstance().getRenderTickCounter();
+        var tickProgress = tickManager.getTickProgress(true);
+
+        // workaround for 3d skin layer
+        state.x = MathHelper.lerp(tickProgress, bindingPlayer.lastRenderX, bindingPlayer.getX());
+        state.y = MathHelper.lerp(tickProgress, bindingPlayer.lastRenderY, bindingPlayer.getY());
+        state.z = MathHelper.lerp(tickProgress, bindingPlayer.lastRenderZ, bindingPlayer.getZ());
+    }
+
+    @Override
+    public void preEntityRender()
+    {
+        if (disguiseInstance == null)
+            return;
+
+        // workaround: When an entity is far away from the player, EMF will reduce the update rate for it.
+        var playerPos = bindingPlayer.getPos();
+        disguiseInstance.setPos(playerPos.x, playerPos.y, playerPos.z);
+
+        // And this is for 3d skin layer compatibility
+        // See https://github.com/tr7zw/3d-Skin-Layers/blob/bd8637d2fedd0b9d836b3932b5b0e2415337a40c/src/main/java/dev/tr7zw/skinlayers/mixin/CustomHeadLayerMixin.java#L49
+        disguiseInstance.lastRenderX = playerPos.x;
+        disguiseInstance.lastRenderY = playerPos.y;
+        disguiseInstance.lastRenderZ = playerPos.z;
     }
 
     @Override

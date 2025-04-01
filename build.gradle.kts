@@ -11,6 +11,18 @@ repositories {
     maven { url = uri("https://maven.shedaniel.me/") }
     maven { url = uri("https://maven.terraformersmc.com/") }
     maven { url = uri("https://jitpack.io") }
+
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = uri("https://api.modrinth.com/maven")
+            }
+        }
+        filter {
+            includeGroup("maven.modrinth")
+        }
+    }
 }
 
 tasks.processResources {
@@ -43,6 +55,7 @@ dependencies {
         project.property("protocols_version") as String
     }
 
+    //modApi("maven.modrinth:entity-model-features:2.4.3")
     modImplementation("com.github.XiaMoZhiShi:feathermorph-protocols:$protocolVersion")
     modImplementation("me.shedaniel.cloth:cloth-config-fabric:${project.property("clothconfig_version")}")
     modImplementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")

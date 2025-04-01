@@ -8,6 +8,7 @@ import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.state.EntityRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
@@ -47,6 +48,7 @@ public class EntityRendererHelper
         renderState.morphclient$setClientPlayer(false);
         renderState.morphclient$setRevealName(null);
         renderState.morphclient$setMasterPosition(null);
+        renderState.morphclient$setDisguiseSyncer(null);
 
         // then do setup
 
@@ -63,7 +65,10 @@ public class EntityRendererHelper
                 masterEntity = syncer.getBindingPlayer();
                 id = syncer.getBindingPlayer().getId();
 
+                renderState.morphclient$setDisguiseSyncer(syncer);
                 renderState.morphclient$setMasterPosition(masterEntity.getPos());
+
+                syncer.onEntityRenderStateSetup((EntityRenderState)renderState, renderState);
             }
         }
 
@@ -88,7 +93,21 @@ public class EntityRendererHelper
 
         if (!(state instanceof IDisguiseRenderState asDisguiseRenderState))
             return;
+/*
+        if (((IDisguiseRenderState) state).morphclient$getDisguiseSyncer() != null)
+        {
+            var syncer = ((IDisguiseRenderState) state).morphclient$getDisguiseSyncer();
+            var bindingPlayer = syncer.getBindingPlayer();
 
+            var distance = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().squaredDistanceTo(
+                    state.x, state.y, state.z
+            );
+
+            MinecraftClient.getInstance().player.sendMessage(Text.literal("State XYZ: %s, %s, %s".formatted(
+                    state.x, state.y, state.z
+            )), false);
+        }
+*/
         // 服务器发送来的揭示数据是 玩家ID <-> 玩家名 的格式
         // 因此当客户端玩家有伪装时，渲染其本体也会显示揭示标签
         // 但我们不想这样，所以跳过此实体的渲染

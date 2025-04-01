@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.render.entity.state.EntityRenderState;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -11,12 +12,12 @@ import net.minecraft.entity.passive.HorseEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import xyz.nifeather.morph.client.*;
+import xyz.nifeather.morph.client.entities.IDisguiseRenderState;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.entities.MorphLocalPlayer;
 import xyz.nifeather.morph.client.mixin.accessors.AbstractHorseEntityMixin;
@@ -331,13 +332,17 @@ public abstract class DisguiseSyncer extends MorphClientObject
         }
     }
 
-    public void onGameRender()
+    public void postEntityRender()
+    {
+    }
+
+    public void onEarlyEntityRender()
     {
         if (!allowTick) return;
 
         try
         {
-            syncDraw();
+            preEntityRender();
         }
         catch (Exception e)
         {
@@ -366,7 +371,11 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     public abstract void syncTick();
 
-    public abstract void syncDraw();
+    public void onEntityRenderStateSetup(EntityRenderState renderState, IDisguiseRenderState asDisguiseRenderState)
+    {
+    }
+
+    public abstract void preEntityRender();
 
     protected abstract void initialSync();
 
@@ -557,6 +566,8 @@ public abstract class DisguiseSyncer extends MorphClientObject
         // Hurt and death
         entity.hurtTime = bindingPlayer.hurtTime;
         entity.deathTime = bindingPlayer.deathTime;
+
+        entity.setSprinting(bindingPlayer.isSprinting());
 
         //entity.inPowderSnow = clientPlayer.inPowderSnow;
         entity.setFrozenTicks(bindingPlayer.getFrozenTicks());
