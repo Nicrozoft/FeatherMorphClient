@@ -106,7 +106,7 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
 
     private int requestId = 0;
 
-    private final static ICapeProvider capeProvider = new KappaCapeProvider();
+    private final static ICapeProvider customCapeProvider = new KappaCapeProvider();
 
     private static final Logger logger = FeatherMorphClient.LOGGER;
 
@@ -266,11 +266,15 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
         updateSkinTextures();
 
         //为披风提供器单独创建新的GameProfile以避免影响皮肤功能
-        capeProvider.getCape(new GameProfile(profile.getId(), profile.getName()), identifier ->
-        {
-            this.ofCapeIdentifier = identifier;
-            updateSkinTextures();
-        });
+        customCapeProvider.getCapeAsync(new GameProfile(profile.getId(), profile.getName()))
+                .thenAccept(optional ->
+                {
+                    if (optional.isEmpty())
+                        return;
+
+                    this.ofCapeIdentifier = optional.get();
+                    updateSkinTextures();
+                });
     }
 
     private void updateSkinTextures()

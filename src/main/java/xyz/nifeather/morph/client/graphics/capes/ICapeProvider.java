@@ -2,15 +2,18 @@ package xyz.nifeather.morph.client.graphics.capes;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.function.Consumer;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public interface ICapeProvider
 {
     /**
      * 尝试获取和profile对应的披风
+     *
      * @param profile {@link GameProfile}
-     * @param callback 获取到披风后执行的callback，参数为披风的 {@link Identifier}, 若参数为null则代表披风不可用
+     * @return 返回一个CompleteableFuture, 若披风不可用，则String为NULL
      */
-    public void getCape(GameProfile profile, Consumer<Identifier> callback);
+    public CompletableFuture<Optional<Identifier>> getCapeAsync(GameProfile profile);
 }

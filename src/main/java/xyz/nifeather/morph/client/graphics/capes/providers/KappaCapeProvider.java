@@ -1,26 +1,27 @@
 package xyz.nifeather.morph.client.graphics.capes.providers;
 
 import com.mojang.authlib.GameProfile;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectLists;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.nifeather.morph.client.graphics.capes.ICapeProvider;
 
 import java.io.FileNotFoundException;
+import java.net.URI;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 修改自 <a href="https://github.com/Hibiii/Kappa">Hibiii/Kappa</a>
@@ -53,41 +54,41 @@ public final class KappaCapeProvider implements ICapeProvider
 	}
 
 	@Override
-	public void getCape(GameProfile profile, Consumer<Identifier> callback)
+	public CompletableFuture<Optional<Identifier>> getCapeAsync(GameProfile profile)
 	{
-		this.loadCape(profile, callback::accept);
+		var uuid = profile.getId();
+
+		var existingRequest = onGoingRequests.getOrDefault(uuid, null);
+		if (existingRequest != null)
+			return existingRequest;
+
+		var future = CompletableFuture.supplyAsync(() -> this.loadCape(profile), this.getCapeExecutor());
+
+		onGoingRequests.put(uuid, future);
+		future.thenAccept(optional -> onGoingRequests.remove(uuid));
+
+		return future;
 	}
 
-	private final List<UUID> onGoingRequests = ObjectLists.synchronize(new ObjectArrayList<>());
+	private final Map<UUID, CompletableFuture<Optional<Identifier>>> onGoingRequests = new ConcurrentHashMap<>();
 
 	// This loads the cape for one player, doesn't matter if it's the player or not.
 	// Requires a callback, that receives the id for the cape
-	public void loadCape(GameProfile player, CapeTextureAvailableCallback callback)
+	public Optional<Identifier> loadCape(GameProfile profile)
 	{
-		if (onGoingRequests.stream().anyMatch(uuid -> player.getId().equals(uuid)))
-			return;
+        // Check if the player doesn't already have a cape.
+        Identifier existingCape = capes.get(profile.getName());
 
-		onGoingRequests.add(player.getId());
+        if (existingCape != null)
+			return Optional.of(existingCape);
 
-		this.getCapeExecutor().execute(() ->
-		{
-			// Check if the player doesn't already have a cape.
-			Identifier existingCape = capes.get(player.getName());
+		var ofCape = this.tryUrl(profile, "https://optifine.net/capes/" + profile.getName() + ".png");
+		if (ofCape != null)
+			return Optional.of(ofCape);
 
-			if(existingCape != null)
-			{
-				callback.onTexAvail(existingCape);
-				return;
-			}
-
-			if(!this.tryUrl(player, callback, "https://optifine.net/capes/" + player.getName() + ".png"))
-				this.tryUrl(player, callback, "http://s.optifine.net/capes/" + player.getName() + ".png");
-		});
-	}
-
-	public interface CapeTextureAvailableCallback {
-		public void onTexAvail(Identifier id);
-	}
+		var sOptifine = this.tryUrl(profile, "http://s.optifine.net/capes/" + profile.getName() + ".png");
+		return sOptifine == null ? Optional.empty() : Optional.of(sOptifine);
+    }
 
 	// This is a provider specific implementation.
 	// Images are usually 46x22 or 92x44, and these work as expected (64x32, 128x64).
@@ -117,40 +118,40 @@ public final class KappaCapeProvider implements ICapeProvider
 
 	// Try to load a cape from an URL.
 	// If this fails, it'll return false, and let us try another url.
-	private boolean tryUrl(GameProfile player, CapeTextureAvailableCallback callback, String urlFrom)
+	private @Nullable Identifier tryUrl(GameProfile player, String targetUrl)
 	{
 		try
 		{
-			URL url = new URL(urlFrom);
+			URL url = new URL(targetUrl);
 
 			NativeImage tex = uncrop(NativeImage.read(url.openStream()));
-			NativeImageBackedTexture nIBT = new NativeImageBackedTexture(() ->
-			{
-				return "cape_tex_" + player.getId().toString().toLowerCase().replace("-", "_");
-			}, tex);
 
-			Identifier id = Identifier.of("kappa", player.getId().toString().replace("-", "_"));
-			MinecraftClient.getInstance().getTextureManager().registerTexture(id, nIBT);
+			var id = CompletableFuture.supplyAsync(() ->
+			{
+				// 1.21.5: No longer allow creating texture async
+				var texture = new NativeImageBackedTexture(() ->
+						"cape_tex_" + player.getId().toString().toLowerCase().replace("-", "_"), tex);
+
+				// Register texture is still allow async, but for sanity we do it on Minecraft thread
+				Identifier texID = Identifier.of("kappa", player.getId().toString().replace("-", "_"));
+				MinecraftClient.getInstance().getTextureManager().registerTexture(texID, texture);
+
+				return texID;
+			}, MinecraftClient.getInstance()).join();
 
 			capes.put(player.getName(), id);
-			callback.onTexAvail(id);
-
-			onGoingRequests.removeIf(uuid -> uuid.equals(player.getId()));
+			return id;
 		}
-		catch(FileNotFoundException e)
+		catch (FileNotFoundException e)
 		{
-			onGoingRequests.removeIf(uuid -> uuid.equals(player.getId()));
-
-			// Getting the cape was successful! But there's no cape, so don't retry.
-			return true;
+			return null;
 		}
-		catch(Throwable t)
+		catch (Throwable t)
 		{
-			onGoingRequests.removeIf(uuid -> uuid.equals(player.getId()));
-			return false;
+			log.info("Error occurred while fetching/processing cape: " + t.getMessage());
+			t.printStackTrace();
+			return null;
 		}
-
-		return true;
 	}
 
 	public KappaCapeProvider()
