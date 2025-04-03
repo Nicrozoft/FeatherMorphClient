@@ -314,13 +314,6 @@ public abstract class FeatherScreen extends Screen implements IMDrawable
     {
     }
 
-    @Override
-    public void setFocused(@Nullable Element focused)
-    {
-        log.info("Focus! " + focused);
-        super.setFocused(focused);
-    }
-
     protected DrawableButtonWrapper createDrawableWrapper(int x, int y, int width, int height, Text text, ButtonWidget.PressAction action)
     {
         return new DrawableButtonWrapper(this.buildButtonWidget(x, y, width, height, text, action));
