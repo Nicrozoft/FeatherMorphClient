@@ -25,14 +25,11 @@ public class LinedToast extends MorphClientObject implements Toast
 {
     public LinedToast()
     {
-        drawAlpha.set(fadeInOnEnter() ? 0f : 1f);
     }
 
     private final Recorder<Integer> outlineWidth = Recorder.of(0);
 
     protected final Bindable<Visibility> visibility = new Bindable<Toast.Visibility>(Visibility.HIDE);
-
-    protected final Recorder<Float> drawAlpha = new Recorder<>(1f);
 
     protected boolean fadeInOnEnter()
     {
@@ -46,22 +43,15 @@ public class LinedToast extends MorphClientObject implements Toast
 
         this.visibility.onValueChanged((o, visible) ->
         {
-            var isHide = visible == Visibility.HIDE;
-
             if (visible == Visibility.SHOW)
                 Transformer.delay(300).then(() ->
                 {
                     Transformer.transform(outlineWidth, 2, 600, Easing.OutQuint);
-                    renderContent = true;
                 });
             else
                 Transformer.transform(outlineWidth, this.getWidth(), 600, Easing.OutQuad);
-
-            Transformer.transform(drawAlpha, isHide ? 0f : 1f, 450, isHide ? Easing.OutQuint : Easing.InOutQuint);
         }, true);
     }
-
-    private boolean renderContent = false;
 
     private final AtomicBoolean layoutValid = new AtomicBoolean(false);
 
@@ -178,6 +168,9 @@ public class LinedToast extends MorphClientObject implements Toast
         return this.visibility.get();
     }
 
+    /**
+     * Range: 0 ~ 1
+     */
     private double progress = 0d;
 
     @Override
@@ -190,58 +183,55 @@ public class LinedToast extends MorphClientObject implements Toast
         this.visibility.set(visibility);
     }
 
+    private final Color progressColor = ColorUtils.fromHex("666666");
+    private final Color borderColor = ColorUtils.fromHex("#444444");
+
     @Override
     public void draw(DrawContext context, TextRenderer textRenderer, long startTime)
     {
         if (!layoutValid.get())
             updateLayout();
 
-        // RenderSystem#getShaderColor -> return shaderColor;
-        var shaderColor = RenderSystem.getShaderColor();
-        shaderColor = new float[]
-                {
-                        shaderColor[0],
-                        shaderColor[1],
-                        shaderColor[2],
-                        shaderColor[3]
-                };
-
-        RenderSystem.setShaderColor(shaderColor[0], shaderColor[1], shaderColor[2], drawAlpha.get());
-
         var xRightPadding = 1;
         var xLeftPadding = 2;
         var yPadding = 1;
+
+        context.enableScissor(xRightPadding, 0, getWidth(), getHeight());
 
         // Draw background
         context.fill(xRightPadding, yPadding,
                 this.getWidth() - xLeftPadding, this.getHeight() - yPadding, 0xFF333333);
 
-        if (renderContent)
+        var matrices = context.getMatrices();
+
+        // Draw progress bar
+        if (drawProgress())
         {
-            // Draw progress bar
-            if (drawProgress())
-            {
-                var progressDisplay = Math.max(0, 0.95 - progress);
+            var progressDisplay = Math.max(0, 0.95 - progress);
 
-                context.fill(xRightPadding, this.getHeight() - yPadding - 2,
-                        Math.max(xRightPadding, (int)Math.round((this.getWidth() - xRightPadding) * progressDisplay)),
-                        this.getHeight() - yPadding,
-                        ColorUtils.fromHex("666666").getColor());
-            }
+            matrices.push();
 
-            postBackgroundDrawing(context, startTime);
+            var translateX = (float)this.getWidth() * (1 - progressDisplay);
+            matrices.translate(-translateX, 0, 0);
 
-            // Draw text
-            var textStartX = (int)getTextStartX();
-            var textStartY = Math.round((this.getHeight()) / 2f) - textRenderer.fontHeight + yPadding;
+            context.fill(xRightPadding, yPadding,
+                    this.getWidth(),
+                    this.getHeight() - yPadding,
+                    ColorUtils.forOpacity(progressColor, (float)progressDisplay).getColor());
 
-            context.drawTextWithShadow(textRenderer, titleDisplay, textStartX, textStartY - 1, 0xffffffff);
-            context.drawTextWithShadow(textRenderer, descDisplay, textStartX, textStartY + textRenderer.fontHeight + 1, 0xffffffff);
-
-            postTextDrawing(context, startTime);
+            matrices.pop();
         }
 
-        var matrices = context.getMatrices();
+        postBackgroundDrawing(context, startTime);
+
+        // Draw text
+        var textStartX = (int)getTextStartX();
+        var textStartY = Math.round((this.getHeight()) / 2f) - textRenderer.fontHeight + yPadding;
+
+        context.drawTextWithShadow(textRenderer, titleDisplay, textStartX, textStartY - 1, 0xffffffff);
+        context.drawTextWithShadow(textRenderer, descDisplay, textStartX, textStartY + textRenderer.fontHeight + 1, 0xffffffff);
+
+        postTextDrawing(context, startTime);
 
         // Draw CoverLine
         matrices.push();
@@ -259,18 +249,12 @@ public class LinedToast extends MorphClientObject implements Toast
 
         context.drawBorder(xRightPadding, yPadding,
                 this.getWidth() - xLeftPadding, this.getHeight() - yPadding,
-                ColorUtils.fromHex("#444444").getColor());
-
-        //context.fill(1, 1, lineWidth, this.getHeight() - 1, lineColor.getColor());
+                borderColor.getColor());
 
         matrices.pop();
 
-        //var borderColor = ColorUtils.fromHex("#222222");
-        //DrawableHelper.drawBorder(matrices, 0, 0, this.getWidth(), this.getHeight(), borderColor.getColor());
+        postDraw(context, startTime);
 
-        if (renderContent)
-            postDraw(context, startTime);
-
-        RenderSystem.setShaderColor(shaderColor[0], shaderColor[1], shaderColor[2], shaderColor[3]);
+        context.disableScissor();
     }
 }

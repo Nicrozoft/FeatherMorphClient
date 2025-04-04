@@ -48,8 +48,6 @@ public class DisguiseEntryToast extends LinedToast
         entityDisplay.postEntitySetup = () -> setDescription(entityDisplay.getDisplayName());
 
         instances.add(this);
-
-        drawAlpha.set(0f);
     }
 
     @Override
@@ -96,10 +94,6 @@ public class DisguiseEntryToast extends LinedToast
     @Override
     protected void postBackgroundDrawing(DrawContext context, long startTime)
     {
-        drawEntity = this.drawAlpha.get() > 0.95f;
-
-        if (!drawEntity) return;
-
         var matrices = context.getMatrices();
         super.postBackgroundDrawing(context, startTime);
 
@@ -111,19 +105,16 @@ public class DisguiseEntryToast extends LinedToast
         matrices.translate(0, 0.5, 0);
         var pos = matrices.peek().getPositionMatrix().getTranslation(new Vector3f(0, 0, 0));
 
-        var mouseX = -50;
-        if (rawIdentifier.equals("minecraft:axolotl"))
-            mouseX = -100;
+        int mX = (int)pos.x() - 30;
+        int mY = (int)pos.y() + (this.getHeight() / 2);
 
         entityDisplay.setParentScreenSpaceX(pos.x);
         entityDisplay.setParentScreenSpaceY(pos.y);
-        entityDisplay.render(context, mouseX, -10, 0);
+        entityDisplay.render(context, mX, mY, 0);
 
         // Pop back
         matrices.pop();
     }
-
-    private boolean drawEntity = true;
 
     @Override
     public void update(ToastManager manager, long startTime)
