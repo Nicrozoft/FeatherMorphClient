@@ -113,7 +113,7 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
 
     private final AnimHandlerIndex animHandlerIndex = new AnimHandlerIndex();
 
-    private final boolean debugToasts = true;
+    private final boolean debugToasts = false;
 
     @Override
     public void onInitializeClient()
