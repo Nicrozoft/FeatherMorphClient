@@ -120,16 +120,44 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     //private boolean isSpider = false;
 
     @Override
+    public void preEntityRender()
+    {
+        if (disguiseInstance == null)
+            return;
+
+        // workaround: When an entity is far away from the player, EMF will reduce the update rate for it.
+        var playerPos = bindingPlayer.getPos();
+        disguiseInstance.setPos(playerPos.x, playerPos.y, playerPos.z);
+
+        disguiseInstance.lastX = bindingPlayer.lastX;
+        disguiseInstance.lastY = bindingPlayer.lastY;
+        disguiseInstance.lastZ = bindingPlayer.lastZ;
+
+        // And this is for 3d skin layer compatibility
+        // See https://github.com/tr7zw/3d-Skin-Layers/blob/bd8637d2fedd0b9d836b3932b5b0e2415337a40c/src/main/java/dev/tr7zw/skinlayers/mixin/CustomHeadLayerMixin.java#L49
+        disguiseInstance.lastRenderX = bindingPlayer.lastRenderX;
+        disguiseInstance.lastRenderY = bindingPlayer.lastRenderY;
+        disguiseInstance.lastRenderZ = bindingPlayer.lastRenderZ;
+    }
+
+    @Override
     public void postEntityRender()
     {
         if (disguiseInstance == null)
             return;
 
         var playerPos = bindingPlayer.getPos();
+
         disguiseInstance.setPos(playerPos.x, playerPos.y - 4096, playerPos.z);
         disguiseInstance.lastRenderX = playerPos.x;
         disguiseInstance.lastRenderY = playerPos.y - 4096;
         disguiseInstance.lastRenderZ = playerPos.z;
+
+        // We may not set lastXYZ to lastRenderXYZ, but I'm too lazy to create another field to store the values.
+        // Hope this won't break things!
+        disguiseInstance.lastX = disguiseInstance.lastRenderX;
+        disguiseInstance.lastY = disguiseInstance.lastRenderY;
+        disguiseInstance.lastZ = disguiseInstance.lastRenderZ;
     }
 
     @Override
@@ -144,23 +172,6 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
         state.x = MathHelper.lerp(tickProgress, bindingPlayer.lastRenderX, bindingPlayer.getX());
         state.y = MathHelper.lerp(tickProgress, bindingPlayer.lastRenderY, bindingPlayer.getY());
         state.z = MathHelper.lerp(tickProgress, bindingPlayer.lastRenderZ, bindingPlayer.getZ());
-    }
-
-    @Override
-    public void preEntityRender()
-    {
-        if (disguiseInstance == null)
-            return;
-
-        // workaround: When an entity is far away from the player, EMF will reduce the update rate for it.
-        var playerPos = bindingPlayer.getPos();
-        disguiseInstance.setPos(playerPos.x, playerPos.y, playerPos.z);
-
-        // And this is for 3d skin layer compatibility
-        // See https://github.com/tr7zw/3d-Skin-Layers/blob/bd8637d2fedd0b9d836b3932b5b0e2415337a40c/src/main/java/dev/tr7zw/skinlayers/mixin/CustomHeadLayerMixin.java#L49
-        disguiseInstance.lastRenderX = playerPos.x;
-        disguiseInstance.lastRenderY = playerPos.y;
-        disguiseInstance.lastRenderZ = playerPos.z;
     }
 
     @Override
