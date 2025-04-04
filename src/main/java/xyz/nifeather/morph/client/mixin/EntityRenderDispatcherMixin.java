@@ -63,7 +63,8 @@ public abstract class EntityRenderDispatcherMixin
             method = "render(Lnet/minecraft/entity/Entity;DDDFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V",
             at = @At("HEAD"),
             index = 1,
-            argsOnly = true)
+            argsOnly = true,
+            order = 1100)
     public Entity morphclient$modifyEntityToRender(Entity source)
     {
         if (PlayerRenderHelper.instance().skipRender)
