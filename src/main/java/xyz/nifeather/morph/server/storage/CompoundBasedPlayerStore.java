@@ -1,28 +1,28 @@
 package xyz.nifeather.morph.server.storage;
 
-import net.minecraft.server.network.ServerPlayerEntity;
 import xyz.nifeather.morph.server.misc.DisguiseMeta;
 import xyz.nifeather.morph.server.storage.playerdata.paper.PlayerMeta;
 
 import java.util.List;
 import java.util.UUID;
+import net.minecraft.server.level.ServerPlayer;
 
 public class CompoundBasedPlayerStore implements IManagePlayerData
 {
     @Override
-    public List<DisguiseMeta> getAvaliableDisguisesFor(ServerPlayerEntity player)
+    public List<DisguiseMeta> getAvaliableDisguisesFor(ServerPlayer player)
     {
         return List.of();
     }
 
     @Override
-    public boolean grantMorphToPlayer(ServerPlayerEntity player, String disguiseIdentifier)
+    public boolean grantMorphToPlayer(ServerPlayer player, String disguiseIdentifier)
     {
         return false;
     }
 
     @Override
-    public boolean revokeMorphFromPlayer(ServerPlayerEntity player, String disguiseIdentifier)
+    public boolean revokeMorphFromPlayer(ServerPlayer player, String disguiseIdentifier)
     {
         return false;
     }

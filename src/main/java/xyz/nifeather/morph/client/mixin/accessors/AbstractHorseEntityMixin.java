@@ -1,17 +1,17 @@
 package xyz.nifeather.morph.client.mixin.accessors;
 
-import net.minecraft.entity.passive.AbstractHorseEntity;
-import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(AbstractHorseEntity.class)
+@Mixin(AbstractHorse.class)
 public interface AbstractHorseEntityMixin
 {
     @Invoker
-    void callSetHorseFlag(int bitmask, boolean flag);
+    void callSetFlag(int bitmask, boolean flag);
 
     @Accessor
-    public SimpleInventory getItems();
+    public SimpleContainer getInventory();
 }

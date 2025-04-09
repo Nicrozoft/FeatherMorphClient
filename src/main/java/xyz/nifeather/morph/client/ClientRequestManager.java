@@ -1,23 +1,23 @@
 package xyz.nifeather.morph.client;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.toast.ToastManager;
 import xyz.nifeather.morph.client.graphics.toasts.RequestToast;
 import xiamomc.morph.network.commands.S2C.S2CRequestCommand;
 import xiamomc.pluginbase.Annotations.Initializer;
 
 import java.util.List;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.toasts.ToastManager;
 
 public class ClientRequestManager extends MorphClientObject
 {
-    private final ToastManager toastManager = MinecraftClient.getInstance().getToastManager();
+    private final ToastManager toastManager = Minecraft.getInstance().getToastManager();
 
     public void addRequest(S2CRequestCommand.Type type, String sourceName)
     {
         if (type == S2CRequestCommand.Type.Unknown) return;
 
-        toastManager.add(new RequestToast(type, sourceName));
+        toastManager.addToast(new RequestToast(type, sourceName));
         requests.add(new Request(plugin.getCurrentTick(), type, sourceName));
     }
 

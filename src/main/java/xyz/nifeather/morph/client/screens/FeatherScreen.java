@@ -2,14 +2,6 @@ package xyz.nifeather.morph.client.screens;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.util.math.Vector2f;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -27,12 +19,19 @@ import xyz.nifeather.morph.client.utilties.Screens;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.model.geom.builders.UVPair;
+import net.minecraft.network.chat.Component;
 
 public abstract class FeatherScreen extends Screen implements IMDrawable
 {
     private static final Logger log = LoggerFactory.getLogger(FeatherScreen.class);
 
-    protected FeatherScreen(Text title) {
+    protected FeatherScreen(Component title) {
         super(title);
     }
 
@@ -54,7 +53,7 @@ public abstract class FeatherScreen extends Screen implements IMDrawable
     }
 
     @Override
-    public void setSize(Vector2f vector)
+    public void setSize(UVPair vector)
     {
         FeatherMorphClient.LOGGER.warn("setSize() for FeatherScreen is not implemented!!!");
     }
@@ -139,24 +138,24 @@ public abstract class FeatherScreen extends Screen implements IMDrawable
         {
             this.onScreenResize();
 
-            clearChildren();
-            this.children.forEach(super::addDrawableChild);
+            clearWidgets();
+            this.children.forEach(super::addRenderableWidget);
         }
 
         super.init();
     }
 
     @Override
-    public void onDisplayed()
+    public void added()
     {
         lastScreen = Screens.getInstance().last;
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta)
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta)
     {
         if (!layoutValid.get())
-            this.clearAndInit();
+            this.rebuildWidgets();
 
         var shaderColor = RenderSystem.getShaderColor();
         shaderColor = new float[]
@@ -175,9 +174,9 @@ public abstract class FeatherScreen extends Screen implements IMDrawable
     }
 
     @Override
-    protected void clearAndInit()
+    protected void rebuildWidgets()
     {
-        super.clearAndInit();
+        super.rebuildWidgets();
         layoutValid.set(true);
     }
 
@@ -193,7 +192,7 @@ public abstract class FeatherScreen extends Screen implements IMDrawable
 
         invalidateLayout();
 
-        this.clearChildren();
+        this.clearWidgets();
         super.removed();
     }
 
@@ -295,7 +294,7 @@ public abstract class FeatherScreen extends Screen implements IMDrawable
 
     protected boolean isCurrent()
     {
-        return MinecraftClient.getInstance().currentScreen == this;
+        return Minecraft.getInstance().screen == this;
     }
 
     protected void onScreenResize()
@@ -314,23 +313,23 @@ public abstract class FeatherScreen extends Screen implements IMDrawable
     {
     }
 
-    protected DrawableButtonWrapper createDrawableWrapper(int x, int y, int width, int height, Text text, ButtonWidget.PressAction action)
+    protected DrawableButtonWrapper createDrawableWrapper(int x, int y, int width, int height, Component text, Button.OnPress action)
     {
         return new DrawableButtonWrapper(this.buildButtonWidget(x, y, width, height, text, action));
     }
 
-    protected MButtonWidget buildButtonWidget(int x, int y, int width, int height, Text text, ButtonWidget.PressAction action)
+    protected MButtonWidget buildButtonWidget(int x, int y, int width, int height, Component text, Button.OnPress action)
     {
-        var builder = ButtonWidget.builder(text, action);
+        var builder = Button.builder(text, action);
 
-        builder.dimensions(x, y, width, height);
+        builder.bounds(x, y, width, height);
 
         return MButtonWidget.from(builder.build(), action);
     }
 
     protected void push(FeatherScreen screen)
     {
-        MinecraftClient.getInstance().setScreen(screen);
+        Minecraft.getInstance().setScreen(screen);
     }
 
     //region Alpha
@@ -362,14 +361,14 @@ public abstract class FeatherScreen extends Screen implements IMDrawable
     //region Narratable Selectable
 
     @Override
-    public void appendNarrations(NarrationMessageBuilder builder)
+    public void updateNarration(NarrationElementOutput builder)
     {
     }
 
     @Override
-    public SelectionType getType()
+    public NarrationPriority narrationPriority()
     {
-        return SelectionType.HOVERED;
+        return NarrationPriority.HOVERED;
     }
 
     //endregion

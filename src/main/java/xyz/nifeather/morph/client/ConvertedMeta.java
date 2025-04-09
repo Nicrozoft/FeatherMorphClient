@@ -2,11 +2,11 @@ package xyz.nifeather.morph.client;
 
 import com.mojang.authlib.GameProfile;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -19,7 +19,7 @@ public class ConvertedMeta
 {
     private static final Logger log = LoggerFactory.getLogger(ConvertedMeta.class);
     @Nullable
-    public NbtCompound nbt;
+    public CompoundTag nbt;
 
     @Nullable
     public GameProfile profileNbt;
@@ -90,7 +90,7 @@ public class ConvertedMeta
         }
     }
 
-    public static ConvertedMeta of(S2CRenderMeta renderMeta, RegistryWrapper.WrapperLookup registry)
+    public static ConvertedMeta of(S2CRenderMeta renderMeta, HolderLookup.Provider registry)
     {
         var instance = new ConvertedMeta();
 
@@ -139,7 +139,7 @@ public class ConvertedMeta
                 for (int i = 0; i < eqIds.length - 1; i++)
                 {
                     var itemId = eqIds[i];
-                    var identifier = Identifier.tryParse(itemId);
+                    var identifier = ResourceLocation.tryParse(itemId);
 
                     ItemStack item;
 
@@ -150,7 +150,7 @@ public class ConvertedMeta
                     }
                     else
                     {
-                        item = new ItemStack(Registries.ITEM.get(identifier));
+                        item = new ItemStack(BuiltInRegistries.ITEM.getValue(identifier));
                     }
 
                     // todo: IMPLEMENT THIS

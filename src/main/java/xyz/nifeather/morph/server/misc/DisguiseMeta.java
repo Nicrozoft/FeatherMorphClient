@@ -2,8 +2,8 @@ package xyz.nifeather.morph.server.misc;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import net.minecraft.entity.EntityType;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EntityType;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -86,7 +86,7 @@ public class DisguiseMeta
                 this.playerDisguiseTargetName = disguiseType.toStrippedId(rawIdentifier);
             }
 
-            case VANILLA -> this.entityType = EntityType.get(rawIdentifier).orElseThrow();
+            case VANILLA -> this.entityType = EntityType.byString(rawIdentifier).orElseThrow();
             default -> this.entityType = null;
         }
     }
@@ -132,13 +132,13 @@ public class DisguiseMeta
         return rawIdentifier;
     }
 
-    public Text asComponent()
+    public Component asComponent()
     {
         return isValid()
                     ? provider == null
-                        ? Text.literal(rawIdentifier)
+                        ? Component.literal(rawIdentifier)
                         : provider.getDisplayName(rawIdentifier)
-                    : Text.literal(rawIdentifier);
+                    : Component.literal(rawIdentifier);
     }
 
     /**

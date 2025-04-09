@@ -1,15 +1,15 @@
 package xyz.nifeather.morph.client.graphics.container;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import xyz.nifeather.morph.client.graphics.MDrawable;
 import xyz.nifeather.morph.client.graphics.color.MaterialColors;
 
 public class DrawableButtonWrapper extends MDrawable
 {
-    private final ButtonWidget widget;
+    private final Button widget;
 
-    public DrawableButtonWrapper(ButtonWidget widget)
+    public DrawableButtonWrapper(Button widget)
     {
         this.setHeight(widget.getHeight());
         this.setWidth(widget.getWidth());
@@ -26,9 +26,9 @@ public class DrawableButtonWrapper extends MDrawable
     }
 
     @Override
-    protected void onRender(DrawContext context, int mouseX, int mouseY, float delta)
+    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
     {
-        context.getMatrices().translate(-this.getScreenSpaceX(), -this.getScreenSpaceY(), 0);
+        context.pose().translate(-this.getScreenSpaceX(), -this.getScreenSpaceY(), 0);
         widget.render(context, mouseX, mouseY, delta);
 
         super.onRender(context, mouseX, mouseY, delta);

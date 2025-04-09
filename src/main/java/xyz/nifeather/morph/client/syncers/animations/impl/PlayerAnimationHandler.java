@@ -1,11 +1,11 @@
 package xyz.nifeather.morph.client.syncers.animations.impl;
 
-import net.minecraft.block.BedBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityPose;
 import xyz.nifeather.morph.shared.AnimationNames;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.entities.MorphLocalPlayer;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
@@ -28,17 +28,17 @@ public class PlayerAnimationHandler extends AnimationHandler
             case AnimationNames.LAY ->
             {
                 // This will need to change when animation support comes for fabric multiplayer
-                var blockPos = MinecraftClient.getInstance().player.getBlockPos();
+                var blockPos = Minecraft.getInstance().player.blockPosition();
 
                 // Only set BedPos when we're on a bed
-                BlockState blockState = localPlayer.getWorld().getBlockState(blockPos);
+                BlockState blockState = localPlayer.level().getBlockState(blockPos);
                 if (blockState.getBlock() instanceof BedBlock)
                     localPlayer.overrideSleepPos(blockPos);
 
-                asMorphClientEntity.featherMorph$overridePose(EntityPose.SLEEPING);
+                asMorphClientEntity.featherMorph$overridePose(Pose.SLEEPING);
             }
 
-            case AnimationNames.CRAWL -> asMorphClientEntity.featherMorph$overridePose(EntityPose.SWIMMING);
+            case AnimationNames.CRAWL -> asMorphClientEntity.featherMorph$overridePose(Pose.SWIMMING);
             case AnimationNames.STANDUP -> asMorphClientEntity.featherMorph$overridePose(null);
         }
     }

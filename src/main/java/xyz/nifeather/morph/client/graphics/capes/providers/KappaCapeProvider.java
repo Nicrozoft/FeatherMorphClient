@@ -1,13 +1,12 @@
 package xyz.nifeather.morph.client.graphics.capes.providers;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.NativeImageBackedTexture;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +53,7 @@ public final class KappaCapeProvider implements ICapeProvider
 	}
 
 	@Override
-	public CompletableFuture<Optional<Identifier>> getCapeAsync(GameProfile profile)
+	public CompletableFuture<Optional<ResourceLocation>> getCapeAsync(GameProfile profile)
 	{
 		var uuid = profile.getId();
 
@@ -70,14 +69,14 @@ public final class KappaCapeProvider implements ICapeProvider
 		return future;
 	}
 
-	private final Map<UUID, CompletableFuture<Optional<Identifier>>> onGoingRequests = new ConcurrentHashMap<>();
+	private final Map<UUID, CompletableFuture<Optional<ResourceLocation>>> onGoingRequests = new ConcurrentHashMap<>();
 
 	// This loads the cape for one player, doesn't matter if it's the player or not.
 	// Requires a callback, that receives the id for the cape
-	public Optional<Identifier> loadCape(GameProfile profile)
+	public Optional<ResourceLocation> loadCape(GameProfile profile)
 	{
         // Check if the player doesn't already have a cape.
-        Identifier existingCape = capes.get(profile.getName());
+        ResourceLocation existingCape = capes.get(profile.getName());
 
         if (existingCape != null)
 			return Optional.of(existingCape);
@@ -106,7 +105,7 @@ public final class KappaCapeProvider implements ICapeProvider
 		{
 			for (int y = 0; y < srcHeight; y++)
 			{
-				out.setColorArgb(x, y, in.getColorArgb(x, y));
+				out.setPixel(x, y, in.getPixel(x, y));
 			}
         }
 
@@ -114,11 +113,11 @@ public final class KappaCapeProvider implements ICapeProvider
 	}
 
 	// This is where capes will be stored
-	private static final Map<String, Identifier> capes = new HashMap<String, Identifier>();
+	private static final Map<String, ResourceLocation> capes = new HashMap<String, ResourceLocation>();
 
 	// Try to load a cape from an URL.
 	// If this fails, it'll return false, and let us try another url.
-	private @Nullable Identifier tryUrl(GameProfile player, String targetUrl)
+	private @Nullable ResourceLocation tryUrl(GameProfile player, String targetUrl)
 	{
 		try
 		{
@@ -129,15 +128,15 @@ public final class KappaCapeProvider implements ICapeProvider
 			var id = CompletableFuture.supplyAsync(() ->
 			{
 				// 1.21.5: No longer allow creating texture async
-				var texture = new NativeImageBackedTexture(() ->
+				var texture = new DynamicTexture(() ->
 						"cape_tex_" + player.getId().toString().toLowerCase().replace("-", "_"), tex);
 
 				// Register texture is still allow async, but for sanity we do it on Minecraft thread
-				Identifier texID = Identifier.of("kappa", player.getId().toString().replace("-", "_"));
-				MinecraftClient.getInstance().getTextureManager().registerTexture(texID, texture);
+				ResourceLocation texID = ResourceLocation.fromNamespaceAndPath("kappa", player.getId().toString().replace("-", "_"));
+				Minecraft.getInstance().getTextureManager().register(texID, texture);
 
 				return texID;
-			}, MinecraftClient.getInstance()).join();
+			}, Minecraft.getInstance()).join();
 
 			capes.put(player.getName(), id);
 			return id;

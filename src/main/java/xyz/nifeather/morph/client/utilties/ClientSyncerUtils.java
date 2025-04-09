@@ -1,10 +1,10 @@
 package xyz.nifeather.morph.client.utilties;
 
-import net.minecraft.entity.Entity;
 import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.function.Consumer;
+import net.minecraft.world.entity.Entity;
 
 public class ClientSyncerUtils
 {

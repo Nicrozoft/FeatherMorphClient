@@ -1,10 +1,6 @@
 package xyz.nifeather.morph.client.mixin;
 
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.world.ClientWorld;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,31 +13,35 @@ import xyz.nifeather.morph.client.utilties.MinecraftClientMixinUtils;
 import xyz.nifeather.morph.client.utilties.Screens;
 
 import java.io.File;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ReceivingLevelScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.ClientLevel;
 
-@Mixin(MinecraftClient.class)
+@Mixin(Minecraft.class)
 public abstract class MinecraftClientMixin
 {
     @Shadow @Final private YggdrasilAuthenticationService authenticationService;
 
-    @Shadow @Final public File runDirectory;
+    @Shadow @Final public File gameDirectory;
 
-    @Shadow @Nullable public Screen currentScreen;
+    @Shadow @Nullable public Screen screen;
 
-    @Inject(method = "render", at = @At("RETURN"))
+    @Inject(method = "runTick", at = @At("RETURN"))
     private void featherMorph$onClientRender(boolean tick, CallbackInfo ci)
     {
-        Transformer.onClientRenderEnd(MinecraftClient.getInstance());
+        Transformer.onClientRenderEnd(Minecraft.getInstance());
     }
 
-    @Inject(method = "joinWorld", at = @At("HEAD"))
-    private void featherMorph$onJoinServer(ClientWorld world, DownloadingTerrainScreen.WorldEntryReason worldEntryReason, CallbackInfo ci)
+    @Inject(method = "setLevel", at = @At("HEAD"))
+    private void featherMorph$onJoinServer(ClientLevel world, ReceivingLevelScreen.Reason worldEntryReason, CallbackInfo ci)
     {
-        MinecraftClientMixinUtils.setApiService(this.authenticationService, this.runDirectory);
+        MinecraftClientMixinUtils.setApiService(this.authenticationService, this.gameDirectory);
     }
 
     @Inject(method = "setScreen", at = @At("HEAD"))
     private void featherMorph$onSetScreen(Screen screenNext, CallbackInfo ci)
     {
-        Screens.getInstance().onChange(this.currentScreen, screenNext);
+        Screens.getInstance().onChange(this.screen, screenNext);
     }
 }

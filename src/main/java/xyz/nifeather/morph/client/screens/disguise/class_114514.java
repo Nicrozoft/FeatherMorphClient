@@ -1,10 +1,10 @@
 package xyz.nifeather.morph.client.screens.disguise;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ConfirmScreen;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ConfirmScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 public class class_114514
@@ -28,10 +28,10 @@ public class class_114514
 
         str = str.replaceFirst("!", "");
 
-        var client = MinecraftClient.getInstance();
+        var client = Minecraft.getInstance();
         var currentLocale = client
                 .getLanguageManager()
-                .getLanguage()
+                .getSelected()
                 .toLowerCase();
 
         boolean isChinese = currentLocale.startsWith("zh") || currentLocale.equals("lzh");
@@ -41,12 +41,12 @@ public class class_114514
             case "owc" -> this.open(isChinese,
                     "https://www.bilibili.com/video/BV19vzfYhEmc",
                     "https://www.youtube.com/watch?v=r459I7A-Rds",
-                    Text.translatable("url.morphclient.owc2024"));
+                    Component.translatable("url.morphclient.owc2024"));
 
             case "osu", "circles" -> this.open(isChinese,
                     "https://www.bilibili.com/video/BV1z9zDYjEc7",
                     "https://www.youtube.com/watch?v=fu0KoihoeA8",
-                    Text.translatable("url.morphclient.circles", client.player.getName()));
+                    Component.translatable("url.morphclient.circles", client.player.getName()));
 
             // 需要更好的文本描述
             /*
@@ -64,20 +64,20 @@ public class class_114514
         }
     }
 
-    private void open(boolean isChinese, String urlCN, String urlOS, Text text)
+    private void open(boolean isChinese, String urlCN, String urlOS, Component text)
     {
-        this.open(isChinese, urlCN, urlOS, text, Text.literal(""));
+        this.open(isChinese, urlCN, urlOS, text, Component.literal(""));
     }
 
-    private void open(boolean isChinese, String urlCN, String urlOS, Text text, @Nullable Text text2)
+    private void open(boolean isChinese, String urlCN, String urlOS, Component text, @Nullable Component text2)
     {
         String url = isChinese ? urlCN : urlOS;
-        var client = MinecraftClient.getInstance();
+        var client = Minecraft.getInstance();
 
         var screen = new ConfirmScreen(confirmed ->
         {
             if (confirmed)
-                Util.getOperatingSystem().open(url);
+                Util.getPlatform().openUri(url);
 
             client.setScreen(this.parentScreen);
         }, text, text2);

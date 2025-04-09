@@ -1,7 +1,7 @@
 package xyz.nifeather.morph.client.screens.quickDisguise;
 
-import net.minecraft.client.util.math.Vector2f;
-import net.minecraft.text.Text;
+import net.minecraft.client.model.geom.builders.UVPair;
+import net.minecraft.network.chat.Component;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.FeatherMorphClient;
 import xyz.nifeather.morph.client.graphics.Anchor;
@@ -17,7 +17,7 @@ public class QuickDisguiseScreen extends SpinnerScreen<QDWidget>
 
     public QuickDisguiseScreen()
     {
-        super(Text.literal("Quick disguise configuration screen"));
+        super(Component.literal("Quick disguise configuration screen"));
 
         this.morphClient = FeatherMorphClient.getInstance();
         this.morphManager = morphClient.morphManager;
@@ -32,7 +32,7 @@ public class QuickDisguiseScreen extends SpinnerScreen<QDWidget>
         flow.setFlowAxes(Axes.Y);
         flow.setSpacing(5);
         flow.setRelativeSizeAxes(Axes.Both);
-        flow.setSize(new Vector2f(0.7f, 0.5f));
+        flow.setSize(new UVPair(0.7f, 0.5f));
         flow.setAnchor(Anchor.Centre);
 
         this.add(flow);

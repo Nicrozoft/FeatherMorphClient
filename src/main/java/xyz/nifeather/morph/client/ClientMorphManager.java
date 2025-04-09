@@ -7,15 +7,15 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.toast.ToastManager;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.toasts.ToastManager;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.graphics.toasts.DisguiseEntryToast;
 import xyz.nifeather.morph.client.graphics.toasts.NewDisguiseSetToast;
@@ -60,7 +60,7 @@ public class ClientMorphManager extends MorphClientObject
 
     public final Bindable<Boolean> equipOverriden = new Bindable<>(false);
 
-    public final Bindable<NbtCompound> currentNbtCompound = new Bindable<>(null);
+    public final Bindable<CompoundTag> currentNbtCompound = new Bindable<>(null);
 
     public final Bindable<Float> revealingValue = new Bindable<>(0f);
 
@@ -132,14 +132,14 @@ public class ClientMorphManager extends MorphClientObject
         reset();
     }
 
-    private ClientWorld world;
-    private ClientWorld prevWorld;
+    private ClientLevel world;
+    private ClientLevel prevWorld;
 
     private void update()
     {
         this.addSchedule(this::update);
 
-        world = MinecraftClient.getInstance().world;
+        world = Minecraft.getInstance().level;
 
         if (world == null) return;
 
@@ -149,7 +149,7 @@ public class ClientMorphManager extends MorphClientObject
         if (world != prevWorld)
             prevWorld = world;
 
-        var currentClientPlayer = MinecraftClient.getInstance().player;
+        var currentClientPlayer = Minecraft.getInstance().player;
         if (currentClientPlayer != null && lastClientPlayer != currentClientPlayer && !syncerRefreshScheduled.get())
         {
             if (localPlayerSyncer != null && localPlayerSyncer.disposed())
@@ -162,7 +162,7 @@ public class ClientMorphManager extends MorphClientObject
     }
 
     @Nullable
-    private PlayerEntity lastClientPlayer;
+    private Player lastClientPlayer;
 
     private final AtomicBoolean syncerRefreshScheduled = new AtomicBoolean(false);
 
@@ -180,7 +180,7 @@ public class ClientMorphManager extends MorphClientObject
 
         if (n == null || n.isEmpty()) return;
 
-        localPlayerSyncer = instanceTracker.setSyncer(MinecraftClient.getInstance().player, n);
+        localPlayerSyncer = instanceTracker.setSyncer(Minecraft.getInstance().player, n);
 
         if (localPlayerSyncer == null) return;
 
@@ -242,10 +242,10 @@ public class ClientMorphManager extends MorphClientObject
         DisguiseEntryToast.invalidateAll();
 
         if (displayToasts)
-            toastManager.add(new NewDisguiseSetToast(availableMorphs.size() <= 0));
+            toastManager.addToast(new NewDisguiseSetToast(availableMorphs.size() <= 0));
     }
 
-    private final ToastManager toastManager = MinecraftClient.getInstance().getToastManager();
+    private final ToastManager toastManager = Minecraft.getInstance().getToastManager();
 
     public void addDisguises(List<String> identifiers, boolean displayToasts)
     {
@@ -281,7 +281,7 @@ public class ClientMorphManager extends MorphClientObject
         availableMorphs.add(identifier);
 
         if (displayToasts)
-            toastManager.add(new DisguiseEntryToast(identifier, true));
+            toastManager.addToast(new DisguiseEntryToast(identifier, true));
     }
 
     private void removeDisguisePrivate(String identifier, boolean displayToasts)
@@ -289,7 +289,7 @@ public class ClientMorphManager extends MorphClientObject
         availableMorphs.remove(identifier);
 
         if (displayToasts)
-            toastManager.add(new DisguiseEntryToast(identifier, false));
+            toastManager.addToast(new DisguiseEntryToast(identifier, false));
     }
 
     //endregion Add/Remove/Set disguises
@@ -370,9 +370,9 @@ public class ClientMorphManager extends MorphClientObject
     @Resolved
     private AnimHandlerIndex animIndex;
 
-    public DisguiseSyncer createSyncerFor(AbstractClientPlayerEntity player, String disguiseId, int networkId)
+    public DisguiseSyncer createSyncerFor(AbstractClientPlayer player, String disguiseId, int networkId)
     {
-        var clientPlayer = MinecraftClient.getInstance().player;
+        var clientPlayer = Minecraft.getInstance().player;
         if (clientPlayer == null)
             throw new NullDependencyException("Required non-null client player to get DisguiseSyncer");
 
@@ -434,8 +434,8 @@ public class ClientMorphManager extends MorphClientObject
                         "player:Tairiitsuu"
                 };
 
-        var player = MinecraftClient.getInstance().player;
-        player.sendMessage(Text.literal("Test! " + disguises[index]), true);
+        var player = Minecraft.getInstance().player;
+        player.displayClientMessage(Component.literal("Test! " + disguises[index]), true);
         this.selfVisibleEnabled.set(!this.selfVisibleEnabled.get());
 
         this.availableMorphs.clear();
@@ -453,7 +453,7 @@ public class ClientMorphManager extends MorphClientObject
             return;
         }
 
-        MinecraftClient.getInstance().player.sendMessage(Text.literal("QUick Disguise! " + index), false);
+        Minecraft.getInstance().player.displayClientMessage(Component.literal("QUick Disguise! " + index), false);
 
         var disguise = quickDisguiseMap.getOrDefault(index, null);
         if (disguise == null) return;

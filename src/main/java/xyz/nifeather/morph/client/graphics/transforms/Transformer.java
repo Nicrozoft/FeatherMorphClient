@@ -1,18 +1,18 @@
 package xyz.nifeather.morph.client.graphics.transforms;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.client.MinecraftClient;
 import xyz.nifeather.morph.client.FeatherMorphClient;
 import xyz.nifeather.morph.client.graphics.transforms.easings.Easing;
 import xiamomc.pluginbase.Bindables.Bindable;
 
 import java.util.List;
+import net.minecraft.client.Minecraft;
 
 public class Transformer
 {
     private static long currentTime;
 
-    public static void onClientRenderEnd(MinecraftClient client)
+    public static void onClientRenderEnd(Minecraft client)
     {
         currentTime = System.currentTimeMillis();
 

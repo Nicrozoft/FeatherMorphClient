@@ -1,7 +1,5 @@
 package xyz.nifeather.morph.client.screens.emote;
 
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
 import xyz.nifeather.morph.shared.AnimationNames;
@@ -17,6 +15,8 @@ import xiamomc.morph.network.commands.C2S.C2SAnimationCommand;
 import xiamomc.pluginbase.Bindables.Bindable;
 
 import java.util.Objects;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 public class EmoteScreen extends SpinnerScreen<SingleEmoteWidget>
 {
@@ -51,12 +51,12 @@ public class EmoteScreen extends SpinnerScreen<SingleEmoteWidget>
 
     public EmoteScreen()
     {
-        super(Text.literal("Disguise emote select screen"));
+        super(Component.literal("Disguise emote select screen"));
 
         serverHandler = FeatherMorphClient.getInstance().serverHandler;
         morphManager = FeatherMorphClient.getInstance().morphManager;
 
-        titleText.setText(Text.translatable("gui.morphclient.emote_select"));
+        titleText.setText(Component.translatable("gui.morphclient.emote_select"));
         titleText.setAnchor(Anchor.TopCentre);
         titleText.setDrawShadow(true);
 
@@ -86,7 +86,7 @@ public class EmoteScreen extends SpinnerScreen<SingleEmoteWidget>
             widget.setEmote(emotes.get(i));
         }
 
-        addEmoteWidget(0, 0).setText(Text.translatable("gui.back"));
+        addEmoteWidget(0, 0).setText(Component.translatable("gui.back"));
         this.add(titleText);
         this.add(currentAnimText);
 
@@ -148,18 +148,18 @@ public class EmoteScreen extends SpinnerScreen<SingleEmoteWidget>
         currentAnimText.setY(-(int)Math.round(this.height * 0.07));
     }
 
-    private Text getEmoteText(@Nullable String identifier)
+    private Component getEmoteText(@Nullable String identifier)
     {
         if (identifier == null || identifier.equals(AnimationNames.VANISH) || identifier.equals(AnimationNames.NONE))
-             return Text.translatable("gui.none");
+             return Component.translatable("gui.none");
 
-        return Text.translatable("emote.morphclient." + identifier);
+        return Component.translatable("emote.morphclient." + identifier);
     }
 
     private void updateEmoteText(@Nullable String identifier)
     {
         var text = this.getEmoteText(identifier);
-        this.currentAnimText.setText(Text.translatable("gui.morphclient.current_emote", text));
+        this.currentAnimText.setText(Component.translatable("gui.morphclient.current_emote", text));
     }
 
     @Nullable
@@ -184,7 +184,7 @@ public class EmoteScreen extends SpinnerScreen<SingleEmoteWidget>
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers)
     {
-        if (FeatherMorphClient.getInstance().getEmoteKeyBind().matchesKey(keyCode, scanCode))
+        if (FeatherMorphClient.getInstance().getEmoteKeyBind().matches(keyCode, scanCode))
             FeatherMorphClient.getInstance().schedule(this::tryClose);
 
         return super.keyPressed(keyCode, scanCode, modifiers);
@@ -193,6 +193,6 @@ public class EmoteScreen extends SpinnerScreen<SingleEmoteWidget>
     private void tryClose()
     {
         if (this.isCurrent())
-            this.close();
+            this.onClose();
     }
 }

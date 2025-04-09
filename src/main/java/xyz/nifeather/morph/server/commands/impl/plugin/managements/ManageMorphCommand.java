@@ -4,10 +4,10 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.network.chat.Component;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xyz.nifeather.morph.server.commands.BrigadierCommand;
 import xyz.nifeather.morph.server.commands.arguments.DisguiseIdentifierSuggestions;
@@ -17,14 +17,14 @@ import xyz.nifeather.morph.shared.commands.arguments.RelaxedStringArgumentType;
 public class ManageMorphCommand extends BrigadierCommand
 {
     @Override
-    public void registerAsChild(ArgumentBuilder<ServerCommandSource, ?> parentBuilder)
+    public void registerAsChild(ArgumentBuilder<CommandSourceStack, ?> parentBuilder)
     {
         parentBuilder.then(
-                CommandManager.literal("morph")
+                Commands.literal("morph")
                         .then(
-                                CommandManager.argument("who", EntityArgumentType.player())
+                                Commands.argument("who", EntityArgument.player())
                                         .then(
-                                                CommandManager.argument("what", RelaxedStringArgumentType.INSTANCE)
+                                                Commands.argument("what", RelaxedStringArgumentType.INSTANCE)
                                                         .suggests(DisguiseIdentifierSuggestions::allAvailable)
                                                         .executes(this::onMorphDisguiseCommand)
                                         )
@@ -35,17 +35,17 @@ public class ManageMorphCommand extends BrigadierCommand
     @Resolved(shouldSolveImmediately = true)
     private FabricMorphManager morphManager;
 
-    private int onMorphDisguiseCommand(CommandContext<ServerCommandSource> context) throws CommandSyntaxException
+    private int onMorphDisguiseCommand(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
     {
         var sender = context.getSource();
 
-        var who = EntityArgumentType.getPlayer(context, "who");
+        var who = EntityArgument.getPlayer(context, "who");
         var what = StringArgumentType.getString(context, "what");
 
         if (!morphManager.morph(who, what, true))
-            sender.sendMessage(Text.translatableWithFallback("morph.command.manage.morph.failed", "Failed to disguise %s as %s", who.getNameForScoreboard(), what));
+            sender.sendSystemMessage(Component.translatableWithFallback("morph.command.manage.morph.failed", "Failed to disguise %s as %s", who.getScoreboardName(), what));
         else
-            sender.sendMessage(Text.translatableWithFallback("morph.command.manage.morph.success", "Successfully disguised %s as %s", who.getNameForScoreboard(), what));
+            sender.sendSystemMessage(Component.translatableWithFallback("morph.command.manage.morph.success", "Successfully disguised %s as %s", who.getScoreboardName(), what));
 
         return 1;
     }

@@ -1,6 +1,6 @@
 package xyz.nifeather.morph.client.syncers.animations;
 
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 
 public abstract class AnimationHandler
 {

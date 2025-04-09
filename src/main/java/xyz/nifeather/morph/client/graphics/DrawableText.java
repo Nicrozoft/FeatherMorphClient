@@ -1,12 +1,12 @@
 package xyz.nifeather.morph.client.graphics;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.navigation.GuiNavigation;
-import net.minecraft.client.gui.navigation.GuiNavigationPath;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ComponentPath;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.graphics.color.ColorUtils;
 import xyz.nifeather.morph.client.graphics.color.Colors;
@@ -14,12 +14,12 @@ import xyz.nifeather.morph.client.graphics.color.MaterialColors;
 
 public class DrawableText extends MDrawable
 {
-    private static final Text defaultText = Text.literal("");
-    private static final TextRenderer renderer = MinecraftClient.getInstance().textRenderer;
+    private static final Component defaultText = Component.literal("");
+    private static final Font renderer = Minecraft.getInstance().font;
 
-    private Text text = defaultText;
+    private Component text = defaultText;
 
-    public void setText(Text text)
+    public void setText(Component text)
     {
         this.text = text;
         updateTextWidth();
@@ -27,19 +27,19 @@ public class DrawableText extends MDrawable
 
     public void setText(String text)
     {
-        this.text = Text.literal(text);
+        this.text = Component.literal(text);
         updateTextWidth();
     }
 
     private void updateTextWidth()
     {
         if (RenderSystem.isOnRenderThread())
-            this.setWidth(renderer.getWidth(text));
+            this.setWidth(renderer.width(text));
         else
-            this.addSchedule(() -> this.setWidth(renderer.getWidth(text)));
+            this.addSchedule(() -> this.setWidth(renderer.width(text)));
     }
 
-    public Text getText()
+    public Component getText()
     {
         return text;
     }
@@ -50,7 +50,7 @@ public class DrawableText extends MDrawable
         this.setText(text);
     }
 
-    public DrawableText(Text text)
+    public DrawableText(Component text)
     {
         this();
         this.setText(text);
@@ -58,7 +58,7 @@ public class DrawableText extends MDrawable
 
     public DrawableText()
     {
-        this.setHeight(renderer.fontHeight);
+        this.setHeight(renderer.lineHeight);
     }
 
     private int color = 0xffffffff;
@@ -86,13 +86,13 @@ public class DrawableText extends MDrawable
     }
 
     @Override
-    public void onRender(DrawContext context, int mouseX, int mouseY, float delta)
+    public void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
     {
-        context.drawText(renderer, text, 0, 0, color, drawShadow);
+        context.drawString(renderer, text, 0, 0, color, drawShadow);
     }
 
     @Override
-    public @Nullable GuiNavigationPath getNavigationPath(GuiNavigation navigation)
+    public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent navigation)
     {
         return null;
     }

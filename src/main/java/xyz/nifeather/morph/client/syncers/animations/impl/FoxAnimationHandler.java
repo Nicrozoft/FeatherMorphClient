@@ -1,8 +1,8 @@
 package xyz.nifeather.morph.client.syncers.animations.impl;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.passive.FoxEntity;
 import xyz.nifeather.morph.shared.AnimationNames;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.animal.Fox;
 import xyz.nifeather.morph.client.entities.IFox;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 
@@ -11,7 +11,7 @@ public class FoxAnimationHandler extends AnimationHandler
     @Override
     public void play(Entity entity, String animationId)
     {
-        if (!(entity instanceof FoxEntity fox))
+        if (!(entity instanceof Fox fox))
             throw new IllegalArgumentException("Entity not a Fox!");
 
         var mixinFox = (IFox) fox;

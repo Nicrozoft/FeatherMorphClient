@@ -8,17 +8,16 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.EntityStatuses;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.mob.GhastEntity;
-import net.minecraft.entity.mob.WardenEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityEvent;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.monster.Ghast;
+import net.minecraft.world.entity.monster.warden.Warden;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import xyz.nifeather.morph.client.config.ModConfigData;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
@@ -49,7 +48,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ServerHandler extends MorphClientObject implements BasicServerHandler<PlayerEntity>
+public class ServerHandler extends MorphClientObject implements BasicServerHandler<Player>
 {
     private final FeatherMorphClient client;
 
@@ -139,7 +138,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         return this.getServerVersion() == getImplmentingApiVersion();
     }
 
-    private final Map<Identifier, Function<String, CustomPayload>> payloadMap = new Object2ObjectArrayMap<>();
+    private final Map<ResourceLocation, Function<String, CustomPacketPayload>> payloadMap = new Object2ObjectArrayMap<>();
 
     private void initializePayloadMap()
     {
@@ -170,7 +169,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         }
     }
 
-    public void sendCommand(Identifier channel, String cmd)
+    public void sendCommand(ResourceLocation channel, String cmd)
     {
         var func = payloadMap.getOrDefault(channel, null);
         if (func == null)
@@ -278,16 +277,16 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     {
         var aggressive = s2CSetAggressiveCommand.getArgumentAt(0, false);
 
-        var syncer = instanceTracker.getSyncerFor(MinecraftClient.getInstance().player);
+        var syncer = instanceTracker.getSyncerFor(Minecraft.getInstance().player);
 
         if (syncer != null)
         {
             var instance = syncer.getDisguiseInstance();
 
-            if (instance instanceof GhastEntity ghast)
-                ghast.setShooting(aggressive);
-            else if (instance instanceof WardenEntity warden && aggressive)
-                warden.handleStatus(EntityStatuses.SONIC_BOOM);
+            if (instance instanceof Ghast ghast)
+                ghast.setCharging(aggressive);
+            else if (instance instanceof Warden warden && aggressive)
+                warden.handleEntityEvent(EntityEvent.SONIC_CHARGE);
         }
     }
 
@@ -319,7 +318,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     {
         var nbt = NbtUtils.parseSNbt(s2CSetSNbtCommand.serializeArguments());
         if (nbt == null)
-            nbt = new NbtCompound();
+            nbt = new CompoundTag();
 
         morphManager.currentNbtCompound.set(nbt);
     }
@@ -369,7 +368,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
 
         morphManager.selfVisibleEnabled.set(enabled);
 
-        var iEntity = (IMorphClientEntity) MinecraftClient.getInstance().player;
+        var iEntity = (IMorphClientEntity) Minecraft.getInstance().player;
         iEntity.featherMorph$requestBypassDispatcherRedirect(this, !enabled);
     }
 
@@ -378,9 +377,9 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     {
         modifyBoundingBox = s2CSetModifyBoundingBoxCommand.getModifyBoundingBox();
 
-        var clientPlayer = MinecraftClient.getInstance().player;
+        var clientPlayer = Minecraft.getInstance().player;
         if (clientPlayer != null)
-            clientPlayer.calculateDimensions();
+            clientPlayer.refreshDimensions();
     }
 
     public static boolean modifyBoundingBox = false;

@@ -1,10 +1,10 @@
 package xyz.nifeather.morph.client.graphics;
 
-import net.minecraft.client.render.Camera;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.RaycastContext;
+import net.minecraft.client.Camera;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.FeatherMorphClient;
 import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
@@ -23,7 +23,7 @@ public class CameraHelper
         return syncer.getDisguiseInstance();
     }
 
-    public float onEyeHeightCall(Entity instance, BlockView area)
+    public float onEyeHeightCall(Entity instance, BlockGetter area)
     {
         if (instance == null) return 0f;
 
@@ -32,28 +32,28 @@ public class CameraHelper
 
         if (current != null && client.morphManager.selfVisibleEnabled.get() && client.getModConfigData().changeCameraHeight)
         {
-            if (current.getStandingEyeHeight() <= instance.getStandingEyeHeight())
+            if (current.getEyeHeight() <= instance.getEyeHeight())
             {
                 var vehicle = instance.getVehicle();
 
                 if (vehicle != null)
-                    return Math.max(current.getStandingEyeHeight(), vehicle.getStandingEyeHeight() + 0.15f);
+                    return Math.max(current.getEyeHeight(), vehicle.getEyeHeight() + 0.15f);
 
-                return current.getStandingEyeHeight();
+                return current.getEyeHeight();
             }
 
-            var pos = instance.getEyePos();
-            var targetPos = pos.add(0, current.getStandingEyeHeight() - instance.getStandingEyeHeight(), 0);
+            var pos = instance.getEyePosition();
+            var targetPos = pos.add(0, current.getEyeHeight() - instance.getEyeHeight(), 0);
 
-            var rayCastContext = new RaycastContext(pos, targetPos,
-                    RaycastContext.ShapeType.VISUAL, RaycastContext.FluidHandling.NONE, instance);
+            var rayCastContext = new ClipContext(pos, targetPos,
+                    ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, instance);
 
-            var rayCast = area.raycast(rayCastContext);
+            var rayCast = area.clip(rayCastContext);
 
-            double distance = current.getStandingEyeHeight();
+            double distance = current.getEyeHeight();
             if (rayCast.getType() == HitResult.Type.BLOCK)
             {
-                distance = instance.getStandingEyeHeight();
+                distance = instance.getEyeHeight();
                 //distance = instance.getStandingEyeHeight() + rayCast.getPos().distanceTo(pos) - 0.375f;
             }
 
@@ -62,7 +62,7 @@ public class CameraHelper
             return (float) distance;
         }
 
-        return instance.getStandingEyeHeight();
+        return instance.getEyeHeight();
     }
 
     public void onCameraUpdate(Camera camera)

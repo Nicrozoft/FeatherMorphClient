@@ -2,9 +2,9 @@ package xyz.nifeather.morph.client.utilties;
 
 import com.google.gson.Gson;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
 public class ClientItemUtils
 {
@@ -36,8 +36,8 @@ public class ClientItemUtils
 
     public static boolean isAir(ItemStack stack)
     {
-        return stack.getRegistryEntry().matchesId(Identifier.of("minecraft", "air"));
+        return stack.getItemHolder().is(ResourceLocation.fromNamespaceAndPath("minecraft", "air"));
     }
 
-    private static final ItemStack air = new ItemStack(Registries.ITEM.get(Identifier.of("minecraft", "air")));
+    private static final ItemStack air = new ItemStack(BuiltInRegistries.ITEM.getValue(ResourceLocation.fromNamespaceAndPath("minecraft", "air")));
 }

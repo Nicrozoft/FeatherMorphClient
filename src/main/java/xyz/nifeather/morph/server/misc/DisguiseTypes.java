@@ -1,8 +1,7 @@
 package xyz.nifeather.morph.server.misc;
 
-import net.minecraft.util.Identifier;
-
 import java.util.Arrays;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * 伪装类型
@@ -69,7 +68,7 @@ public enum DisguiseTypes
         return result;
     }
 
-    public static DisguiseTypes fromId(Identifier key)
+    public static DisguiseTypes fromId(ResourceLocation key)
     {
         return fromId(key.toString());
     }
@@ -79,9 +78,9 @@ public enum DisguiseTypes
         return this.getNameSpace() + ":" + id;
     }
 
-    public Identifier toIdentifier(String idWithoutNamespace)
+    public ResourceLocation toIdentifier(String idWithoutNamespace)
     {
-        return Identifier.of(toId(idWithoutNamespace));
+        return ResourceLocation.parse(toId(idWithoutNamespace));
     }
 
     public String toStrippedId(String rawString)

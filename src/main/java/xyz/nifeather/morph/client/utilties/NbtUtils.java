@@ -1,9 +1,8 @@
 package xyz.nifeather.morph.client.utilties;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.nbt.TagParser;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import xyz.nifeather.morph.client.FeatherMorphClient;
@@ -12,20 +11,20 @@ public class NbtUtils
 {
     private static final Logger logger = FeatherMorphClient.LOGGER;
 
-    public static NbtCompound parseOrThrow(@Nullable String snbt) throws Throwable
+    public static CompoundTag parseOrThrow(@Nullable String snbt) throws Throwable
     {
         //MinecraftClient.getInstance().world.getRegistryManager()
 
         //var ops = MinecraftClient.getInstance().world.getRegistryManager().getOps(NbtOps.INSTANCE);
 
-        if (StringNbtReader.readCompound(snbt) instanceof NbtCompound compound)
+        if (TagParser.parseCompoundFully(snbt) instanceof CompoundTag compound)
             return compound;
 
         throw new RuntimeException("Unable to read compound! The return value of StringNbtReader.read was not an NbtCompound");
     }
 
     @Nullable
-    public static NbtCompound parseSNbt(@Nullable String snbt)
+    public static CompoundTag parseSNbt(@Nullable String snbt)
     {
         if (snbt == null || snbt.isEmpty())
             return null;

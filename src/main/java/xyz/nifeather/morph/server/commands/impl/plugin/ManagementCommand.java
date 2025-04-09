@@ -1,8 +1,6 @@
 package xyz.nifeather.morph.server.commands.impl.plugin;
 
 import com.mojang.brigadier.builder.ArgumentBuilder;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
 import xyz.nifeather.morph.server.commands.BrigadierCommand;
 import xyz.nifeather.morph.server.commands.IBrigadierCommand;
 import xyz.nifeather.morph.server.commands.impl.plugin.managements.ManageGrantCommand;
@@ -11,6 +9,8 @@ import xyz.nifeather.morph.server.commands.impl.plugin.managements.ManageRevokeC
 import xyz.nifeather.morph.server.commands.impl.plugin.managements.ManageUnMorphCommand;
 
 import java.util.List;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 
 public class ManagementCommand extends BrigadierCommand
 {
@@ -27,10 +27,10 @@ public class ManagementCommand extends BrigadierCommand
     private final List<IBrigadierCommand> subCommands;
 
     @Override
-    public void registerAsChild(ArgumentBuilder<ServerCommandSource, ?> parentBuilder)
+    public void registerAsChild(ArgumentBuilder<CommandSourceStack, ?> parentBuilder)
     {
-        var then = CommandManager.literal("manage")
-                .requires(source -> source.hasPermissionLevel(server.getOpPermissionLevel()));
+        var then = Commands.literal("manage")
+                .requires(source -> source.hasPermission(server.getOperatorUserPermissionLevel()));
 
         subCommands.forEach(ibc -> ibc.registerAsChild(then));
 

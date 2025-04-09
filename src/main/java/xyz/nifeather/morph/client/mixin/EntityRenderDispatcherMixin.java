@@ -1,15 +1,15 @@
 package xyz.nifeather.morph.client.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.LightmapTextureManager;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.state.EntityRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,13 +26,13 @@ import xyz.nifeather.morph.client.graphics.PlayerRenderHelper;
 @Mixin(EntityRenderDispatcher.class)
 public abstract class EntityRenderDispatcherMixin
 {
-    @Shadow @Final private TextRenderer textRenderer;
+    @Shadow @Final private Font font;
 
     @ModifyVariable(
-            method = "render(Lnet/minecraft/entity/Entity;DDDFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V",
+            method = "render(Lnet/minecraft/world/entity/Entity;DDDFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/render/entity/EntityRenderDispatcher;getRenderer(Lnet/minecraft/entity/Entity;)Lnet/minecraft/client/render/entity/EntityRenderer;",
+                    target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;getRenderer(Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/client/renderer/entity/EntityRenderer;",
                     shift = At.Shift.AFTER
             ),
             index = 11,
@@ -53,14 +53,14 @@ public abstract class EntityRenderDispatcherMixin
                 || type == EntityType.MAGMA_CUBE
                 || type == EntityType.VEX)
         {
-            return LightmapTextureManager.MAX_LIGHT_COORDINATE;
+            return LightTexture.FULL_BRIGHT;
         }
 
         return value;
     }
 
     @ModifyVariable(
-            method = "render(Lnet/minecraft/entity/Entity;DDDFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V",
+            method = "render(Lnet/minecraft/world/entity/Entity;DDDFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
             at = @At("HEAD"),
             index = 1,
             argsOnly = true,
@@ -86,12 +86,12 @@ public abstract class EntityRenderDispatcherMixin
     }
 
     @Inject(
-            method = "render(Lnet/minecraft/client/render/entity/state/EntityRenderState;DDDLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/client/render/entity/EntityRenderer;)V",
+            method = "render(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/renderer/entity/EntityRenderer;)V",
             at = @At(
                     value = "HEAD"
             )
     )
-    public <S extends EntityRenderState>  void onRenderBegin(S state, double x, double y, double z, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, EntityRenderer<?, S> renderer, CallbackInfo ci)
+    public <S extends EntityRenderState>  void onRenderBegin(S state, double x, double y, double z, PoseStack matrices, MultiBufferSource vertexConsumers, int light, EntityRenderer<?, S> renderer, CallbackInfo ci)
     {
         if (state instanceof IDisguiseRenderState asDisguiseRenderState)
         {
@@ -103,12 +103,12 @@ public abstract class EntityRenderDispatcherMixin
     }
 
     @Inject(
-            method = "render(Lnet/minecraft/client/render/entity/state/EntityRenderState;DDDLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/client/render/entity/EntityRenderer;)V",
+            method = "render(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/renderer/entity/EntityRenderer;)V",
             at = @At(
                     value = "TAIL"
             )
     )
-    public <S extends EntityRenderState>  void onRenderEnd(S state, double x, double y, double z, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, EntityRenderer<?, S> renderer, CallbackInfo ci)
+    public <S extends EntityRenderState>  void onRenderEnd(S state, double x, double y, double z, PoseStack matrices, MultiBufferSource vertexConsumers, int light, EntityRenderer<?, S> renderer, CallbackInfo ci)
     {
         if (state instanceof IDisguiseRenderState asDisguiseRenderState)
         {
@@ -120,19 +120,19 @@ public abstract class EntityRenderDispatcherMixin
     }
 
     @Inject(
-            method = "render(Lnet/minecraft/client/render/entity/state/EntityRenderState;DDDLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/client/render/entity/EntityRenderer;)V",
+            method = "render(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/renderer/entity/EntityRenderer;)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/util/math/MatrixStack;pop()V"
+                    target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V"
             )
     )
     public <S extends EntityRenderState> void morphclient$tryRenderRevealName(S entityRenderState,
                                                                               double x, double y, double z,
-                                                                              MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider,
+                                                                              PoseStack matrices, MultiBufferSource vertexConsumerProvider,
                                                                               int light,
                                                                               EntityRenderer<?, S> entityRenderer,
                                                                               CallbackInfo ci)
     {
-        EntityRendererHelper.instance.renderRevealNameIfPossible((EntityRenderDispatcher)(Object) this, entityRenderState, textRenderer, matrices, vertexConsumerProvider);
+        EntityRendererHelper.instance.renderRevealNameIfPossible((EntityRenderDispatcher)(Object) this, entityRenderState, font, matrices, vertexConsumerProvider);
     }
 }

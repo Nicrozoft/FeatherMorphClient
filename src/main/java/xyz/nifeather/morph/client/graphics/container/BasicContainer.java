@@ -1,11 +1,6 @@
 package xyz.nifeather.morph.client.graphics.container;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.ParentElement;
-import net.minecraft.client.gui.navigation.GuiNavigation;
-import net.minecraft.client.gui.navigation.GuiNavigationPath;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.graphics.IMDrawable;
@@ -15,8 +10,13 @@ import xyz.nifeather.morph.client.graphics.color.MaterialColors;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import net.minecraft.client.gui.ComponentPath;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.events.ContainerEventHandler;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 
-public class BasicContainer<T extends IMDrawable> extends MDrawable implements ParentElement
+public class BasicContainer<T extends IMDrawable> extends MDrawable implements ContainerEventHandler
 {
     //region Layout Validation
 
@@ -153,15 +153,15 @@ public class BasicContainer<T extends IMDrawable> extends MDrawable implements P
     }
 
     @Override
-    public @Nullable Element getFocused()
+    public @Nullable GuiEventListener getFocused()
     {
         return focusedElement;
     }
 
-    private Element focusedElement;
+    private GuiEventListener focusedElement;
 
     @Override
-    public void setFocused(@Nullable Element focused)
+    public void setFocused(@Nullable GuiEventListener focused)
     {
         if (this.focusedElement != null)
             this.focusedElement.setFocused(false);
@@ -175,13 +175,13 @@ public class BasicContainer<T extends IMDrawable> extends MDrawable implements P
     //endregion ParentElement
 
     @Override
-    protected void onRender(DrawContext context, int mouseX, int mouseY, float delta)
+    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
     {
         super.onRender(context, mouseX, mouseY, delta);
 
-        var matrices = context.getMatrices();
+        var matrices = context.pose();
 
-        matrices.push();
+        matrices.pushPose();
 
         matrices.translate(0, 0, 50);
 
@@ -205,14 +205,14 @@ public class BasicContainer<T extends IMDrawable> extends MDrawable implements P
         finally
         {
             //matrices.translate(0, 0, -50);
-            matrices.pop();
+            matrices.popPose();
         }
     }
 
     @Override
-    public @Nullable GuiNavigationPath getNavigationPath(GuiNavigation navigation)
+    public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent navigation)
     {
-        return ParentElement.super.getNavigationPath(navigation);
+        return ContainerEventHandler.super.nextFocusPath(navigation);
     }
 
     @Override

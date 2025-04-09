@@ -1,10 +1,5 @@
 package xyz.nifeather.morph.client.screens.disguise;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.widget.ElementListWidget;
-import net.minecraft.client.util.math.Vector2f;
-import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.FeatherMorphClient;
@@ -15,10 +10,15 @@ import xyz.nifeather.morph.client.graphics.transforms.Transformer;
 import xyz.nifeather.morph.client.graphics.transforms.easings.Easing;
 
 import java.util.List;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.ContainerObjectSelectionList;
+import net.minecraft.client.model.geom.builders.UVPair;
+import net.minecraft.util.Mth;
 
-public class DisguiseList extends ElementListWidget<EntityDisplayEntry> implements IMDrawable
+public class DisguiseList extends ContainerObjectSelectionList<EntityDisplayEntry> implements IMDrawable
 {
-    public DisguiseList(MinecraftClient minecraftClient, int width, int height, int topPadding, int bottomPadding, int itemHeight)
+    public DisguiseList(Minecraft minecraftClient, int width, int height, int topPadding, int bottomPadding, int itemHeight)
     {
         super(minecraftClient, width, height, 0, itemHeight);
     }
@@ -76,20 +76,20 @@ public class DisguiseList extends ElementListWidget<EntityDisplayEntry> implemen
         if (widget == null || !children().contains(widget)) return;
 
         var amount = children().indexOf(widget) * itemHeight - itemHeight * 4;
-        var maxScroll = this.getMaxScrollY();
+        var maxScroll = this.maxScrollAmount();
         if (amount > maxScroll) amount = maxScroll;
 
-        this.setScrollY(amount);
+        this.setScrollAmount(amount);
     }
 
     private long duration = 300;
 
     @Override
-    public void setScrollY(double targetAmount)
+    public void setScrollAmount(double targetAmount)
     {
-        super.setScrollY(targetAmount);
+        super.setScrollAmount(targetAmount);
 
-        targetAmount = MathHelper.clamp(targetAmount, 0, getMaxScrollY());
+        targetAmount = Mth.clamp(targetAmount, 0, maxScrollAmount());
 
         if (smoothScroll() && !noTransform)
             Transformer.transform(this.scrollAmount, targetAmount, duration, Easing.OutQuint);
@@ -125,22 +125,22 @@ public class DisguiseList extends ElementListWidget<EntityDisplayEntry> implemen
     }
 
     @Override
-    public double getScrollY()
+    public double scrollAmount()
     {
         return (!noTransform || smoothScroll())
                ? this.scrollAmount.get()
-               : super.getScrollY();
+               : super.scrollAmount();
     }
 
     @Override
-    protected int getScrollbarThumbY()
+    protected int scrollBarY()
     {
-        return Math.max(this.getY(), Math.round((float)this.getScrollY() * (this.height - this.getScrollbarThumbHeight()) / this.getMaxScrollY() + this.getY()));
+        return Math.max(this.getY(), Math.round((float)this.scrollAmount() * (this.height - this.scrollerHeight()) / this.maxScrollAmount() + this.getY()));
         //return super.getScrollbarThumbY();
     }
 
     @Override
-    protected void drawHeaderAndFooterSeparators(DrawContext context)
+    protected void renderListSeparators(GuiGraphics context)
     {
     }
 
@@ -180,10 +180,10 @@ public class DisguiseList extends ElementListWidget<EntityDisplayEntry> implemen
     }
 
     @Override
-    public void setSize(Vector2f vector)
+    public void setSize(UVPair vector)
     {
-        this.setWidth(vector.getX());
-        this.setHeight(vector.getY());
+        this.setWidth(vector.u());
+        this.setHeight(vector.v());
     }
 
     @Override

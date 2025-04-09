@@ -1,10 +1,5 @@
 package xyz.nifeather.morph.client.graphics.toasts;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.ScreenRect;
-import net.minecraft.client.toast.ToastManager;
-import net.minecraft.client.util.math.Vector2f;
-import net.minecraft.text.Text;
 import org.joml.Vector3f;
 import xyz.nifeather.morph.client.graphics.Anchor;
 import xyz.nifeather.morph.client.graphics.EntityDisplay;
@@ -13,6 +8,11 @@ import xiamomc.pluginbase.Annotations.Initializer;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.toasts.ToastManager;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.model.geom.builders.UVPair;
+import net.minecraft.network.chat.Component;
 
 public class DisguiseEntryToast extends LinedToast
 {
@@ -42,7 +42,7 @@ public class DisguiseEntryToast extends LinedToast
 
         this.entityDisplay = new ToastEntityDisplay(rawIdentifier, true, EntityDisplay.InitialSetupMethod.NONE);
         entityDisplay.setX(512);
-        entityDisplay.setSize(new Vector2f(26, 20));
+        entityDisplay.setSize(new UVPair(26, 20));
         entityDisplay.setMasking(true);
 
         entityDisplay.postEntitySetup = () -> setDescription(entityDisplay.getDisplayName());
@@ -75,9 +75,9 @@ public class DisguiseEntryToast extends LinedToast
         entityDisplay.setX(x);
         entityDisplay.setY(y);
         entityDisplay.setAnchor(Anchor.CentreLeft);
-        entityDisplay.setParentScreenSpace(new ScreenRect(0, 0, this.getWidth(), this.getHeight()));
+        entityDisplay.setParentScreenSpace(new ScreenRectangle(0, 0, this.width(), this.height()));
 
-        setTitle(Text.translatable("text.morphclient.toast.disguise_%s".formatted(isGrant ? "grant" : "lost")));
+        setTitle(Component.translatable("text.morphclient.toast.disguise_%s".formatted(isGrant ? "grant" : "lost")));
         this.setLineColor(isGrant ? MaterialColors.Green500 : MaterialColors.Amber500);
 
         visibility.onValueChanged((o, n) ->
@@ -92,28 +92,28 @@ public class DisguiseEntryToast extends LinedToast
     private final EntityDisplay entityDisplay;
 
     @Override
-    protected void postBackgroundDrawing(DrawContext context, long startTime)
+    protected void postBackgroundDrawing(GuiGraphics context, long startTime)
     {
-        var matrices = context.getMatrices();
+        var matrices = context.pose();
         super.postBackgroundDrawing(context, startTime);
 
         // Push a new entry to allow us to do some tricks
-        matrices.push();
+        matrices.pushPose();
 
         // Draw entity
         // Make entity display more pixel-perfect
         matrices.translate(0, 0.5, 0);
-        var pos = matrices.peek().getPositionMatrix().getTranslation(new Vector3f(0, 0, 0));
+        var pos = matrices.last().pose().getTranslation(new Vector3f(0, 0, 0));
 
         int mX = (int)pos.x() - 30;
-        int mY = (int)pos.y() + (this.getHeight() / 2);
+        int mY = (int)pos.y() + (this.height() / 2);
 
         entityDisplay.setParentScreenSpaceX(pos.x);
         entityDisplay.setParentScreenSpaceY(pos.y);
         entityDisplay.render(context, mX, mY, 0);
 
         // Pop back
-        matrices.pop();
+        matrices.popPose();
     }
 
     @Override

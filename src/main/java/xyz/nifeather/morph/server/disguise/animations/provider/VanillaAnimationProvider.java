@@ -1,6 +1,6 @@
 package xyz.nifeather.morph.server.disguise.animations.provider;
 
-import net.minecraft.entity.EntityType;
+import net.minecraft.world.entity.EntityType;
 import org.jetbrains.annotations.NotNull;
 import xyz.nifeather.morph.server.disguise.animations.AnimationSet;
 import xyz.nifeather.morph.server.disguise.animations.bundled.*;

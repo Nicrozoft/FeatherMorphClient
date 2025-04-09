@@ -1,8 +1,8 @@
 package xyz.nifeather.morph.client.syncers.animations.impl;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.passive.PandaEntity;
 import xyz.nifeather.morph.shared.AnimationNames;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.animal.Panda;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 
 public class PandaAnimationHandler extends AnimationHandler
@@ -10,13 +10,13 @@ public class PandaAnimationHandler extends AnimationHandler
     @Override
     public void play(Entity entity, String animationId)
     {
-        if(!(entity instanceof PandaEntity panda))
+        if(!(entity instanceof Panda panda))
             throw new IllegalArgumentException("Entity not a Panda!");
 
         switch (animationId)
         {
-            case AnimationNames.SIT -> panda.setSitting(true);
-            case AnimationNames.STANDUP -> panda.setSitting(false);
+            case AnimationNames.SIT -> panda.sit(true);
+            case AnimationNames.STANDUP -> panda.sit(false);
         }
     }
 }

@@ -1,7 +1,7 @@
 package xyz.nifeather.morph.client.mixin;
 
-import net.minecraft.client.render.entity.state.EntityRenderState;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -30,17 +30,17 @@ public class EntityRenderStateMixin implements IDisguiseRenderState
 
     @Unique
     @Nullable
-    private Vec3d morphclient$masterPosition;
+    private Vec3 morphclient$masterPosition;
 
     @Override
     @Nullable
-    public Vec3d morphclient$masterPosition()
+    public Vec3 morphclient$masterPosition()
     {
         return morphclient$masterPosition;
     }
 
     @Override
-    public void morphclient$setMasterPosition(@Nullable Vec3d pos)
+    public void morphclient$setMasterPosition(@Nullable Vec3 pos)
     {
         this.morphclient$masterPosition = pos;
     }

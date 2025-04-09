@@ -1,6 +1,6 @@
 package xyz.nifeather.morph.client.entities;
 
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
@@ -12,8 +12,8 @@ public interface IDisguiseRenderState
     void morphclient$setRevealName(@Nullable String name);
 
     @Nullable
-    Vec3d morphclient$masterPosition();
-    void morphclient$setMasterPosition(@Nullable Vec3d pos);
+    Vec3 morphclient$masterPosition();
+    void morphclient$setMasterPosition(@Nullable Vec3 pos);
 
     @Nullable
     DisguiseSyncer morphclient$getDisguiseSyncer();

@@ -2,9 +2,9 @@ package xyz.nifeather.morph.client.graphics.hud;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.shedaniel.math.Color;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.MorphClientObject;
 import xyz.nifeather.morph.client.graphics.color.ColorUtils;
@@ -95,25 +95,25 @@ public class HudRenderHelper extends MorphClientObject
         visible.set(rev > 0.1f);
     }
 
-    public void onRender(DrawContext context, RenderTickCounter renderTickCounter)
+    public void onRender(GuiGraphics context, DeltaTracker renderTickCounter)
     {
-        if (manager == null || drawAlpha.get() == 0f || MinecraftClient.getInstance().options.hudHidden) return;
+        if (manager == null || drawAlpha.get() == 0f || Minecraft.getInstance().options.hideGui) return;
 
-        var matrices = context.getMatrices();
+        var matrices = context.pose();
 
         try
         {
-            matrices.push();
+            matrices.pushPose();
 
             renderBar(context, renderTickCounter);
         }
         finally
         {
-            matrices.pop();
+            matrices.popPose();
         }
     }
 
-    public void renderBar(DrawContext context, RenderTickCounter renderTickCounter)
+    public void renderBar(GuiGraphics context, DeltaTracker renderTickCounter)
     {
         // 10 * 0.8
         var width = 8;
@@ -122,8 +122,8 @@ public class HudRenderHelper extends MorphClientObject
         var height = 28;
         var padding = 1;
 
-        var windowHeight = context.getScaledWindowHeight();
-        var matrices = context.getMatrices();
+        var windowHeight = context.guiHeight();
+        var matrices = context.pose();
 
         var shaderColor = RenderSystem.getShaderColor();
         shaderColor = new float[]
@@ -140,7 +140,7 @@ public class HudRenderHelper extends MorphClientObject
         // 然后再位移到屏幕里面
         matrices.translate(barHeightRecorder.get() + 2, windowHeight - height - 2, 0);
 
-        context.drawBorder(0, 0, width, height, bgColorRecord.get().darker(1.3).getColor());
+        context.renderOutline(0, 0, width, height, bgColorRecord.get().darker(1.3).getColor());
 
         // 填充背景
         context.fill(padding, padding, width - padding, height - padding, bgColorRecord.get().getColor());
@@ -153,12 +153,12 @@ public class HudRenderHelper extends MorphClientObject
         RenderSystem.setShaderColor(shaderColor[0], shaderColor[1], shaderColor[2], shaderColor[3]);
     }
 
-    public void renderProgress(DrawContext context, RenderTickCounter renderTickCounter)
+    public void renderProgress(GuiGraphics context, DeltaTracker renderTickCounter)
     {
-        var width = context.getScaledWindowWidth();
+        var width = context.guiWidth();
 
         var height = 2;
-        var matrices = context.getMatrices();
+        var matrices = context.pose();
 
         //logger.info("H " + heightRecorder.get());
         matrices.translate(0, progressHeightRecorder.get(), 0);
@@ -169,7 +169,7 @@ public class HudRenderHelper extends MorphClientObject
         // var scale80 = Math.round(width * 0.8f);
 
         // Base W
-        context.fill(0, 0, context.getScaledWindowWidth(), height, ColorUtils.forOpacity(bgColorRecord.get(), 0.6f).getColor());
+        context.fill(0, 0, context.guiWidth(), height, ColorUtils.forOpacity(bgColorRecord.get(), 0.6f).getColor());
 
         // Progress
         context.fill(0, 0, scale, height, colorRecord.get().getColor());

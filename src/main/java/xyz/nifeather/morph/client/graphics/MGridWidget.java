@@ -1,22 +1,22 @@
 package xyz.nifeather.morph.client.graphics;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.ScreenRect;
-import net.minecraft.client.gui.navigation.GuiNavigation;
-import net.minecraft.client.gui.navigation.GuiNavigationPath;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.gui.widget.GridWidget;
-import net.minecraft.client.util.math.Vector2f;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
+import net.minecraft.client.gui.ComponentPath;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.model.geom.builders.UVPair;
 
-public class MGridWidget extends GridWidget implements IMDrawable
+public class MGridWidget extends GridLayout implements IMDrawable
 {
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta)
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta)
     {
     }
 
@@ -33,10 +33,10 @@ public class MGridWidget extends GridWidget implements IMDrawable
     }
 
     @Override
-    public void setSize(Vector2f vector)
+    public void setSize(UVPair vector)
     {
-        this.setWidth(vector.getX());
-        this.setHeight(vector.getY());
+        this.setWidth(vector.u());
+        this.setHeight(vector.v());
     }
 
     @Override
@@ -129,8 +129,8 @@ public class MGridWidget extends GridWidget implements IMDrawable
 
     @Nullable
     @Override
-    public GuiNavigationPath getNavigationPath(GuiNavigation navigation) {
-        return IMDrawable.super.getNavigationPath(navigation);
+    public ComponentPath nextFocusPath(FocusNavigationEvent navigation) {
+        return IMDrawable.super.nextFocusPath(navigation);
     }
 
     @Override
@@ -153,38 +153,38 @@ public class MGridWidget extends GridWidget implements IMDrawable
 
     @Nullable
     @Override
-    public GuiNavigationPath getFocusedPath() {
-        return IMDrawable.super.getFocusedPath();
+    public ComponentPath getCurrentFocusPath() {
+        return IMDrawable.super.getCurrentFocusPath();
     }
 
     @Override
-    public SelectionType getType() {
-        return SelectionType.HOVERED;
+    public NarrationPriority narrationPriority() {
+        return NarrationPriority.HOVERED;
     }
 
     @Override
-    public boolean isNarratable() {
-        return IMDrawable.super.isNarratable();
+    public boolean isActive() {
+        return IMDrawable.super.isActive();
     }
 
     @Override
-    public void appendNarrations(NarrationMessageBuilder builder)
+    public void updateNarration(NarrationElementOutput builder)
     {
     }
 
     @Override
-    public int getNavigationOrder() {
-        return IMDrawable.super.getNavigationOrder();
+    public int getTabOrderGroup() {
+        return IMDrawable.super.getTabOrderGroup();
     }
 
     @Override
-    public ScreenRect getNavigationFocus() {
-        return super.getNavigationFocus();
+    public ScreenRectangle getRectangle() {
+        return super.getRectangle();
     }
 
     @Override
-    public void forEachChild(Consumer<ClickableWidget> consumer) {
-        super.forEachChild(consumer);
+    public void visitWidgets(Consumer<AbstractWidget> consumer) {
+        super.visitWidgets(consumer);
     }
 
     @Override

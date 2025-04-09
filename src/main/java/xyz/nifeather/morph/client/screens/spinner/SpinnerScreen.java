@@ -1,15 +1,15 @@
 package xyz.nifeather.morph.client.screens.spinner;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.text.Text;
 import xyz.nifeather.morph.client.graphics.Anchor;
 import xyz.nifeather.morph.client.screens.FeatherScreen;
 
 import java.util.List;
+import net.minecraft.network.chat.Component;
 
 public abstract class SpinnerScreen<T extends ClickableSpinnerWidget> extends FeatherScreen
 {
-    protected SpinnerScreen(Text title)
+    protected SpinnerScreen(Component title)
     {
         super(title);
     }

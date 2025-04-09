@@ -1,16 +1,7 @@
 package xyz.nifeather.morph.client.mixin;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityPose;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -27,6 +18,13 @@ import xyz.nifeather.morph.client.utilties.EntityCacheUtils;
 
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 @Mixin(Entity.class)
 public abstract class MorphClientEntityMixin implements IMorphClientEntity
@@ -35,75 +33,75 @@ public abstract class MorphClientEntityMixin implements IMorphClientEntity
     private int id;
 
     @Shadow
-    private Vec3d pos;
+    private Vec3 position;
 
-    @Shadow public abstract EntityPose getPose();
+    @Shadow public abstract Pose getPose();
 
     @Shadow public abstract void remove(Entity.RemovalReason reason);
 
-    @Shadow protected abstract void setFlag(int index, boolean value);
+    @Shadow protected abstract void setSharedFlag(int index, boolean value);
 
-    @Shadow public abstract void setPose(EntityPose pose);
+    @Shadow public abstract void setPose(Pose pose);
 
     private Entity featherMorph$entityInstance;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void featherMorph$onInit(EntityType<?> type, World world, CallbackInfo ci)
+    private void featherMorph$onInit(EntityType<?> type, Level world, CallbackInfo ci)
     {
         featherMorph$entityInstance = (Entity) (Object) this;
     }
 
-    @Inject(method = "setGlowing", at = @At("RETURN"))
+    @Inject(method = "setGlowingTag", at = @At("RETURN"))
     private void morphClient$onGlowingCall(boolean glowing, CallbackInfo ci)
     {
         var thisInstance = ((Entity)(Object)this);
-        if (thisInstance.getCommandTags().contains(EntityCache.tag))
-            this.setFlag(6, glowing);
+        if (thisInstance.getTags().contains(EntityCache.tag))
+            this.setSharedFlag(6, glowing);
     }
 
     @Inject(method = "getEyeY", at = @At("HEAD"), cancellable = true)
     private void featherMorph$onGetEyeY(CallbackInfoReturnable<Double> cir)
     {
-        if (featherMorph$entityInstance == MinecraftClient.getInstance().player && ServerHandler.modifyBoundingBox)
+        if (featherMorph$entityInstance == Minecraft.getInstance().player && ServerHandler.modifyBoundingBox)
         {
             runIfSyncerEntityNotNull(syncerEntity ->
-                    cir.setReturnValue(MinecraftClient.getInstance().player.getY() + syncerEntity.getStandingEyeHeight()));
+                    cir.setReturnValue(Minecraft.getInstance().player.getY() + syncerEntity.getEyeHeight()));
         }
     }
 
-    @Inject(method = "getEyeHeight(Lnet/minecraft/entity/EntityPose;)F", at = @At("HEAD"), cancellable = true)
-    private void featherMorph$onGetEyeHeight(EntityPose pose, CallbackInfoReturnable<Float> cir)
+    @Inject(method = "getEyeHeight(Lnet/minecraft/world/entity/Pose;)F", at = @At("HEAD"), cancellable = true)
+    private void featherMorph$onGetEyeHeight(Pose pose, CallbackInfoReturnable<Float> cir)
     {
-        if (featherMorph$entityInstance == MinecraftClient.getInstance().player && ServerHandler.modifyBoundingBox)
+        if (featherMorph$entityInstance == Minecraft.getInstance().player && ServerHandler.modifyBoundingBox)
         {
             runIfSyncerEntityNotNull(syncerEntity ->
                     cir.setReturnValue(syncerEntity.getEyeHeight(pose)));
         }
     }
 
-    @Inject(method = "getStandingEyeHeight", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getEyeHeight()F", at = @At("HEAD"), cancellable = true)
     private void featherMorph$onGetStandingEyeHeight(CallbackInfoReturnable<Float> cir)
     {
-        if (featherMorph$entityInstance == MinecraftClient.getInstance().player && ServerHandler.modifyBoundingBox)
+        if (featherMorph$entityInstance == Minecraft.getInstance().player && ServerHandler.modifyBoundingBox)
         {
             runIfSyncerEntityNotNull(syncerEntity ->
-                    cir.setReturnValue(syncerEntity.getStandingEyeHeight()));
+                    cir.setReturnValue(syncerEntity.getEyeHeight()));
         }
     }
 
-    @Inject(method = "calculateBoundingBox", at = @At("HEAD"), cancellable = true)
-    private void featherMorph$onCalcCall(CallbackInfoReturnable<Box> cir)
+    @Inject(method = "makeBoundingBox()Lnet/minecraft/world/phys/AABB;", at = @At("HEAD"), cancellable = true)
+    private void featherMorph$onCalcCall(CallbackInfoReturnable<AABB> cir)
     {
         featherMorph$onCalcCallMthod(cir);
     }
 
     @Unique
-    private void featherMorph$onCalcCallMthod(CallbackInfoReturnable<Box> cir)
+    private void featherMorph$onCalcCallMthod(CallbackInfoReturnable<AABB> cir)
     {
-        if (featherMorph$entityInstance == MinecraftClient.getInstance().player && ServerHandler.modifyBoundingBox)
+        if (featherMorph$entityInstance == Minecraft.getInstance().player && ServerHandler.modifyBoundingBox)
         {
             runIfSyncerEntityNotNull(e ->
-                    cir.setReturnValue(e.getDimensions(getPose()).getBoxAt(this.pos)));
+                    cir.setReturnValue(e.getDimensions(getPose()).makeBoundingBox(this.position)));
         }
     }
 
@@ -132,10 +130,10 @@ public abstract class MorphClientEntityMixin implements IMorphClientEntity
     }
 
     @Unique
-    private EntityPose morphClient$overridePose;
+    private Pose morphClient$overridePose;
 
     @Override
-    public void featherMorph$overridePose(@Nullable EntityPose newPose)
+    public void featherMorph$overridePose(@Nullable Pose newPose)
     {
         this.morphClient$overridePose = newPose;
 
@@ -144,7 +142,7 @@ public abstract class MorphClientEntityMixin implements IMorphClientEntity
     }
 
     @Inject(method = "getPose", at = @At("HEAD"), cancellable = true)
-    private void morphClient$onPoseCall(CallbackInfoReturnable<EntityPose> cir)
+    private void morphClient$onPoseCall(CallbackInfoReturnable<Pose> cir)
     {
         if (morphClient$overridePose != null)
             cir.setReturnValue(morphClient$overridePose);
@@ -180,7 +178,7 @@ public abstract class MorphClientEntityMixin implements IMorphClientEntity
     }
 
     @Inject(method = "setPose", at = @At("HEAD"), cancellable = true)
-    private void morphClient$onSetPose(EntityPose pose, CallbackInfo ci)
+    private void morphClient$onSetPose(Pose pose, CallbackInfo ci)
     {
         if (this.morphClient$noAcceptSetPose)
             ci.cancel();

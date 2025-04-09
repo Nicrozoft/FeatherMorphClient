@@ -1,17 +1,16 @@
 package xyz.nifeather.morph.client.graphics.toasts;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.toast.ToastManager;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
 import xyz.nifeather.morph.client.graphics.color.ColorUtils;
 import xiamomc.pluginbase.Annotations.Initializer;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class NewDisguiseSetToast extends LinedToast
 {
@@ -32,36 +31,36 @@ public class NewDisguiseSetToast extends LinedToast
     private void load()
     {
         var transId = "text.morphclient.toast.new_disguises";
-        setTitle(Text.translatable(transId));
-        setDescription(Text.translatable(transId + (allGone.get() ? ".all_gone" : ".desc"), Text.keybind("key.morphclient.morph").formatted(Formatting.ITALIC)));
+        setTitle(Component.translatable(transId));
+        setDescription(Component.translatable(transId + (allGone.get() ? ".all_gone" : ".desc"), Component.keybind("key.morphclient.morph").withStyle(ChatFormatting.ITALIC)));
         setLineColor(ColorUtils.fromHex("#009688"));
     }
 
     @Override
-    public int getWidth()
+    public int width()
     {
-        var textRenderer = MinecraftClient.getInstance().textRenderer;
+        var textRenderer = Minecraft.getInstance().font;
 
         var desc = getDescription();
         var title = getTitle();
 
-        var descLength = textRenderer.getWidth(desc == null ? Text.EMPTY : desc);
-        var titleLength = textRenderer.getWidth(title == null ? Text.EMPTY : title);
+        var descLength = textRenderer.width(desc == null ? Component.EMPTY : desc);
+        var titleLength = textRenderer.width(title == null ? Component.EMPTY : title);
         var max1 = Math.max(descLength, titleLength) + 20;
 
-        return Math.max(super.getWidth(), max1);
+        return Math.max(super.width(), max1);
     }
 
-    private static final Identifier TEX = Identifier.of(Identifier.DEFAULT_NAMESPACE, "textures/gui/sprites/icon/info.png");
+    private static final ResourceLocation TEX = ResourceLocation.fromNamespaceAndPath(ResourceLocation.DEFAULT_NAMESPACE, "textures/gui/sprites/icon/info.png");
 
     @Override
-    protected void postBackgroundDrawing(DrawContext context, long startTime)
+    protected void postBackgroundDrawing(GuiGraphics context, long startTime)
     {
         super.postBackgroundDrawing(context, startTime);
 
         //RenderSystem.enableBlend();
         //RenderSystem.setShaderTexture(0, TEX);
 
-        context.drawGuiTexture(RenderLayer::getGuiTextured, TEX, this.getWidth() / 16 - 2, 6, 20, 20);
+        context.blitSprite(RenderType::guiTextured, TEX, this.width() / 16 - 2, 6, 20, 20);
     }
 }

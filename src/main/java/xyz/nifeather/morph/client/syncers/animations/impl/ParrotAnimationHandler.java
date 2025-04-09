@@ -1,9 +1,9 @@
 package xyz.nifeather.morph.client.syncers.animations.impl;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.passive.ParrotEntity;
-import net.minecraft.util.math.BlockPos;
 import xyz.nifeather.morph.shared.AnimationNames;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.animal.Parrot;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 
 public class ParrotAnimationHandler extends AnimationHandler
@@ -13,13 +13,13 @@ public class ParrotAnimationHandler extends AnimationHandler
     @Override
     public void play(Entity entity, String animationId)
     {
-        if (!(entity instanceof ParrotEntity parrot))
+        if (!(entity instanceof Parrot parrot))
             throw new IllegalArgumentException("Entity not a Parrot!");
 
         switch (animationId)
         {
-            case AnimationNames.DANCE_START -> parrot.setNearbySongPlaying(bPos, true);
-            case AnimationNames.STOP -> parrot.setNearbySongPlaying(bPos, false);
+            case AnimationNames.DANCE_START -> parrot.setRecordPlayingNearby(bPos, true);
+            case AnimationNames.STOP -> parrot.setRecordPlayingNearby(bPos, false);
         }
     }
 }

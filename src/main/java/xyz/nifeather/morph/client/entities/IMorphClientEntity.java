@@ -1,11 +1,11 @@
 package xyz.nifeather.morph.client.entities;
 
-import net.minecraft.entity.EntityPose;
+import net.minecraft.world.entity.Pose;
 import org.jetbrains.annotations.Nullable;
 
 public interface IMorphClientEntity
 {
-    public void featherMorph$overridePose(@Nullable EntityPose newPose);
+    public void featherMorph$overridePose(@Nullable Pose newPose);
     public void featherMorph$overrideInvisibility(boolean invisible);
     public void featherMorph$setNoAcceptSetPose(boolean noAccept);
 

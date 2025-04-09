@@ -1,16 +1,16 @@
 package xyz.nifeather.morph.client.screens.disguise;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.widget.ElementListWidget;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.ContainerObjectSelectionList;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.resources.ResourceLocation;
 
-public class EntityDisplayEntry extends ElementListWidget.Entry<EntityDisplayEntry> implements Comparable<EntityDisplayEntry>
+public class EntityDisplayEntry extends ContainerObjectSelectionList.Entry<EntityDisplayEntry> implements Comparable<EntityDisplayEntry>
 {
     private DisplayWidget displayWidget;
 
@@ -26,9 +26,9 @@ public class EntityDisplayEntry extends ElementListWidget.Entry<EntityDisplayEnt
         return identifier;
     }
 
-    private Identifier identifierAsNms;
+    private ResourceLocation identifierAsNms;
 
-    private static final Identifier defaultIdentifier = Identifier.of("morph", "unknown");
+    private static final ResourceLocation defaultIdentifier = ResourceLocation.fromNamespaceAndPath("morph", "unknown");
 
     private int parentWidth = 0;
     private int expectedWidth = 0;
@@ -41,12 +41,12 @@ public class EntityDisplayEntry extends ElementListWidget.Entry<EntityDisplayEnt
         this.children.forEach(displayWidget -> displayWidget.setWidth(expectedWidth));
     }
 
-    public Identifier getIdentifier()
+    public ResourceLocation getIdentifier()
     {
         if (identifierAsNms != null)
             return identifierAsNms;
 
-        var id = Identifier.tryParse(identifier.toLowerCase());
+        var id = ResourceLocation.tryParse(identifier.toLowerCase());
         if (id == null)
             id = defaultIdentifier;
 
@@ -57,13 +57,13 @@ public class EntityDisplayEntry extends ElementListWidget.Entry<EntityDisplayEnt
     private final List<DisplayWidget> children = new ObjectArrayList<>();
 
     @Override
-    public List<? extends Selectable> selectableChildren()
+    public List<? extends NarratableEntry> narratables()
     {
         return children;
     }
 
     @Override
-    public List<? extends Element> children()
+    public List<? extends GuiEventListener> children()
     {
         return children;
     }
@@ -91,7 +91,7 @@ public class EntityDisplayEntry extends ElementListWidget.Entry<EntityDisplayEnt
     }
 
     @Override
-    public void render(DrawContext matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta)
+    public void render(GuiGraphics matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta)
     {
         displayWidget.screenSpaceY = y;
         displayWidget.screenSpaceX = x;

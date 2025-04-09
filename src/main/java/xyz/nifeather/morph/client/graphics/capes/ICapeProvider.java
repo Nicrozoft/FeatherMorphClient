@@ -1,11 +1,11 @@
 package xyz.nifeather.morph.client.graphics.capes;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.resources.ResourceLocation;
 
 public interface ICapeProvider
 {
@@ -15,5 +15,5 @@ public interface ICapeProvider
      * @param profile {@link GameProfile}
      * @return 返回一个CompleteableFuture, 若披风不可用，则String为NULL
      */
-    public CompletableFuture<Optional<Identifier>> getCapeAsync(GameProfile profile);
+    public CompletableFuture<Optional<ResourceLocation>> getCapeAsync(GameProfile profile);
 }

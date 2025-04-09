@@ -1,7 +1,6 @@
 package xyz.nifeather.morph.server.storage.playerdata.paper;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.Nullable;
 import xiamomc.pluginbase.Annotations.Resolved;
@@ -20,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import net.minecraft.server.level.ServerPlayer;
 
 public class PlayerDataStoreNew extends DirectoryJsonBasedStorage<PlayerMeta> implements IManagePlayerData
 {
@@ -100,9 +100,9 @@ public class PlayerDataStoreNew extends DirectoryJsonBasedStorage<PlayerMeta> im
      * @return 目标玩家拥有的伪装
      */
     @Override
-    public List<DisguiseMeta> getAvaliableDisguisesFor(ServerPlayerEntity player)
+    public List<DisguiseMeta> getAvaliableDisguisesFor(ServerPlayer player)
     {
-        return getPlayerMeta(player.getUuid()).getUnlockedDisguises();
+        return getPlayerMeta(player.getUUID()).getUnlockedDisguises();
     }
 
     /**
@@ -113,9 +113,9 @@ public class PlayerDataStoreNew extends DirectoryJsonBasedStorage<PlayerMeta> im
      * @return 添加是否成功（伪装是否可用或玩家是否已经拥有目标伪装）
      */
     @Override
-    public boolean grantMorphToPlayer(ServerPlayerEntity player, String disguiseIdentifier)
+    public boolean grantMorphToPlayer(ServerPlayer player, String disguiseIdentifier)
     {
-        var playerMeta = this.getPlayerMeta(player.getUuid());
+        var playerMeta = this.getPlayerMeta(player.getUUID());
         var disguiseMeta = DisguiseUtils.getDisguiseMeta(disguiseIdentifier);
 
         if (disguiseMeta == null) return false;
@@ -141,9 +141,9 @@ public class PlayerDataStoreNew extends DirectoryJsonBasedStorage<PlayerMeta> im
      * @return 添加是否成功（伪装是否可用或玩家是否已经拥有目标伪装）
      */
     @Override
-    public boolean revokeMorphFromPlayer(ServerPlayerEntity player, String disguiseIdentifier)
+    public boolean revokeMorphFromPlayer(ServerPlayer player, String disguiseIdentifier)
     {
-        var playerMeta = getPlayerMeta(player.getUuid());
+        var playerMeta = getPlayerMeta(player.getUUID());
         var match = playerMeta.getUnlockedDisguises()
                 .stream()
                 .filter(meta -> meta.equals(disguiseIdentifier))
@@ -177,7 +177,7 @@ public class PlayerDataStoreNew extends DirectoryJsonBasedStorage<PlayerMeta> im
 
         var storedMeta = this.get(uuid.toString());
 
-        var matchingPlayer = MorphServerLoader.mcserver.getPlayerManager().getPlayer(uuid);
+        var matchingPlayer = MorphServerLoader.mcserver.getPlayerList().getPlayer(uuid);
         String playerName = matchingPlayer == null ? uuid.toString() : matchingPlayer.getGameProfile().getName();
 
         // Don't process default meta

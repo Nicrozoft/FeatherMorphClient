@@ -1,21 +1,21 @@
 package xyz.nifeather.morph.client.mixin.accessors;
 
-import net.minecraft.entity.LimbAnimator;
+import net.minecraft.world.entity.WalkAnimationState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(LimbAnimator.class)
+@Mixin(WalkAnimationState.class)
 public interface LimbAnimatorAccessor
 {
     @Accessor
-    public void setLastSpeed(float prevSpd);
+    public void setSpeedOld(float prevSpd);
 
     @Accessor
     public void setSpeed(float spd);
 
     @Accessor
-    public void setAnimationProgress(float pos);
+    public void setPosition(float pos);
 
     @Accessor
-    public float getLastSpeed();
+    public float getSpeedOld();
 }

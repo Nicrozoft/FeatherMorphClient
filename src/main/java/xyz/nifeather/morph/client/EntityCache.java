@@ -1,13 +1,6 @@
 package xyz.nifeather.morph.client;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import xyz.nifeather.morph.client.entities.MorphLocalPlayer;
@@ -21,6 +14,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 
 public class EntityCache
 {
@@ -35,9 +35,9 @@ public class EntityCache
     {
         EntityCacheUtils.addOnEntityAddHook(this, e ->
         {
-            if (e.getCommandTags().contains(tag)) return;
+            if (e.getTags().contains(tag)) return;
 
-            var targets = cacheMap.entrySet().stream().filter(entry -> entry.getValue().getUuid().equals(e.getUuid()))
+            var targets = cacheMap.entrySet().stream().filter(entry -> entry.getValue().getUUID().equals(e.getUUID()))
                     .toList();
 
             targets.forEach(ee ->
@@ -85,7 +85,7 @@ public class EntityCache
             FeatherMorphClient.getInstance().schedule(() ->
             {
                 entity.discard();
-                entity.onRemoved();
+                entity.onClientRemoval();
             });
 
             cacheMap.remove(identifier);
@@ -123,7 +123,7 @@ public class EntityCache
     }
 
     @Nullable
-    public LivingEntity getEntity(String identifier, PlayerEntity bindingPlayer)
+    public LivingEntity getEntity(String identifier, Player bindingPlayer)
     {
         if (identifier == null) return null;
 
@@ -164,17 +164,17 @@ public class EntityCache
 
         if (identifier.startsWith("minecraft:"))
         {
-            var typeOptional = EntityType.get(identifier);
+            var typeOptional = EntityType.byString(identifier);
 
             if (typeOptional.isEmpty()) return null;
 
             var type = typeOptional.get();
 
-            try (var world = MinecraftClient.getInstance().world)
+            try (var world = Minecraft.getInstance().level)
             {
                 if (world == null) return null;
 
-                var instance = type.create(world, SpawnReason.COMMAND);
+                var instance = type.create(world, EntitySpawnReason.COMMAND);
 
                 if (!(instance instanceof LivingEntity le))
                 {
@@ -182,8 +182,8 @@ public class EntityCache
                     return null;
                 }
 
-                var uuid = ensureUUIDUnique(MathHelper.randomUuid());
-                le.setUuid(uuid);
+                var uuid = ensureUUIDUnique(Mth.createInsecureUUID());
+                le.setUUID(uuid);
 
                 living = le;
             }
@@ -201,10 +201,10 @@ public class EntityCache
 
             if (splitedId.length != 2) return null;
 
-            var uuid = ensureUUIDUnique(MathHelper.randomUuid());
+            var uuid = ensureUUIDUnique(Mth.createInsecureUUID());
             var profile = new GameProfile(uuid, splitedId[1]);
 
-            try (var world = MinecraftClient.getInstance().world)
+            try (var world = Minecraft.getInstance().level)
             {
                 var localPlayer = new MorphLocalPlayer(world, profile, bindingPlayer);
                 localPlayer.updateSkin(new GameProfile(Util.NIL_UUID, splitedId[1]));
@@ -242,7 +242,7 @@ public class EntityCache
 
         try
         {
-            living.addCommandTag(tag);
+            living.addTag(tag);
 
             isLivingMap.put(identifier, true);
             cacheMap.put(identifier, living);
@@ -266,7 +266,7 @@ public class EntityCache
      */
     private UUID ensureUUIDUnique(UUID uuid)
     {
-        var world = MinecraftClient.getInstance().world;
+        var world = Minecraft.getInstance().level;
         if (world == null) return uuid;
 
         var haveMatch = true;
@@ -274,11 +274,11 @@ public class EntityCache
         {
             haveMatch = false;
 
-            for (var entity : world.getEntities())
+            for (var entity : world.entitiesForRendering())
             {
-                if (entity.getUuid().equals(uuid))
+                if (entity.getUUID().equals(uuid))
                 {
-                    uuid = MathHelper.randomUuid();
+                    uuid = Mth.createInsecureUUID();
                     haveMatch = true;
                     break;
                 }

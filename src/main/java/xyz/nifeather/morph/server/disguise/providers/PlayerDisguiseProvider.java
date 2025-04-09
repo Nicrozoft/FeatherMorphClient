@@ -1,14 +1,14 @@
 package xyz.nifeather.morph.server.disguise.providers;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.Text;
 import xyz.nifeather.morph.server.MorphServerLoader;
 import xyz.nifeather.morph.server.morphs.FabricDisguiseSession;
 import xyz.nifeather.morph.server.disguise.animations.provider.PlayerAnimationProvider;
 
 import java.util.Arrays;
 import java.util.List;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 
 public class PlayerDisguiseProvider extends AbstractDisguiseProvider
 {
@@ -36,19 +36,19 @@ public class PlayerDisguiseProvider extends AbstractDisguiseProvider
     }
 
     @Override
-    public boolean disguise(PlayerEntity player, String disguiseIdentifier)
+    public boolean disguise(Player player, String disguiseIdentifier)
     {
         return true;
     }
 
     @Override
-    public boolean unDisguise(PlayerEntity player)
+    public boolean unDisguise(Player player)
     {
         return true;
     }
 
     @Override
-    public boolean updateDisguise(PlayerEntity player, FabricDisguiseSession disguiseSession)
+    public boolean updateDisguise(Player player, FabricDisguiseSession disguiseSession)
     {
         return true;
     }
@@ -59,9 +59,9 @@ public class PlayerDisguiseProvider extends AbstractDisguiseProvider
     }
 
     @Override
-    public Text getDisplayName(String disguiseIdentifier)
+    public Component getDisplayName(String disguiseIdentifier)
     {
-        return Text.literal(disguiseIdentifier.replace("player:", ""));
+        return Component.literal(disguiseIdentifier.replace("player:", ""));
     }
 
     private final PlayerAnimationProvider animationProvider = new PlayerAnimationProvider();

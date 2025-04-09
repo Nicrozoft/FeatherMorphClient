@@ -1,7 +1,7 @@
 package xyz.nifeather.morph.client.screens.emote;
 
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.graphics.Anchor;
 import xyz.nifeather.morph.client.graphics.DrawableText;
@@ -11,7 +11,7 @@ public class SingleEmoteWidget extends ClickableSpinnerWidget
 {
     public SingleEmoteWidget()
     {
-        setText(Text.translatable("gui.none"));
+        setText(Component.translatable("gui.none"));
 
         title.setAnchor(Anchor.Centre);
 
@@ -21,14 +21,14 @@ public class SingleEmoteWidget extends ClickableSpinnerWidget
     }
 
     @Override
-    protected Identifier getPathOf(String variant)
+    protected ResourceLocation getPathOf(String variant)
     {
-        return Identifier.of("morphclient", "emote_select/button_" + variant);
+        return ResourceLocation.fromNamespaceAndPath("morphclient", "emote_select/button_" + variant);
     }
 
     private final DrawableText title = new DrawableText();
 
-    public void setText(Text text)
+    public void setText(Component text)
     {
         title.setText(text);
     }
@@ -39,7 +39,7 @@ public class SingleEmoteWidget extends ClickableSpinnerWidget
     public void setEmote(String identifier)
     {
         this.emote = identifier;
-        this.setText(Text.translatable("emote.morphclient." + identifier));
+        this.setText(Component.translatable("emote.morphclient." + identifier));
     }
 
     @Nullable

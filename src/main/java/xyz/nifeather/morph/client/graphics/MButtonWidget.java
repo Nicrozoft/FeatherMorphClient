@@ -1,25 +1,25 @@
 package xyz.nifeather.morph.client.graphics;
 
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.util.math.Vector2f;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.model.geom.builders.UVPair;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class MButtonWidget extends ButtonWidget implements IMDrawable
+public class MButtonWidget extends Button implements IMDrawable
 {
-    protected MButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress, NarrationSupplier narrationSupplier)
+    protected MButtonWidget(int x, int y, int width, int height, Component message, OnPress onPress, CreateNarration narrationSupplier)
     {
         super(x, y, width, height, message, onPress, narrationSupplier);
     }
 
-    public static MButtonWidget from(ButtonWidget widget, PressAction onPress)
+    public static MButtonWidget from(Button widget, OnPress onPress)
     {
         return new MButtonWidget(
                 widget.getX(), widget.getY(),
                 widget.getWidth(), widget.getHeight(),
                 widget.getMessage(), onPress,
-                ButtonWidget.DEFAULT_NARRATION_SUPPLIER
+                Button.DEFAULT_NARRATION
         );
     }
 
@@ -46,10 +46,10 @@ public class MButtonWidget extends ButtonWidget implements IMDrawable
     }
 
     @Override
-    public void setSize(Vector2f vector)
+    public void setSize(UVPair vector)
     {
-        this.setWidth(vector.getX());
-        this.setHeight(vector.getY());
+        this.setWidth(vector.u());
+        this.setHeight(vector.v());
     }
 
     @Override

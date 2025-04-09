@@ -1,14 +1,6 @@
 package xyz.nifeather.morph.client.graphics;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.client.util.math.Vector2f;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.registry.Registries;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
@@ -20,6 +12,14 @@ import xyz.nifeather.morph.client.FeatherMorphClient;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.model.geom.builders.UVPair;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.LivingEntity;
 
 public class EntityDisplay extends MDrawable
 {
@@ -55,15 +55,15 @@ public class EntityDisplay extends MDrawable
         this.rawIdentifier = rawIdentifier;
         this.isPlayerItSelf = rawIdentifier.equals(FeatherMorphClient.UNMORPH_STIRNG);
 
-        this.displayName = Text.translatable("gui.morphclient.loading")
-                .formatted(Formatting.ITALIC, Formatting.GRAY);
+        this.displayName = Component.translatable("gui.morphclient.loading")
+                .withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY);
 
         this.displayLoadingIfInvalid = displayLoadingIfNotValid;
 
         loadingSpinner.setAnchor(Anchor.Centre);
         loadingSpinner.setParent(this);
         loadingSpinner.setRelativeSizeAxes(Axes.Both);
-        loadingSpinner.setSize(new Vector2f(1, 1));
+        loadingSpinner.setSize(new UVPair(1, 1));
 
         switch (initialSetupMethod)
         {
@@ -101,9 +101,9 @@ public class EntityDisplay extends MDrawable
         return isLiving.get();
     }
 
-    private Text displayName;
+    private Component displayName;
 
-    public Text getDisplayName()
+    public Component getDisplayName()
     {
         return displayName;
     }
@@ -113,7 +113,7 @@ public class EntityDisplay extends MDrawable
 
     private int getEntityYOffset(LivingEntity entity)
     {
-        var type = Registries.ENTITY_TYPE.getId(entity.getType());
+        var type = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
 
         return switch (type.toString())
         {
@@ -124,7 +124,7 @@ public class EntityDisplay extends MDrawable
 
     protected int getInitialEntitySize(LivingEntity entity)
     {
-        var type = Registries.ENTITY_TYPE.getId(entity.getType());
+        var type = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
 
         return switch (type.toString())
         {
@@ -161,7 +161,7 @@ public class EntityDisplay extends MDrawable
 
                 if (isPlayerItSelf)
                 {
-                    entity = MinecraftClient.getInstance().player;
+                    entity = Minecraft.getInstance().player;
                     isLiving.set(true);
                 }
 
@@ -170,7 +170,7 @@ public class EntityDisplay extends MDrawable
                 {
                     Runnable complete = () ->
                     {
-                        this.displayName = Text.literal(rawIdentifier);
+                        this.displayName = Component.literal(rawIdentifier);
 
                         if (postEntitySetup != null)
                             postEntitySetup.run();
@@ -226,14 +226,14 @@ public class EntityDisplay extends MDrawable
 
     private final LoadingSpinner loadingSpinner = new LoadingSpinner();
 
-    private void renderLoading(DrawContext context)
+    private void renderLoading(GuiGraphics context)
     {
         loadingSpinner.render(context, 0, 0, 0);
     }
 
     protected float getRenderScale()
     {
-        float scaledMaxEntityBorder = Math.max(displayingEntity.getWidth(), displayingEntity.getHeight()) * initialEntitySize.get();
+        float scaledMaxEntityBorder = Math.max(displayingEntity.getBbWidth(), displayingEntity.getBbHeight()) * initialEntitySize.get();
 
         var scale = Math.round((Math.min(this.getRenderHeight(), this.getRenderWidth()) * 0.8f) / scaledMaxEntityBorder);
         scale = Math.max(1, scale);
@@ -242,7 +242,7 @@ public class EntityDisplay extends MDrawable
     }
 
     @Override
-    protected void onRender(DrawContext context, int mouseX, int mouseY, float delta)
+    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
     {
         if (displayingEntity == null && isLiving())
         {
@@ -269,19 +269,19 @@ public class EntityDisplay extends MDrawable
                 return;
             }
 
-            if (displayingEntity == MinecraftClient.getInstance().player)
+            if (displayingEntity == Minecraft.getInstance().player)
                 PlayerRenderHelper.instance().skipRender = true;
 
             //context.fill(0, 0, renderWidth, renderHeight, MaterialColors.Red500.getColor());
 
             var scale = 1;
 
-            float scaledMaxEntityBorder = Math.max(displayingEntity.getWidth(), displayingEntity.getHeight()) * initialEntitySize.get();
+            float scaledMaxEntityBorder = Math.max(displayingEntity.getBbWidth(), displayingEntity.getBbHeight()) * initialEntitySize.get();
 
             scale = Math.round((Math.min(this.getRenderHeight(), this.getRenderWidth()) * 0.8f) / scaledMaxEntityBorder);
             scale = Math.max(1, scale);
 
-            InventoryScreen.drawEntity(context,
+            InventoryScreen.renderEntityInInventoryFollowsMouse(context,
                     0, 0, renderWidth, renderHeight,
                     scale * initialEntitySize.get(),
                     0.0625f + entityYOffset,

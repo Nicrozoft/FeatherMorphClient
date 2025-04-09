@@ -1,21 +1,21 @@
 package xyz.nifeather.morph.client.graphics.container;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.ScreenRect;
-import net.minecraft.client.gui.navigation.GuiNavigation;
-import net.minecraft.client.gui.navigation.GuiNavigationPath;
-import net.minecraft.client.gui.widget.TextFieldWidget;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.graphics.MDrawable;
 import xyz.nifeather.morph.client.graphics.color.MaterialColors;
 
 import java.util.function.Consumer;
+import net.minecraft.client.gui.ComponentPath;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 
 public class TextFieldWidgetWrapper extends MDrawable
 {
-    public TextFieldWidget widget;
+    public EditBox widget;
 
-    public TextFieldWidgetWrapper(TextFieldWidget fieldWidget)
+    public TextFieldWidgetWrapper(EditBox fieldWidget)
     {
         this.widget = fieldWidget;
 
@@ -23,14 +23,14 @@ public class TextFieldWidgetWrapper extends MDrawable
         this.setWidth(fieldWidget.getWidth());
     }
 
-    public TextFieldWidget widget()
+    public EditBox widget()
     {
         return widget;
     }
 
     public void setChangedListener(Consumer<String> changedListener)
     {
-        widget.setChangedListener(changedListener);
+        widget.setResponder(changedListener);
     }
 
     @Override
@@ -43,9 +43,9 @@ public class TextFieldWidgetWrapper extends MDrawable
     }
 
     @Override
-    protected void onRender(DrawContext context, int mouseX, int mouseY, float delta)
+    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
     {
-        context.getMatrices().translate(-this.getScreenSpaceX(), -this.getScreenSpaceY(), 0);
+        context.pose().translate(-this.getScreenSpaceX(), -this.getScreenSpaceY(), 0);
         widget.render(context, mouseX, mouseY, delta);
 
         super.onRender(context, mouseX, mouseY, delta);
@@ -60,21 +60,21 @@ public class TextFieldWidgetWrapper extends MDrawable
     }
 
     @Override
-    public @Nullable GuiNavigationPath getNavigationPath(GuiNavigation navigation)
+    public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent navigation)
     {
-        return widget.getNavigationPath(navigation);
+        return widget.nextFocusPath(navigation);
     }
 
     @Override
-    public ScreenRect getNavigationFocus()
+    public ScreenRectangle getRectangle()
     {
-        return widget.getNavigationFocus();
+        return widget.getRectangle();
     }
 
     @Override
-    public @Nullable GuiNavigationPath getFocusedPath()
+    public @Nullable ComponentPath getCurrentFocusPath()
     {
-        return widget.getFocusedPath();
+        return widget.getCurrentFocusPath();
     }
 
     @Override

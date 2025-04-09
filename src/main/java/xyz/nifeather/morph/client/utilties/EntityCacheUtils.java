@@ -1,11 +1,11 @@
 package xyz.nifeather.morph.client.utilties;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.entity.Entity;
 import xyz.nifeather.morph.client.FeatherMorphClient;
 
 import java.util.Map;
 import java.util.function.Consumer;
+import net.minecraft.world.entity.Entity;
 
 public class EntityCacheUtils
 {

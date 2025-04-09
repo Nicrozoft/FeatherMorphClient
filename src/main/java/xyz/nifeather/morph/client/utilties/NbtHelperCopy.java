@@ -2,9 +2,9 @@ package xyz.nifeather.morph.client.utilties;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import net.minecraft.Util;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.*;
-import net.minecraft.util.Util;
-import net.minecraft.util.Uuids;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.FeatherMorphClient;
 
@@ -13,18 +13,18 @@ import java.util.UUID;
 
 public class NbtHelperCopy
 {
-    public static UUID readUUID(@Nullable NbtElement element)
+    public static UUID readUUID(@Nullable Tag element)
     {
         if (element == null)
             return null;
 
-        if (element.getNbtType() != NbtIntArray.TYPE)
+        if (element.getType() != IntArrayTag.TYPE)
         {
             FeatherMorphClient.LOGGER.warn("Given element is not a int array, can't convert to UUID");
             return null;
         }
 
-        int[] is = ((NbtIntArray)element).getIntArray();
+        int[] is = ((IntArrayTag)element).getAsIntArray();
 
         if (is.length != 4)
         {
@@ -32,11 +32,11 @@ public class NbtHelperCopy
             return null;
         }
 
-        return Uuids.toUuid(is);
+        return UUIDUtil.uuidFromIntArray(is);
     }
 
     @Nullable
-    public static GameProfile toGameProfile(NbtCompound nbt)
+    public static GameProfile toGameProfile(CompoundTag nbt)
     {
         UUID uuid = readUUID(nbt.get("Id"));
         if (uuid == null)
@@ -56,15 +56,15 @@ public class NbtHelperCopy
             if (!nbt.contains("Properties"))
                 return gameProfile;
 
-            NbtCompound nbtCompound = nbt.getCompound("Properties").orElseThrow();
+            CompoundTag nbtCompound = nbt.getCompound("Properties").orElseThrow();
 
-            for (String subKey : nbtCompound.getKeys())
+            for (String subKey : nbtCompound.keySet())
             {
-                NbtList nbtList = nbtCompound.getList(subKey).orElseThrow();
+                ListTag nbtList = nbtCompound.getList(subKey).orElseThrow();
 
                 for (int i = 0; i < nbtList.size(); ++i)
                 {
-                    NbtCompound nbtCompound2 = nbtList.getCompound(i).orElseThrow();
+                    CompoundTag nbtCompound2 = nbtList.getCompound(i).orElseThrow();
 
                     String base64Url = nbtCompound2.getString("Value").orElse("");
 

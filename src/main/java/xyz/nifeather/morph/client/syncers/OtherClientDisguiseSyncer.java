@@ -1,13 +1,13 @@
 package xyz.nifeather.morph.client.syncers;
 
-import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.player.AbstractClientPlayer;
 import org.jetbrains.annotations.NotNull;
 import xyz.nifeather.morph.client.EntityCache;
 import xyz.nifeather.morph.client.entities.MorphLocalPlayer;
 
 public class OtherClientDisguiseSyncer extends DisguiseSyncer
 {
-    public OtherClientDisguiseSyncer(AbstractClientPlayerEntity bindingPlayer, String morphId, int networkId)
+    public OtherClientDisguiseSyncer(AbstractClientPlayer bindingPlayer, String morphId, int networkId)
     {
         super(bindingPlayer, morphId, networkId);
     }
@@ -29,10 +29,10 @@ public class OtherClientDisguiseSyncer extends DisguiseSyncer
     {
         if (disguiseInstance == null) return;
 
-        var playerPos = bindingPlayer.getPos();
+        var playerPos = bindingPlayer.position();
 
         //暂时先这样
-        disguiseInstance.setPosition(playerPos.add(-4096, -4096, -4096));
+        disguiseInstance.setPos(playerPos.add(-4096, -4096, -4096));
     }
 
     @Override
@@ -69,8 +69,8 @@ public class OtherClientDisguiseSyncer extends DisguiseSyncer
         syncPosition();
         syncYawPitch();
 
-        if (disguiseInstance.isGlowing() != bindingPlayer.isGlowing())
-            disguiseInstance.setGlowing(bindingPlayer.isGlowing());
+        if (disguiseInstance.isCurrentlyGlowing() != bindingPlayer.isCurrentlyGlowing())
+            disguiseInstance.setGlowingTag(bindingPlayer.isCurrentlyGlowing());
     }
 
     @Override
@@ -79,11 +79,11 @@ public class OtherClientDisguiseSyncer extends DisguiseSyncer
         if (disguiseInstance == null)
             return;
 
-        var playerPos = bindingPlayer.getPos();
-        disguiseInstance.setPos(playerPos.x, playerPos.y - 4096, playerPos.z);
-        disguiseInstance.lastRenderX = playerPos.x;
-        disguiseInstance.lastRenderY = playerPos.y - 4096;
-        disguiseInstance.lastRenderZ = playerPos.z;
+        var playerPos = bindingPlayer.position();
+        disguiseInstance.setPosRaw(playerPos.x, playerPos.y - 4096, playerPos.z);
+        disguiseInstance.xOld = playerPos.x;
+        disguiseInstance.yOld = playerPos.y - 4096;
+        disguiseInstance.zOld = playerPos.z;
     }
 
     @Override
@@ -97,14 +97,14 @@ public class OtherClientDisguiseSyncer extends DisguiseSyncer
         // From ClientDisguiseSyncer
 
         // workaround: When an entity is far away from the player, EMF will reduce the update rate for it.
-        var playerPos = bindingPlayer.getPos();
-        disguiseInstance.setPos(playerPos.x, playerPos.y, playerPos.z);
+        var playerPos = bindingPlayer.position();
+        disguiseInstance.setPosRaw(playerPos.x, playerPos.y, playerPos.z);
 
         // And this is for 3d skin layer compatibility
         // See https://github.com/tr7zw/3d-Skin-Layers/blob/bd8637d2fedd0b9d836b3932b5b0e2415337a40c/src/main/java/dev/tr7zw/skinlayers/mixin/CustomHeadLayerMixin.java#L49
-        disguiseInstance.lastRenderX = playerPos.x;
-        disguiseInstance.lastRenderY = playerPos.y;
-        disguiseInstance.lastRenderZ = playerPos.z;
+        disguiseInstance.xOld = playerPos.x;
+        disguiseInstance.yOld = playerPos.y;
+        disguiseInstance.zOld = playerPos.z;
     }
 
     @Override

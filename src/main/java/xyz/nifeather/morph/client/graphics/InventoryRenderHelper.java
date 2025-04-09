@@ -1,12 +1,12 @@
 package xyz.nifeather.morph.client.graphics;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.FeatherMorphClient;
 import xyz.nifeather.morph.client.MorphClientObject;
 import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import xiamomc.pluginbase.Annotations.Initializer;
 
 public class InventoryRenderHelper extends MorphClientObject
@@ -31,7 +31,7 @@ public class InventoryRenderHelper extends MorphClientObject
 
     public boolean allowRender = true;
 
-    public void onRenderCall(DrawContext context, int x1, int y1, int x2, int y2, int size, float f, float mouseX, float mouseY)
+    public void onRenderCall(GuiGraphics context, int x1, int y1, int x2, int y2, int size, float f, float mouseX, float mouseY)
     {
         if (!allowRender) return;
         var modConfig = FeatherMorphClient.getInstance().getModConfigData();
@@ -46,7 +46,7 @@ public class InventoryRenderHelper extends MorphClientObject
         {
             try
             {
-                InventoryScreen.drawEntity(context, x1, y1, x2, y2, size, f, mouseX, mouseY, entity);
+                InventoryScreen.renderEntityInInventoryFollowsMouse(context, x1, y1, x2, y2, size, f, mouseX, mouseY, entity);
             }
             catch (Exception e)
             {
@@ -56,10 +56,10 @@ public class InventoryRenderHelper extends MorphClientObject
         }
         else
         {
-            var clientPlayer = MinecraftClient.getInstance().player;
+            var clientPlayer = Minecraft.getInstance().player;
 
             if (clientPlayer != null)
-                InventoryScreen.drawEntity(context, x1, y1, x2, y2, size, f, mouseX, mouseY, clientPlayer);
+                InventoryScreen.renderEntityInInventoryFollowsMouse(context, x1, y1, x2, y2, size, f, mouseX, mouseY, clientPlayer);
         }
 
         PlayerRenderHelper.instance().skipRender = false;

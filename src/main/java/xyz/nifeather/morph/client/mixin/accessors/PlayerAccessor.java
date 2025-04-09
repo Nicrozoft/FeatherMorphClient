@@ -1,12 +1,12 @@
 package xyz.nifeather.morph.client.mixin.accessors;
 
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public interface PlayerAccessor
 {
     @Invoker
-    public void invokeUpdateCapeAngles();
+    public void invokeMoveCloak();
 }

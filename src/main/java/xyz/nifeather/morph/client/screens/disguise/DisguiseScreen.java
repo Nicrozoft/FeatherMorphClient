@@ -1,19 +1,6 @@
 package xyz.nifeather.morph.client.screens.disguise;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.ScreenPos;
-import net.minecraft.client.gui.ScreenRect;
-import net.minecraft.client.gui.navigation.NavigationAxis;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.util.math.Vector2f;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
-import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.EntityCache;
@@ -23,7 +10,6 @@ import xyz.nifeather.morph.client.graphics.*;
 import xyz.nifeather.morph.client.graphics.color.Colors;
 import xyz.nifeather.morph.client.graphics.color.MaterialColors;
 import xyz.nifeather.morph.client.graphics.container.*;
-import xyz.nifeather.morph.client.graphics.container.Container;
 import xyz.nifeather.morph.client.graphics.transforms.Recorder;
 import xyz.nifeather.morph.client.screens.FeatherScreen;
 import xyz.nifeather.morph.client.screens.WaitingForServerScreen;
@@ -32,12 +18,25 @@ import xyz.nifeather.morph.client.screens.disguise.preview.DisguisePreviewDispla
 
 import java.util.List;
 import java.util.function.Function;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.navigation.ScreenAxis;
+import net.minecraft.client.gui.navigation.ScreenPosition;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.model.geom.builders.UVPair;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 
 public class DisguiseScreen extends FeatherScreen
 {
     public DisguiseScreen()
     {
-        super(Text.literal("选择界面"));
+        super(Component.literal("选择界面"));
 
         var morphClient = FeatherMorphClient.getInstance();
 
@@ -89,7 +88,7 @@ public class DisguiseScreen extends FeatherScreen
         //初始化文本
         this.currentIdentifier.onValueChanged((o, n) ->
         {
-            Text display = null;
+            Component display = null;
 
             if (n != null)
             {
@@ -98,11 +97,11 @@ public class DisguiseScreen extends FeatherScreen
                 if (cachedEntity != null)
                     display = cachedEntity.getName();
                 else
-                    display = Text.literal(n);
+                    display = Component.literal(n);
             }
 
-            var text = Text.stringifiedTranslatable("gui.morphclient.current_disguise",
-                    display == null ? Text.translatable("gui.none") : display);
+            var text = Component.translatableEscape("gui.morphclient.current_disguise",
+                    display == null ? Component.translatable("gui.none") : display);
 
             selectedIdentifierText.setText(text);
             refreshEntityPreview(n);
@@ -113,7 +112,7 @@ public class DisguiseScreen extends FeatherScreen
         titleText.setWidth(200);
         titleText.setHeight(20);
 
-        textBox = new TextFieldWidgetWrapper(new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 120, 17, Text.literal("Search disguise...")));
+        textBox = new TextFieldWidgetWrapper(new EditBox(Minecraft.getInstance().font, 120, 17, Component.literal("Search disguise...")));
         textBox.setChangedListener(this::onTextBoxText);
 
         textBox.setAnchor(Anchor.TopRight);
@@ -142,10 +141,10 @@ public class DisguiseScreen extends FeatherScreen
         var newDisplay = new DisguisePreviewDisplay(identifier, true, EntityDisplay.InitialSetupMethod.SYNC);
         newDisplay.setMasking(true);
 
-        newDisplay.setParentScreenSpace(new ScreenRect(ScreenPos.of(NavigationAxis.HORIZONTAL, 0, 0), this.width, this.height));
+        newDisplay.setParentScreenSpace(new ScreenRectangle(ScreenPosition.of(ScreenAxis.HORIZONTAL, 0, 0), this.width, this.height));
         newDisplay.setRelativeSizeAxes(Axes.Both);
         newDisplay.setAnchor(Anchor.CentreRight);
-        newDisplay.setSize(new Vector2f(0.4f, 0.7f));
+        newDisplay.setSize(new UVPair(0.4f, 0.7f));
 
         playerDisplay = newDisplay;
 
@@ -164,11 +163,11 @@ public class DisguiseScreen extends FeatherScreen
     private final Container topTextContainer = new Container();
     private final Container bottomTextContainer = new Container();
 
-    private final DisguiseList disguiseList = new DisguiseList(MinecraftClient.getInstance(), 200, 0, 20, 0, 22);
-    private final DrawableText titleText = new DrawableText(Text.translatable("gui.morphclient.select_disguise"));
+    private final DisguiseList disguiseList = new DisguiseList(Minecraft.getInstance(), 200, 0, 20, 0, 22);
+    private final DrawableText titleText = new DrawableText(Component.translatable("gui.morphclient.select_disguise"));
     private final DrawableText selectedIdentifierText = new DrawableText();
     private final DrawableText serverAPIText = new DrawableText();
-    private final DrawableText outdatedText = new DrawableText(Text.translatable("gui.morphclient.version_mismatch").formatted(Formatting.GOLD).formatted(Formatting.BOLD));
+    private final DrawableText outdatedText = new DrawableText(Component.translatable("gui.morphclient.version_mismatch").withStyle(ChatFormatting.GOLD).withStyle(ChatFormatting.BOLD));
 
     private final int fontMargin = 4;
 
@@ -224,7 +223,7 @@ public class DisguiseScreen extends FeatherScreen
         if (last instanceof WaitingForServerScreen waitingForServerScreen)
             backgroundDim.set(waitingForServerScreen.getCurrentDim());
 
-        int headerTargetHeight = textRenderer.fontHeight * 2 + fontMargin * 2;
+        int headerTargetHeight = font.lineHeight * 2 + fontMargin * 2;
 
         topHeight.set(headerTargetHeight);
         bottomHeight.set(30);
@@ -240,7 +239,7 @@ public class DisguiseScreen extends FeatherScreen
         bottomTextContainer.setAnchor(Anchor.BottomLeft);
         bottomTextContainer.setPadding(new MarginPadding(0, 0, fontMargin + 1, 0));
 
-        var fontHeight = textRenderer.fontHeight;
+        var fontHeight = font.lineHeight;
         serverAPIText.setMargin(new MarginPadding(0, 0, fontHeight + 2, 0));
         selectedIdentifierText.setMargin(new MarginPadding(0, 0, fontHeight + 2, 0));
 
@@ -251,16 +250,16 @@ public class DisguiseScreen extends FeatherScreen
         var buttonContainer = new BasicContainer<MDrawable>();
 
         //初始化按钮
-        var closeButton = this.createDrawableWrapper(0, 0, 112, 20, Text.translatable("gui.back"), (button) ->
+        var closeButton = this.createDrawableWrapper(0, 0, 112, 20, Component.translatable("gui.back"), (button) ->
         {
-            this.close();
+            this.onClose();
         });
 
-        var configMenuButton = this.createDrawableWrapper(0, 0, 20, 20, Text.literal("C"), (button ->
+        var configMenuButton = this.createDrawableWrapper(0, 0, 20, 20, Component.literal("C"), (button ->
         {
             var screen = FeatherMorphClient.getInstance().getFactory(this).build();
 
-            MinecraftClient.getInstance().setScreen(screen);
+            Minecraft.getInstance().setScreen(screen);
         }));
 
         var selfVisibleToggle = this.createToggleSelfButton();
@@ -270,18 +269,18 @@ public class DisguiseScreen extends FeatherScreen
 
         buttonContainer.addRange(closeButton, selfVisibleToggle, configMenuButton);
         buttonContainer.setAnchor(Anchor.BottomRight);
-        buttonContainer.setSize(new Vector2f(closeButton.getX() + closeButton.getWidth(), 20));
+        buttonContainer.setSize(new UVPair(closeButton.getX() + closeButton.getWidth(), 20));
         buttonContainer.setMargin(new MarginPadding(5));
 
-        var topHeader = new DrawableSprite(Screen.INWORLD_HEADER_SEPARATOR_TEXTURE, false);
+        var topHeader = new DrawableSprite(Screen.INWORLD_HEADER_SEPARATOR, false);
         topHeader.setY(this.topHeight.get() - 2);
-        topHeader.setSize(new Vector2f(1, 2));
+        topHeader.setSize(new UVPair(1, 2));
         topHeader.setRelativeSizeAxes(Axes.X);
 
-        var bottomFooter = new DrawableSprite(Screen.INWORLD_FOOTER_SEPARATOR_TEXTURE, false);
+        var bottomFooter = new DrawableSprite(Screen.INWORLD_FOOTER_SEPARATOR, false);
         bottomFooter.setAnchor(Anchor.BottomLeft);
         bottomFooter.setY(-bottomHeight.get() + 1);
-        bottomFooter.setSize(new Vector2f(1, 2));
+        bottomFooter.setSize(new UVPair(1, 2));
         bottomFooter.setRelativeSizeAxes(Axes.X);
 
         //顶端文本
@@ -310,13 +309,13 @@ public class DisguiseScreen extends FeatherScreen
     {
         var bindable = manager.selfVisibleEnabled;
 
-        Function<Boolean, Text> textFunction = val ->
+        Function<Boolean, Component> textFunction = val ->
         {
             var color = val
-                        ? TextColor.fromFormatting(Formatting.GREEN)
-                        : TextColor.fromFormatting(Formatting.RED);
+                        ? TextColor.fromLegacyFormat(ChatFormatting.GREEN)
+                        : TextColor.fromLegacyFormat(ChatFormatting.RED);
 
-            return Text.literal(val ? "I" : "O")
+            return Component.literal(val ? "I" : "O")
                     .setStyle(Style.EMPTY.withColor(color));
         };
 
@@ -337,7 +336,7 @@ public class DisguiseScreen extends FeatherScreen
 
     private void resizeDisguiseList()
     {
-        int headerTargetHeight = textRenderer.fontHeight * 2 + fontMargin * 2;
+        int headerTargetHeight = font.lineHeight * 2 + fontMargin * 2;
         int footerTargetHeight = 30;
 
         int disguiseListWidth = Math.round(this.width * 0.6f);
@@ -349,7 +348,7 @@ public class DisguiseScreen extends FeatherScreen
     @Override
     protected void onScreenResize()
     {
-        assert this.client != null;
+        assert this.minecraft != null;
 
         //列表
         resizeDisguiseList();
@@ -393,12 +392,12 @@ public class DisguiseScreen extends FeatherScreen
     {
         if (!str.startsWith("!"))
         {
-            textBox.widget.setEditableColor(Colors.WHITE.getColor());
+            textBox.widget.setTextColor(Colors.WHITE.getColor());
             applySearch(str);
         }
         else
         {
-            textBox.widget.setEditableColor(MaterialColors.Amber500.getColor());
+            textBox.widget.setTextColor(MaterialColors.Amber500.getColor());
             field_1919810.apply(str);
         }
     }
@@ -432,7 +431,7 @@ public class DisguiseScreen extends FeatherScreen
         disguiseList.clearChildren(false);
         disguiseList.addChildrenRange(filter);
 
-        if (disguiseList.getScrollY() > disguiseList.getMaxScrollY())
+        if (disguiseList.scrollAmount() > disguiseList.maxScrollAmount())
             scrollToCurrentOrLast(true);
     }
 
@@ -455,16 +454,16 @@ public class DisguiseScreen extends FeatherScreen
     }
 
     @Override
-    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta)
+    public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta)
     {
         super.renderBackground(context, mouseX, mouseY, delta);
 
-        context.drawTexture(RenderLayer::getGuiTextured, Screen.MENU_BACKGROUND_TEXTURE,
+        context.blit(RenderType::guiTextured, Screen.MENU_BACKGROUND,
                 0, 0,
                 0, -topHeight.get(),
                 this.width, this.topHeight.get(), 32, 32);
 
-        context.drawTexture(RenderLayer::getGuiTextured, Screen.MENU_BACKGROUND_TEXTURE,
+        context.blit(RenderType::guiTextured, Screen.MENU_BACKGROUND,
                 0, this.height - bottomHeight.get(),
                 0, 0,
                 this.width, this.height, 32, 32);

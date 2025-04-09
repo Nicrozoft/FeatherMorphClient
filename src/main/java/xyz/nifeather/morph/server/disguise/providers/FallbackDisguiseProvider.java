@@ -1,12 +1,12 @@
 package xyz.nifeather.morph.server.disguise.providers;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.Text;
 import xyz.nifeather.morph.server.morphs.FabricDisguiseSession;
 import xyz.nifeather.morph.server.disguise.animations.AnimationProvider;
 import xyz.nifeather.morph.server.disguise.animations.provider.FallbackAnimationProvider;
 
 import java.util.List;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 
 public class FallbackDisguiseProvider extends AbstractDisguiseProvider
 {
@@ -29,19 +29,19 @@ public class FallbackDisguiseProvider extends AbstractDisguiseProvider
     }
 
     @Override
-    public boolean disguise(PlayerEntity player, String disguiseIdentifier)
+    public boolean disguise(Player player, String disguiseIdentifier)
     {
         return false;
     }
 
     @Override
-    public boolean unDisguise(PlayerEntity player)
+    public boolean unDisguise(Player player)
     {
         return false;
     }
 
     @Override
-    public boolean updateDisguise(PlayerEntity player, FabricDisguiseSession disguiseSession)
+    public boolean updateDisguise(Player player, FabricDisguiseSession disguiseSession)
     {
         return false;
     }
@@ -52,9 +52,9 @@ public class FallbackDisguiseProvider extends AbstractDisguiseProvider
     }
 
     @Override
-    public Text getDisplayName(String disguiseIdentifier)
+    public Component getDisplayName(String disguiseIdentifier)
     {
-        return Text.literal("[Fallback: %s]".formatted(disguiseIdentifier));
+        return Component.literal("[Fallback: %s]".formatted(disguiseIdentifier));
     }
 
     private final AnimationProvider animationProvider = new FallbackAnimationProvider();

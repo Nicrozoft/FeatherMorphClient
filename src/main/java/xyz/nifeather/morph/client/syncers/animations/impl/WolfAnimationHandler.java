@@ -1,8 +1,8 @@
 package xyz.nifeather.morph.client.syncers.animations.impl;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.passive.WolfEntity;
 import xyz.nifeather.morph.shared.AnimationNames;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.animal.wolf.Wolf;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 
 public class WolfAnimationHandler extends AnimationHandler
@@ -10,7 +10,7 @@ public class WolfAnimationHandler extends AnimationHandler
     @Override
     public void play(Entity entity, String animationId)
     {
-        if (!(entity instanceof WolfEntity wolf))
+        if (!(entity instanceof Wolf wolf))
             throw new IllegalArgumentException("Entity not a Wolf!");
 
         switch (animationId)

@@ -1,12 +1,12 @@
 package xyz.nifeather.morph.server.disguise.animations.provider;
 
-import net.minecraft.entity.EntityType;
 import xyz.nifeather.morph.server.disguise.animations.AnimationProvider;
 import xyz.nifeather.morph.server.disguise.animations.AnimationSet;
 import xyz.nifeather.morph.server.disguise.animations.bundled.FallbackAnimationSet;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.world.entity.EntityType;
 
 public abstract class DefaultAnimationProvider extends AnimationProvider
 {
@@ -17,7 +17,7 @@ public abstract class DefaultAnimationProvider extends AnimationProvider
 
     protected void registerAnimSet(EntityType<?> type, AnimationSet animationSet)
     {
-        this.registerAnimSet(EntityType.getId(type).toString(), animationSet);
+        this.registerAnimSet(EntityType.getKey(type).toString(), animationSet);
     }
 
     protected void registerAnimSet(String disguiseIdentifier, AnimationSet animationSet)

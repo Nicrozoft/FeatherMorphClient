@@ -1,11 +1,11 @@
 package xyz.nifeather.morph.server.storage;
 
-import net.minecraft.server.network.ServerPlayerEntity;
 import xyz.nifeather.morph.server.misc.DisguiseMeta;
 import xyz.nifeather.morph.server.storage.playerdata.paper.PlayerMeta;
 
 import java.util.List;
 import java.util.UUID;
+import net.minecraft.server.level.ServerPlayer;
 
 public interface IManagePlayerData
 {
@@ -14,7 +14,7 @@ public interface IManagePlayerData
      * @param player 目标玩家
      * @return 目标玩家拥有的伪装
      */
-    public List<DisguiseMeta> getAvaliableDisguisesFor(ServerPlayerEntity player);
+    public List<DisguiseMeta> getAvaliableDisguisesFor(ServerPlayer player);
 
     /**
      * 将伪装授予某一玩家
@@ -22,7 +22,7 @@ public interface IManagePlayerData
      * @param disguiseIdentifier 伪装ID
      * @return 添加是否成功（伪装是否可用或玩家是否已经拥有目标伪装）
      */
-    public boolean grantMorphToPlayer(ServerPlayerEntity player, String disguiseIdentifier);
+    public boolean grantMorphToPlayer(ServerPlayer player, String disguiseIdentifier);
 
     /**
      * 从某一玩家剥离伪装
@@ -30,7 +30,7 @@ public interface IManagePlayerData
      * @param disguiseIdentifier 伪装ID
      * @return 添加是否成功（伪装是否可用或玩家是否已经拥有目标伪装）
      */
-    public boolean revokeMorphFromPlayer(ServerPlayerEntity player, String disguiseIdentifier);
+    public boolean revokeMorphFromPlayer(ServerPlayer player, String disguiseIdentifier);
 
     /**
      * 获取玩家的伪装配置

@@ -1,28 +1,32 @@
 package xyz.nifeather.morph.client.graphics;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.render.*;
-import net.minecraft.client.render.entity.EnderDragonEntityRenderer;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.LivingEntityRenderer;
-import net.minecraft.client.render.entity.PlayerEntityRenderer;
-import net.minecraft.client.render.entity.model.BipedEntityModel;
-import net.minecraft.client.render.entity.model.EntityModel;
-import net.minecraft.client.render.entity.model.EntityModelPartNames;
-import net.minecraft.client.render.entity.model.EntityModels;
-import net.minecraft.client.render.entity.state.LivingEntityRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.decoration.EndCrystalEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.geom.LayerDefinitions;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartNames;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EnderDragonRenderer;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
@@ -66,7 +70,7 @@ public class PlayerRenderHelper extends MorphClientObject
     @Resolved
     private DisguiseInstanceTracker instanceTracker;
 
-    public boolean shouldHideLabel(@Nullable AbstractClientPlayerEntity player)
+    public boolean shouldHideLabel(@Nullable AbstractClientPlayer player)
     {
         if (player == null) return false;
 
@@ -98,11 +102,11 @@ public class PlayerRenderHelper extends MorphClientObject
             }
         }
 
-        var clientPlayer = MinecraftClient.getInstance().player;
+        var clientPlayer = Minecraft.getInstance().player;
         assert clientPlayer != null;
 
-        clientPlayer.sendMessage(Text.translatable("text.morphclient.error.render_disguise1"), false);
-        clientPlayer.sendMessage(Text.translatable("text.morphclient.error.render_disguise2"), false);
+        clientPlayer.displayClientMessage(Component.translatable("text.morphclient.error.render_disguise1"), false);
+        clientPlayer.displayClientMessage(Component.translatable("text.morphclient.error.render_disguise2"), false);
     }
 
     @ApiStatus.Internal
@@ -110,19 +114,19 @@ public class PlayerRenderHelper extends MorphClientObject
 
     private Camera camera()
     {
-        return MinecraftClient.getInstance().gameRenderer.getCamera();
+        return Minecraft.getInstance().gameRenderer.getMainCamera();
     }
 
     /**
      * 在玩家位置渲染通向 {@link ClientDisguiseSyncer#getBeamTarget()} 的光柱
      * @param tickCounter tickCounter
-     * @param matrixStack {@link MatrixStack}
-     * @param vertexConsumerProvider {@link VertexConsumerProvider}
+     * @param matrixStack {@link PoseStack}
+     * @param vertexConsumerProvider {@link MultiBufferSource}
      * @param light 光照等级
      */
-    public void renderCrystalBeam(RenderTickCounter tickCounter, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light)
+    public void renderCrystalBeam(DeltaTracker tickCounter, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int light)
     {
-        DisguiseSyncer abstractSyncer = instanceTracker.getSyncerFor(MinecraftClient.getInstance().player);
+        DisguiseSyncer abstractSyncer = instanceTracker.getSyncerFor(Minecraft.getInstance().player);
 
         if (!(abstractSyncer instanceof ClientDisguiseSyncer syncer)) return;
 
@@ -130,23 +134,23 @@ public class PlayerRenderHelper extends MorphClientObject
 
         if (connectedCrystal == null) return;
 
-        matrixStack.push();
+        matrixStack.pushPose();
 
-        var cameraPos = camera().getPos();
+        var cameraPos = camera().getPosition();
 
         //相机XYZ
         var cameraX = cameraPos.x;
         var cameraY = cameraPos.y;
         var cameraZ = cameraPos.z;
 
-        var player = MinecraftClient.getInstance().player;
+        var player = Minecraft.getInstance().player;
         assert player != null;
 
-        var tickDelta = tickCounter.getTickProgress(true);
+        var tickDelta = tickCounter.getGameTimeDeltaPartialTick(true);
         //通过插值的方式获取玩家XYZ可以避免让渲染出来的光柱看起来非常卡顿
-        var lerpPlayerX = MathHelper.lerp(tickDelta, player.lastX, player.getX());
-        var lerpPlayerY = MathHelper.lerp(tickDelta, player.lastY, player.getY());
-        var lerpPlayerZ = MathHelper.lerp(tickDelta, player.lastZ, player.getZ());
+        var lerpPlayerX = Mth.lerp(tickDelta, player.xo, player.getX());
+        var lerpPlayerY = Mth.lerp(tickDelta, player.yo, player.getY());
+        var lerpPlayerZ = Mth.lerp(tickDelta, player.zo, player.getZ());
 
         //光柱目标的Y轴位移，数值越大最终的位置相较于相机越低
         var yOffset = 1f;
@@ -162,20 +166,20 @@ public class PlayerRenderHelper extends MorphClientObject
         matrixStack.translate(lerpPlayerX - cameraX, lerpPlayerY - cameraY - yOffset, lerpPlayerZ - cameraZ);
 
         //渲染光柱
-        EnderDragonEntityRenderer.renderCrystalBeam(relativeX,
+        EnderDragonRenderer.renderCrystalBeams(relativeX,
                 relativeY + getCrystalYOffsetCopy(connectedCrystal, tickDelta),
                 relativeZ,
-                player.age + tickDelta, matrixStack, vertexConsumerProvider, light);
+                player.tickCount + tickDelta, matrixStack, vertexConsumerProvider, light);
 
-        matrixStack.pop();
+        matrixStack.popPose();
     }
 
     private float getCrystalYOffsetCopy(Entity entity, float tickDelta)
     {
-        var age = entity instanceof EndCrystalEntity endCrystalEntity ? endCrystalEntity.endCrystalAge : 0;
+        var age = entity instanceof EndCrystal endCrystalEntity ? endCrystalEntity.time : 0;
 
         float f = age + tickDelta;
-        float g = MathHelper.sin(f * 0.2f) / 2.0f + 0.5f;
+        float g = Mth.sin(f * 0.2f) / 2.0f + 0.5f;
         g = (g * g + g) * 0.4f;
         return g - 1.4f;
     }
@@ -186,7 +190,7 @@ public class PlayerRenderHelper extends MorphClientObject
 
     private final Map<EntityType<?>, ModelInfo> typeModelPartMap = new Object2ObjectOpenHashMap<>();
 
-    public record ModelInfo(@Nullable ModelPart left, @Nullable ModelPart right, Vec3d offset, Vec3d scale)
+    public record ModelInfo(@Nullable ModelPart left, @Nullable ModelPart right, Vec3 offset, Vec3 scale)
     {
         @Nullable
         public ModelPart getPart(boolean isLeftArm)
@@ -208,42 +212,42 @@ public class PlayerRenderHelper extends MorphClientObject
 
         //尝试获取对应的模型
         //有些模型变换会影响全局渲染，所以我们需要创建一个新的模型（比方说雪傀儡和铁傀儡的手臂模型）
-        var targetEntry = EntityModels.getModels().entrySet().stream()
-                .filter(e -> e.getKey().id().equals(EntityType.getId(type))).findFirst().orElse(null);
+        var targetEntry = LayerDefinitions.createRoots().entrySet().stream()
+                .filter(e -> e.getKey().model().equals(EntityType.getKey(type))).findFirst().orElse(null);
 
         if (targetEntry != null)
-            model = targetEntry.getValue().createModel();
+            model = targetEntry.getValue().bakeRoot();
 
         ModelPart leftPart = null;
         ModelPart rightPart = null;
-        Vec3d offset = Vec3dUtils.of(0);
-        Vec3d scale = Vec3dUtils.ONE();
+        Vec3 offset = Vec3dUtils.of(0);
+        Vec3 scale = Vec3dUtils.ONE();
 
         if (model != null)
         {
             var leftPartNames = List.of(
-                    EntityModelPartNames.LEFT_ARM,
-                    EntityModelPartNames.LEFT_LEG,
-                    EntityModelPartNames.LEFT_FRONT_LEG,
-                    EntityModelPartNames.LEFT_HIND_LEG,
-                    EntityModelPartNames.LEFT_FOOT,
-                    EntityModelPartNames.LEFT_FRONT_FOOT,
-                    EntityModelPartNames.LEFT_HIND_FOOT,
+                    PartNames.LEFT_ARM,
+                    PartNames.LEFT_LEG,
+                    PartNames.LEFT_FRONT_LEG,
+                    PartNames.LEFT_HIND_LEG,
+                    PartNames.LEFT_FOOT,
+                    PartNames.LEFT_FRONT_FOOT,
+                    PartNames.LEFT_HIND_FOOT,
                     "part9"
             );
 
             var rightPartNames = List.of(
-                    EntityModelPartNames.RIGHT_ARM,
-                    EntityModelPartNames.RIGHT_LEG,
-                    EntityModelPartNames.RIGHT_FRONT_LEG,
-                    EntityModelPartNames.RIGHT_HIND_LEG,
-                    EntityModelPartNames.RIGHT_FOOT,
-                    EntityModelPartNames.RIGHT_FRONT_FOOT,
-                    EntityModelPartNames.RIGHT_HIND_FOOT,
+                    PartNames.RIGHT_ARM,
+                    PartNames.RIGHT_LEG,
+                    PartNames.RIGHT_FRONT_LEG,
+                    PartNames.RIGHT_HIND_LEG,
+                    PartNames.RIGHT_FOOT,
+                    PartNames.RIGHT_FRONT_FOOT,
+                    PartNames.RIGHT_HIND_FOOT,
                     "part9"
             );
 
-            if (sourceModel instanceof BipedEntityModel<?> bipedEntityModel)
+            if (sourceModel instanceof HumanoidModel<?> bipedEntityModel)
             {
                 leftPart = bipedEntityModel.leftArm;
                 rightPart = bipedEntityModel.rightArm;
@@ -269,7 +273,7 @@ public class PlayerRenderHelper extends MorphClientObject
     private ModelPart tryGetChild(ModelPart modelPart, String childName)
     {
         //From SinglePartEntityModel#getChild(String name)
-        return modelPart.traverse().filter(part -> part.hasChild(childName)).findFirst().map(part -> part.getChild(childName)).orElse(null);
+        return modelPart.getAllParts().filter(part -> part.hasChild(childName)).findFirst().map(part -> part.getChild(childName)).orElse(null);
     }
 
     private ModelPart tryGetChild(ModelPart modelPart, List<String> childNames)
@@ -286,13 +290,13 @@ public class PlayerRenderHelper extends MorphClientObject
         return part;
     }
 
-    private final RenderLayer dragonLayer = RenderLayer.getEntityCutoutNoCull(Identifier.of("textures/entity/enderdragon/dragon.png"));
+    private final RenderType dragonLayer = RenderType.entityCutoutNoCull(ResourceLocation.parse("textures/entity/enderdragon/dragon.png"));
 
     /**
      * @return Whether rendered disguise instance
      */
     @SuppressWarnings("rawtypes")
-    public boolean onArmDrawCall(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light)
+    public boolean onArmDrawCall(PoseStack matrices, MultiBufferSource vertexConsumers, int light)
     {
         //logger.info("On Arms!");
         if (!allowRender) return false;
@@ -306,14 +310,14 @@ public class PlayerRenderHelper extends MorphClientObject
 
             if (disguiseEntity == null) return false;
 
-            EntityRenderer<?, ?> disguiseRenderer = MinecraftClient.getInstance().getEntityRenderDispatcher().getRenderer(disguiseEntity);
+            EntityRenderer<?, ?> disguiseRenderer = Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(disguiseEntity);
 
             ModelPart targetArm;
             ModelInfo modelInfo;
-            RenderLayer layer = null;
+            RenderType layer = null;
             EntityModel model = null;
 
-            if (disguiseRenderer instanceof EnderDragonEntityRenderer enderDragonEntityRenderer)
+            if (disguiseRenderer instanceof EnderDragonRenderer enderDragonEntityRenderer)
             {
                 model = ((DragonEntityRendererAccessor) enderDragonEntityRenderer).getModel();
                 layer = dragonLayer;
@@ -325,46 +329,46 @@ public class PlayerRenderHelper extends MorphClientObject
 
                 if (disguiseEntity instanceof MorphLocalPlayer localPlayer)
                 {
-                    var renderer = (PlayerEntityRenderer) livingEntityRenderer;
+                    var renderer = (PlayerRenderer) livingEntityRenderer;
 
                     if (renderingLeftPart)
-                        renderer.renderLeftArm(matrices, vertexConsumers, light, localPlayer.getSkinTextures().texture(), true);
+                        renderer.renderLeftHand(matrices, vertexConsumers, light, localPlayer.getSkin().texture(), true);
                     else
-                        renderer.renderRightArm(matrices, vertexConsumers, light, localPlayer.getSkinTextures().texture(), true);
+                        renderer.renderRightHand(matrices, vertexConsumers, light, localPlayer.getSkin().texture(), true);
 
                     return true;
                 }
 
                 var renderState = (LivingEntityRenderState) livingEntityRenderer.createRenderState();
-                livingEntityRenderer.updateRenderState(disguiseEntity, renderState, 0);
-                layer = ((LivingRendererAccessor) livingEntityRenderer).callGetRenderLayer(renderState, true, false, true);
+                livingEntityRenderer.extractRenderState(disguiseEntity, renderState, 0);
+                layer = ((LivingRendererAccessor) livingEntityRenderer).callGetRenderType(renderState, true, false, true);
             }
 
             if (model != null)
-                model.resetTransforms();
+                model.resetPose();
 
             modelInfo = tryGetModel(disguiseEntity.getType(), model);
             targetArm = modelInfo.getPart(renderingLeftPart);
 
             if (targetArm != null)
             {
-                layer = layer == null ? RenderLayer.getSolid() : layer;
+                layer = layer == null ? RenderType.solid() : layer;
 
                 targetArm.visible = true;
                 //targetArm.resetTransform();
 
                 var scale = modelInfo.scale;
-                matrices.scale((float)scale.getX(), (float)scale.getY(), (float)scale.getZ());
+                matrices.scale((float)scale.x(), (float)scale.y(), (float)scale.z());
 
                 var offset = modelInfo.offset;
-                matrices.translate(offset.getX(), offset.getY(), offset.getZ());
+                matrices.translate(offset.x(), offset.y(), offset.z());
 
                 light = (disguiseEntity.getType() == EntityType.ALLAY || disguiseEntity.getType() == EntityType.VEX)
-                        ? LightmapTextureManager.MAX_LIGHT_COORDINATE
+                        ? LightTexture.FULL_BRIGHT
                         : light;
 
-                targetArm.pitch = 0;
-                targetArm.render(matrices, vertexConsumers.getBuffer(layer), light, OverlayTexture.DEFAULT_UV);
+                targetArm.xRot = 0;
+                targetArm.render(matrices, vertexConsumers.getBuffer(layer), light, OverlayTexture.NO_OVERLAY);
 
                 return true;
             }

@@ -1,13 +1,13 @@
 package xyz.nifeather.morph.server.commands.impl;
 
 import com.mojang.brigadier.CommandDispatcher;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
 import xyz.nifeather.morph.server.commands.BrigadierCommand;
 import xyz.nifeather.morph.server.commands.IBrigadierCommand;
 import xyz.nifeather.morph.server.commands.impl.plugin.ManagementCommand;
 
 import java.util.List;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 
 public class PluginMainCommand extends BrigadierCommand
 {
@@ -21,9 +21,9 @@ public class PluginMainCommand extends BrigadierCommand
     private final List<IBrigadierCommand> subCommands;
 
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher)
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        var cmd = CommandManager.literal("feathermorph");
+        var cmd = Commands.literal("feathermorph");
         subCommands.forEach(ibc -> ibc.registerAsChild(cmd));
 
         dispatcher.register(cmd);

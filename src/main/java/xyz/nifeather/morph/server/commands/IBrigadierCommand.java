@@ -2,15 +2,15 @@ package xyz.nifeather.morph.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.ArgumentBuilder;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 
 public interface IBrigadierCommand
 {
-    default void register(CommandDispatcher<ServerCommandSource> dispatcher)
+    default void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
     }
 
-    default void registerAsChild(ArgumentBuilder<ServerCommandSource, ?> parentBuilder)
+    default void registerAsChild(ArgumentBuilder<CommandSourceStack, ?> parentBuilder)
     {
     }
 }

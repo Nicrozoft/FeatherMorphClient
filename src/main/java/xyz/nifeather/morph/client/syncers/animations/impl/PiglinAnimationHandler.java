@@ -1,8 +1,8 @@
 package xyz.nifeather.morph.client.syncers.animations.impl;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.mob.PiglinEntity;
 import xyz.nifeather.morph.shared.AnimationNames;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.monster.piglin.Piglin;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 
 public class PiglinAnimationHandler extends AnimationHandler
@@ -10,7 +10,7 @@ public class PiglinAnimationHandler extends AnimationHandler
     @Override
     public void play(Entity entity, String animationId)
     {
-        if (!(entity instanceof PiglinEntity piglin))
+        if (!(entity instanceof Piglin piglin))
             throw new IllegalArgumentException("Entity not a Piglin!");
 
         switch (animationId)

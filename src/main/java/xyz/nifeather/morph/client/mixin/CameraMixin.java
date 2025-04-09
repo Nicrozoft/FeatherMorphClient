@@ -1,11 +1,12 @@
 package xyz.nifeather.morph.client.mixin;
 
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.render.Camera;
-import net.minecraft.entity.Entity;
-import net.minecraft.world.BlockView;
+import net.minecraft.client.Camera;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.BlockGetter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -15,51 +16,51 @@ import xyz.nifeather.morph.client.graphics.CameraHelper;
 @Mixin(Camera.class)
 public abstract class CameraMixin
 {
-    @Shadow private Entity focusedEntity;
-    @Shadow private float cameraY;
-    @Shadow private BlockView area;
-    @Shadow private float lastCameraY;
+    @Shadow private Entity entity;
+    @Shadow private float eyeHeight;
+    @Shadow private BlockGetter level;
+    @Shadow private float eyeHeightOld;
 
-    private Camera featherMorph$cameraInstance;
+    @Unique
     private boolean featherMorph$sodiumExtraInstalled;
 
+    @Unique
     private final CameraHelper featherMorph$cameraHelper = new CameraHelper();
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(CallbackInfo ci)
     {
-        featherMorph$cameraInstance = (Camera)(Object)this;
-
         featherMorph$sodiumExtraInstalled = FabricLoader.getInstance().isModLoaded("sodium-extra");
     }
 
+    @Unique
     private boolean featherMorph$isInstantSneak;
 
-    @Inject(method = "update", at = @At("HEAD"))
-    private void onUpdate(BlockView area, Entity focusedEntity, boolean thirdPerson, boolean inverseView, float tickDelta, CallbackInfo ci)
+    @Inject(method = "setup", at = @At("HEAD"))
+    private void onUpdate(BlockGetter blockGetter, Entity entity, boolean thirdPerson, boolean inverseView, float tickDelta, CallbackInfo ci)
     {
         CameraHelper.isThirdPerson.set(thirdPerson);
     }
 
-    @Redirect(method = "updateEyeHeight",
+    @Redirect(method = "tick",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/entity/Entity;getStandingEyeHeight()F"))
+                    target = "Lnet/minecraft/world/entity/Entity;getEyeHeight()F"))
     private float featherMorph$onEntityEyeHeightCall(Entity instance)
     {
         //Workaround for SodiumExtra's InstantSneak
         //https://github.com/FlashyReese/sodium-extra-fabric/blob/1.19.x/dev/src/main/java/me/flashyreese/mods/sodiumextra/mixin/instant_sneak/MixinCamera.java
-        featherMorph$isInstantSneak = featherMorph$sodiumExtraInstalled && this.cameraY == instance.getStandingEyeHeight();
+        featherMorph$isInstantSneak = featherMorph$sodiumExtraInstalled && this.eyeHeight == instance.getEyeHeight();
 
         if (featherMorph$isInstantSneak)
-            return instance.getStandingEyeHeight();
+            return instance.getEyeHeight();
         else
-            return featherMorph$cameraHelper.onEyeHeightCall(instance, area);
+            return featherMorph$cameraHelper.onEyeHeightCall(instance, level);
     }
 
-    @Inject(method = "updateEyeHeight",at = @At("RETURN"))
+    @Inject(method = "tick",at = @At("RETURN"))
     private void featherMorph$endUpdateEyeHeight(CallbackInfo ci)
     {
         if (featherMorph$isInstantSneak)
-            this.lastCameraY = this.cameraY = featherMorph$cameraHelper.onEyeHeightCall(this.focusedEntity, area);
+            this.eyeHeightOld = this.eyeHeight = featherMorph$cameraHelper.onEyeHeightCall(this.entity, level);
     }
 }

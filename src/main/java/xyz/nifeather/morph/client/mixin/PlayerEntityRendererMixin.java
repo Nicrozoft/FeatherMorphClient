@@ -1,8 +1,8 @@
 package xyz.nifeather.morph.client.mixin;
 
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.render.entity.PlayerEntityRenderer;
-import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -10,19 +10,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.nifeather.morph.client.entities.MorphLocalPlayer;
 import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
 
-@Mixin(PlayerEntityRenderer.class)
+@Mixin(PlayerRenderer.class)
 public class PlayerEntityRendererMixin
 {
     @Inject(
-            method = "updateRenderState(Lnet/minecraft/client/network/AbstractClientPlayerEntity;Lnet/minecraft/client/render/entity/state/PlayerEntityRenderState;F)V",
+            method = "extractRenderState(Lnet/minecraft/client/player/AbstractClientPlayer;Lnet/minecraft/client/renderer/entity/state/PlayerRenderState;F)V",
             at = @At("RETURN")
     )
-    public void onUpdateRenderState(AbstractClientPlayerEntity abstractClientPlayerEntity, PlayerEntityRenderState playerEntityRenderState, float f, CallbackInfo ci)
+    public void onUpdateRenderState(AbstractClientPlayer abstractClientPlayerEntity, PlayerRenderState playerEntityRenderState, float f, CallbackInfo ci)
     {
         if (abstractClientPlayerEntity instanceof MorphLocalPlayer localPlayer
-                && !localPlayer.shouldRenderName())
+                && !localPlayer.shouldShowName())
         {
-            playerEntityRenderState.displayName = null;
+            playerEntityRenderState.nameTag = null;
         }
     }
 }

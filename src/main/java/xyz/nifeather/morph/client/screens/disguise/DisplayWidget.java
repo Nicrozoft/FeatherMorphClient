@@ -1,19 +1,19 @@
 package xyz.nifeather.morph.client.screens.disguise;
 
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.screen.narration.NarrationPart;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.util.math.Vector2f;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.model.geom.builders.UVPair;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -29,7 +29,7 @@ import xyz.nifeather.morph.client.graphics.EntityDisplay;
 import xyz.nifeather.morph.client.graphics.container.Container;
 import xyz.nifeather.morph.client.graphics.transforms.easings.Easing;
 
-public class DisplayWidget extends MorphClientObject implements Selectable, Drawable, Element
+public class DisplayWidget extends MorphClientObject implements NarratableEntry, Renderable, GuiEventListener
 {
     private final String identifier;
     private String entityName;
@@ -40,7 +40,7 @@ public class DisplayWidget extends MorphClientObject implements Selectable, Draw
         return this.entityName;
     }
 
-    private Text display;
+    private Component display;
 
     int screenSpaceY = 0;
     int screenSpaceX = 0;
@@ -87,10 +87,10 @@ public class DisplayWidget extends MorphClientObject implements Selectable, Draw
     private Bindable<String> currentIdentifier = new Bindable<>();
     private Bindable<String> selectedIdentifier = new Bindable<>();
 
-    public static final Identifier buttonTextureSelected = Identifier.of("morphclient", "disguise_selection/disguise_select_selected");
-    public static final Identifier buttonTextureCurrent = Identifier.of("morphclient", "disguise_selection/disguise_select_current");
-    public static final Identifier buttonTextureWaiting = Identifier.of("morphclient", "disguise_selection/disguise_select_waiting");
-    public static final Identifier buttonTextureOverlay = Identifier.of("morphclient", "disguise_selection/disguise_select_overlay_hover");
+    public static final ResourceLocation buttonTextureSelected = ResourceLocation.fromNamespaceAndPath("morphclient", "disguise_selection/disguise_select_selected");
+    public static final ResourceLocation buttonTextureCurrent = ResourceLocation.fromNamespaceAndPath("morphclient", "disguise_selection/disguise_select_current");
+    public static final ResourceLocation buttonTextureWaiting = ResourceLocation.fromNamespaceAndPath("morphclient", "disguise_selection/disguise_select_waiting");
+    public static final ResourceLocation buttonTextureOverlay = ResourceLocation.fromNamespaceAndPath("morphclient", "disguise_selection/disguise_select_overlay_hover");
 
     private final DrawableSprite spriteSelected;
     private final DrawableSprite spriteCurrent;
@@ -121,8 +121,8 @@ public class DisplayWidget extends MorphClientObject implements Selectable, Draw
         };
 
         // Container Setup
-        displayContainer.setSize(new Vector2f(48, 18));
-        entityDisplay.setSize(new Vector2f(18, 18));
+        displayContainer.setSize(new UVPair(48, 18));
+        entityDisplay.setSize(new UVPair(18, 18));
 
         displayContainer.add(entityDisplay);
         backgroundContainer.add(spriteSelected = new DrawableSprite(buttonTextureSelected));
@@ -195,7 +195,7 @@ public class DisplayWidget extends MorphClientObject implements Selectable, Draw
 
     private void updateBackgroundSize(boolean makeHidden)
     {
-        var backgroundSize = new Vector2f(this.width, this.height);
+        var backgroundSize = new UVPair(this.width, this.height);
         backgroundContainer.setSize(backgroundSize);
 
         backgroundContainer.children().forEach(d ->
@@ -207,18 +207,18 @@ public class DisplayWidget extends MorphClientObject implements Selectable, Draw
         });
     }
 
-    private void trimDisplay(Text text)
+    private void trimDisplay(Component text)
     {
         this.display = text;
 
         this.addSchedule(() ->
         {
             var targetMultiplier = entityDisplay.getDisplayingEntity() == null ? 0.85 : 0.7;
-            var toDisplay = textRenderer.trimToWidth(text, (int)Math.round(this.width * targetMultiplier));
+            var toDisplay = textRenderer.substrByWidth(text, (int)Math.round(this.width * targetMultiplier));
             var trimmed = !toDisplay.getString().equals(text.getString());
 
             if (trimmed)
-                this.display = Text.literal(toDisplay.getString() + "...");
+                this.display = Component.literal(toDisplay.getString() + "...");
         });
     }
 
@@ -226,10 +226,10 @@ public class DisplayWidget extends MorphClientObject implements Selectable, Draw
     private final Container displayContainer = new Container();
     private final Container backgroundContainer = new Container();
 
-    private final static TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+    private final static Font textRenderer = Minecraft.getInstance().font;
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta)
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta)
     {
         var lastHovered = this.hovered;
         this.hovered = mouseX < this.screenSpaceX + width && mouseX > this.screenSpaceX
@@ -243,11 +243,11 @@ public class DisplayWidget extends MorphClientObject implements Selectable, Draw
                 spriteHover.fadeOut(300, Easing.OutExpo);
         }
 
-        var matrices = context.getMatrices();
+        var matrices = context.pose();
 
         try
         {
-            matrices.push();
+            matrices.pushPose();
 
             if (this.hovered)
                 matrices.translate(0, 0, 64);
@@ -290,10 +290,10 @@ public class DisplayWidget extends MorphClientObject implements Selectable, Draw
         }
         finally
         {
-            context.drawTextWithShadow(textRenderer, display,
-                    screenSpaceX + 10, (screenSpaceY + Math.round((height - textRenderer.fontHeight) / 2f)), 0xffffffff);
+            context.drawString(textRenderer, display,
+                    screenSpaceX + 10, (screenSpaceY + Math.round((height - textRenderer.lineHeight) / 2f)), 0xffffffff);
 
-            matrices.pop();
+            matrices.popPose();
         }
     }
 
@@ -306,9 +306,9 @@ public class DisplayWidget extends MorphClientObject implements Selectable, Draw
     }
 
     @Override
-    public Selectable.SelectionType getType()
+    public NarratableEntry.NarrationPriority narrationPriority()
     {
-        return (activationState.get() == ActivationState.CURRENT ? Selectable.SelectionType.FOCUSED : Selectable.SelectionType.NONE);
+        return (activationState.get() == ActivationState.CURRENT ? NarratableEntry.NarrationPriority.FOCUSED : NarratableEntry.NarrationPriority.NONE);
     }
 
     @NotNull
@@ -316,7 +316,7 @@ public class DisplayWidget extends MorphClientObject implements Selectable, Draw
 
     private void playClickSound()
     {
-        MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
     }
 
     @Override
@@ -370,7 +370,7 @@ public class DisplayWidget extends MorphClientObject implements Selectable, Draw
             }
         }
 
-        return Element.super.mouseClicked(mouseX, mouseY, button);
+        return GuiEventListener.super.mouseClicked(mouseX, mouseY, button);
     }
 
     private boolean isHovered()
@@ -392,9 +392,9 @@ public class DisplayWidget extends MorphClientObject implements Selectable, Draw
     }
 
     @Override
-    public void appendNarrations(NarrationMessageBuilder builder)
+    public void updateNarration(NarrationElementOutput builder)
     {
-        builder.nextMessage().put(NarrationPart.HINT, Text.literal("Disguise of").append(this.display));
+        builder.nest().add(NarratedElementType.HINT, Component.literal("Disguise of").append(this.display));
     }
 
     private enum ActivationState

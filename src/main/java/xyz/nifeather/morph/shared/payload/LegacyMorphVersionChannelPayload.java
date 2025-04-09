@@ -2,21 +2,21 @@ package xyz.nifeather.morph.shared.payload;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import xyz.nifeather.morph.shared.SharedValues;
 
 import java.nio.charset.StandardCharsets;
 
 @Environment(EnvType.CLIENT)
-public record LegacyMorphVersionChannelPayload(int protocolVersion) implements CustomPayload
+public record LegacyMorphVersionChannelPayload(int protocolVersion) implements CustomPacketPayload
 {
     // Client --String-> Server
     // Bukkit Server --Integer-> Client
     // Fabric Server --String-> Client
     // :(
-    public static final PacketCodec<PacketByteBuf, LegacyMorphVersionChannelPayload> CODEC  = PacketCodec.of(
+    public static final StreamCodec<FriendlyByteBuf, LegacyMorphVersionChannelPayload> CODEC  = StreamCodec.ofMember(
             (value, buf) -> BufferUtils.writeVersionBufAuto(value.protocolVersion, buf), //Client -> Server
             buf -> new LegacyMorphVersionChannelPayload(BufferUtils.readVersionBuf(buf)) // Server -> Client
     );
@@ -40,7 +40,7 @@ public record LegacyMorphVersionChannelPayload(int protocolVersion) implements C
         return 1;
     }
 
-    public static int parseBuf(PacketByteBuf buf)
+    public static int parseBuf(FriendlyByteBuf buf)
     {
         //System.out.println("Buf is '" + buf.toString(StandardCharsets.UTF_8) + "' :: with hashCode" + buf.hashCode());
         int read = -1;
@@ -73,10 +73,10 @@ public record LegacyMorphVersionChannelPayload(int protocolVersion) implements C
         return read;
     }
 
-    public static final Id<LegacyMorphVersionChannelPayload> id = new Id<>(SharedValues.versionChannelIdentifierLegacy);
+    public static final Type<LegacyMorphVersionChannelPayload> id = new Type<>(SharedValues.versionChannelIdentifierLegacy);
 
     @Override
-    public Id<? extends CustomPayload> getId()
+    public Type<? extends CustomPacketPayload> type()
     {
         return id;
     }

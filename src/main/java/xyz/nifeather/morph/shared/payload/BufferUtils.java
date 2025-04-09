@@ -1,11 +1,11 @@
 package xyz.nifeather.morph.shared.payload;
 
-import net.minecraft.network.PacketByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.nifeather.morph.shared.SharedValues;
 
 import java.nio.charset.StandardCharsets;
+import net.minecraft.network.FriendlyByteBuf;
 
 public class BufferUtils
 {
@@ -14,7 +14,7 @@ public class BufferUtils
     //region Write
 
     // int
-    public static void writeVersionBufAuto(int content, PacketByteBuf buf)
+    public static void writeVersionBufAuto(int content, FriendlyByteBuf buf)
     {
         if (SharedValues.client_UseNewPacketSerializeMethod)
             writeIntBuf(content, buf);
@@ -22,12 +22,12 @@ public class BufferUtils
             writeVersionBufLegacy(content, buf);
     }
 
-    public static void writeIntBuf(int content, PacketByteBuf buf)
+    public static void writeIntBuf(int content, FriendlyByteBuf buf)
     {
         buf.writeInt(content);
     }
 
-    public static void writeVersionBufLegacy(int content, PacketByteBuf buf)
+    public static void writeVersionBufLegacy(int content, FriendlyByteBuf buf)
     {
         var str = "" + content;
         var bytes = str.getBytes(StandardCharsets.UTF_8);
@@ -36,7 +36,7 @@ public class BufferUtils
     }
 
     // string
-    public static void writeCommandBuf(String content, PacketByteBuf buf)
+    public static void writeCommandBuf(String content, FriendlyByteBuf buf)
     {
         if (SharedValues.client_UseNewPacketSerializeMethod)
             writeBuf(content, buf);
@@ -44,17 +44,17 @@ public class BufferUtils
             writeBufLegacy(content, buf);
     }
 
-    public static void writeInitBuf(String content, PacketByteBuf buf)
+    public static void writeInitBuf(String content, FriendlyByteBuf buf)
     {
         writeBuf(content, buf);
     }
 
-    public static void writeBuf(String content, PacketByteBuf buf)
+    public static void writeBuf(String content, FriendlyByteBuf buf)
     {
-        buf.writeString(content);
+        buf.writeUtf(content);
     }
 
-    public static void writeBufLegacy(String content, PacketByteBuf buf)
+    public static void writeBufLegacy(String content, FriendlyByteBuf buf)
     {
         buf.writeBytes(content.getBytes(StandardCharsets.UTF_8));
     }
@@ -64,7 +64,7 @@ public class BufferUtils
     //region Read
 
     // int
-    public static int readVersionBuf(PacketByteBuf buf)
+    public static int readVersionBuf(FriendlyByteBuf buf)
     {
         try
         {
@@ -79,7 +79,7 @@ public class BufferUtils
 
     // string
 
-    public static String readInitBuf(PacketByteBuf buf)
+    public static String readInitBuf(FriendlyByteBuf buf)
     {
         try
         {
@@ -92,7 +92,7 @@ public class BufferUtils
         }
     }
 
-    public static String readCommandBuf(PacketByteBuf buf)
+    public static String readCommandBuf(FriendlyByteBuf buf)
     {
         if (SharedValues.client_UseNewPacketSerializeMethod)
             return readBuf(buf);
@@ -100,12 +100,12 @@ public class BufferUtils
             return readBufLegacy(buf);
     }
 
-    public static String readBuf(PacketByteBuf buf)
+    public static String readBuf(FriendlyByteBuf buf)
     {
-        return buf.readString();
+        return buf.readUtf();
     }
 
-    public static String readBufLegacy(PacketByteBuf buf)
+    public static String readBufLegacy(FriendlyByteBuf buf)
     {
         var directBuffer = buf.readBytes(buf.readableBytes());
         var dst = new byte[directBuffer.capacity()];

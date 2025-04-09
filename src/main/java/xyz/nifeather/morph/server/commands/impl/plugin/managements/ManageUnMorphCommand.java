@@ -3,10 +3,10 @@ package xyz.nifeather.morph.server.commands.impl.plugin.managements;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.network.chat.Component;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xyz.nifeather.morph.server.commands.BrigadierCommand;
 import xyz.nifeather.morph.server.morphs.FabricMorphManager;
@@ -14,12 +14,12 @@ import xyz.nifeather.morph.server.morphs.FabricMorphManager;
 public class ManageUnMorphCommand extends BrigadierCommand
 {
     @Override
-    public void registerAsChild(ArgumentBuilder<ServerCommandSource, ?> parentBuilder)
+    public void registerAsChild(ArgumentBuilder<CommandSourceStack, ?> parentBuilder)
     {
         parentBuilder.then(
-                CommandManager.literal("unmorph")
+                Commands.literal("unmorph")
                         .then(
-                                CommandManager.argument("who", EntityArgumentType.player())
+                                Commands.argument("who", EntityArgument.player())
                                         .executes(this::onUnMorphDisguiseCommand)
                         )
         );
@@ -28,15 +28,15 @@ public class ManageUnMorphCommand extends BrigadierCommand
     @Resolved(shouldSolveImmediately = true)
     private FabricMorphManager morphManager;
 
-    private int onUnMorphDisguiseCommand(CommandContext<ServerCommandSource> context) throws CommandSyntaxException
+    private int onUnMorphDisguiseCommand(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
     {
         var sender = context.getSource();
 
-        var who = EntityArgumentType.getPlayer(context, "who");
+        var who = EntityArgument.getPlayer(context, "who");
 
         morphManager.unMorph(who);
 
-        sender.sendMessage(Text.translatableWithFallback("morph.command.manage.unmorph.success", "Undisguised %s successfully", who.getNameForScoreboard()));
+        sender.sendSystemMessage(Component.translatableWithFallback("morph.command.manage.unmorph.success", "Undisguised %s successfully", who.getScoreboardName()));
 
         return 1;
     }

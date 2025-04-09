@@ -6,11 +6,6 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.command.ServerCommandSource;
 import xiamomc.pluginbase.Managers.DependencyManager;
 import xyz.nifeather.morph.client.FeatherMorphClient;
 import xyz.nifeather.morph.server.FeatherMorphFabricMain;
@@ -19,12 +14,15 @@ import xyz.nifeather.morph.server.morphs.FabricMorphManager;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.world.entity.player.Player;
 
 public class DisguiseIdentifierSuggestions
 {
     // Only available in fabric
     // For plugin platform we need to use `allAvailable` instead.
-    public static CompletableFuture<Suggestions> forInputPlayer(final CommandContext<ServerCommandSource> context,
+    public static CompletableFuture<Suggestions> forInputPlayer(final CommandContext<CommandSourceStack> context,
                                                                     final SuggestionsBuilder builder,
                                                                     String playerArgumentName) throws CommandSyntaxException
     {
@@ -36,7 +34,7 @@ public class DisguiseIdentifierSuggestions
         if (morphManager == null)
             return builder.buildFuture();
 
-        var player = EntityArgumentType.getPlayer(context, playerArgumentName);
+        var player = EntityArgument.getPlayer(context, playerArgumentName);
 
         var availableDisguises = morphManager.getUnlockedDisguiseIds(player);
 
@@ -68,9 +66,9 @@ public class DisguiseIdentifierSuggestions
 
         var source = context.getSource();
 
-        PlayerEntity player = null;
+        Player player = null;
 
-        if (source instanceof ServerCommandSource serverCommandSource)
+        if (source instanceof CommandSourceStack serverCommandSource)
             player = serverCommandSource.getPlayer();
 
         if (player == null)

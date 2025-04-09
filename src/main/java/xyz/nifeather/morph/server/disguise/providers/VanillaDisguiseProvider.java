@@ -2,21 +2,21 @@ package xyz.nifeather.morph.server.disguise.providers;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectImmutableList;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.Registries;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.server.MorphServerLoader;
 import xyz.nifeather.morph.server.morphs.FabricDisguiseSession;
 import xyz.nifeather.morph.server.disguise.animations.provider.VanillaAnimationProvider;
 
 import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 
 public class VanillaDisguiseProvider extends AbstractDisguiseProvider
 {
@@ -31,7 +31,7 @@ public class VanillaDisguiseProvider extends AbstractDisguiseProvider
     @Override
     public boolean isValid(String identifier)
     {
-        var asIdentifier = Identifier.tryParse(identifier);
+        var asIdentifier = ResourceLocation.tryParse(identifier);
         if (asIdentifier == null)
             return false;
 
@@ -43,7 +43,7 @@ public class VanillaDisguiseProvider extends AbstractDisguiseProvider
         var server = MorphServerLoader.mcserver;
         assert server != null;
 
-        var entityTypes = server.getRegistryManager().getOptional(Registries.ENTITY_TYPE.getKey());
+        var entityTypes = server.registryAccess().lookup(BuiltInRegistries.ENTITY_TYPE.key());
 
         logger.info("Loading vanilla disguise identifiers...");
 
@@ -52,7 +52,7 @@ public class VanillaDisguiseProvider extends AbstractDisguiseProvider
         var list = new ObjectArrayList<String>();
         entityTypes.orElseThrow().forEach(eT ->
         {
-            var entity = eT.spawn(server.getOverworld(), spawnPos, SpawnReason.COMMAND);
+            var entity = eT.spawn(server.overworld(), spawnPos, EntitySpawnReason.COMMAND);
 
             //logger.info("Filter " + eT + " --> " + entity);
 
@@ -66,7 +66,7 @@ public class VanillaDisguiseProvider extends AbstractDisguiseProvider
 
             entity.discard();
 
-            list.add(EntityType.getId(eT).getPath());
+            list.add(EntityType.getKey(eT).getPath());
         });
 
         availableIdentifiers = new ObjectImmutableList<>(list);
@@ -81,7 +81,7 @@ public class VanillaDisguiseProvider extends AbstractDisguiseProvider
     }
 
     @Override
-    public boolean disguise(PlayerEntity player, String disguiseIdentifier)
+    public boolean disguise(Player player, String disguiseIdentifier)
     {
         return false;
     }
@@ -92,13 +92,13 @@ public class VanillaDisguiseProvider extends AbstractDisguiseProvider
     }
 
     @Override
-    public boolean unDisguise(PlayerEntity player)
+    public boolean unDisguise(Player player)
     {
         return true;
     }
 
     @Override
-    public boolean updateDisguise(PlayerEntity player, FabricDisguiseSession disguiseSession)
+    public boolean updateDisguise(Player player, FabricDisguiseSession disguiseSession)
     {
         return true;
     }
@@ -109,13 +109,13 @@ public class VanillaDisguiseProvider extends AbstractDisguiseProvider
     }
 
     @Override
-    public Text getDisplayName(String disguiseIdentifier)
+    public Component getDisplayName(String disguiseIdentifier)
     {
-        var entityType = EntityType.get(disguiseIdentifier).orElse(null);
+        var entityType = EntityType.byString(disguiseIdentifier).orElse(null);
         if (entityType == null)
-            return Text.of("???(%s)".formatted(disguiseIdentifier));
+            return Component.nullToEmpty("???(%s)".formatted(disguiseIdentifier));
 
-        return Text.translatable(entityType.getTranslationKey());
+        return Component.translatable(entityType.getDescriptionId());
     }
 
     private final VanillaAnimationProvider animationProvider = new VanillaAnimationProvider();

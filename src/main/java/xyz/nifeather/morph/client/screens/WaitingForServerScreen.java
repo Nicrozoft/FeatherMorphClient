@@ -1,9 +1,9 @@
 package xyz.nifeather.morph.client.screens;
 
 import me.shedaniel.math.Color;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.FeatherMorphClient;
@@ -20,21 +20,21 @@ public class WaitingForServerScreen extends FeatherScreen
 
     public WaitingForServerScreen(@NotNull FeatherScreen next)
     {
-        this(Text.empty(), next);
+        this(Component.empty(), next);
     }
 
-    protected WaitingForServerScreen(Text title, @NotNull FeatherScreen next)
+    protected WaitingForServerScreen(Component title, @NotNull FeatherScreen next)
     {
         super(title);
 
         this.nextScreen = next;
-        closeButton = this.buildButtonWidget(0, 0, 150, 20, Text.translatable("gui.back"), (button) ->
+        closeButton = this.buildButtonWidget(0, 0, 150, 20, Component.translatable("gui.back"), (button) ->
         {
-            this.close();
+            this.onClose();
         });
     }
 
-    private final DrawableText notReadyText = new DrawableText(Text.translatable("gui.morphclient.waiting_for_server"));
+    private final DrawableText notReadyText = new DrawableText(Component.translatable("gui.morphclient.waiting_for_server"));
     private final MButtonWidget closeButton;
 
     private final Bindable<Float> backgroundDim = new Bindable<>(0f);
@@ -106,7 +106,7 @@ public class WaitingForServerScreen extends FeatherScreen
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta)
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta)
     {
         var color = Color.ofRGBA(0, 0, 0, backgroundDim.get());
         context.fillGradient(0, 0, this.width, this.height, color.getColor(), color.getColor());
@@ -121,17 +121,17 @@ public class WaitingForServerScreen extends FeatherScreen
     }
 
     @Override
-    public void renderInGameBackground(DrawContext context)
+    public void renderTransparentBackground(GuiGraphics context)
     {
     }
 
     @Override
-    protected void renderDarkening(DrawContext context)
+    protected void renderMenuBackground(GuiGraphics context)
     {
     }
 
     @Override
-    protected void renderDarkening(DrawContext context, int x, int y, int width, int height)
+    protected void renderMenuBackground(GuiGraphics context, int x, int y, int width, int height)
     {
     }
 }

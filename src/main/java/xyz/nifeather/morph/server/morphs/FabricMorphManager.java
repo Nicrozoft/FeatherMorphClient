@@ -2,15 +2,6 @@ package xyz.nifeather.morph.server.morphs;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.GameMode;
 import org.jetbrains.annotations.Nullable;
 import xiamomc.morph.network.commands.S2C.S2CAnimationCommand;
 import xiamomc.morph.network.commands.S2C.S2CCurrentCommand;
@@ -35,6 +26,15 @@ import xyz.nifeather.morph.shared.exceptions.AlreadyRegisteredException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.GameType;
 
 public class FabricMorphManager extends ServerPluginObject
 {
@@ -49,15 +49,15 @@ public class FabricMorphManager extends ServerPluginObject
         this.addSchedule(this::update);
     }
 
-    private final Map<ServerPlayerEntity, FabricDisguiseSession> disguiseSessionMap = new ConcurrentHashMap<>();
+    private final Map<ServerPlayer, FabricDisguiseSession> disguiseSessionMap = new ConcurrentHashMap<>();
 
-    public boolean playerDisguised(ServerPlayerEntity player)
+    public boolean playerDisguised(ServerPlayer player)
     {
         return disguiseSessionMap.containsKey(player);
     }
 
     @Nullable
-    public FabricDisguiseSession getSessionFor(ServerPlayerEntity player)
+    public FabricDisguiseSession getSessionFor(ServerPlayer player)
     {
         return disguiseSessionMap.getOrDefault(player, null);
     }
@@ -127,14 +127,14 @@ public class FabricMorphManager extends ServerPluginObject
 
     private final PlayerDataStoreNew dataStore = new PlayerDataStoreNew();
 
-    public List<String> getUnlockedDisguiseIds(PlayerEntity player)
+    public List<String> getUnlockedDisguiseIds(Player player)
     {
-        var meta = dataStore.getPlayerMeta(player.getUuid());
+        var meta = dataStore.getPlayerMeta(player.getUUID());
 
         return meta.getUnlockedDisguiseIdentifiers();
     }
 
-    public boolean grantDisguiseToPlayer(ServerPlayerEntity player, String disguiseIdentifier)
+    public boolean grantDisguiseToPlayer(ServerPlayer player, String disguiseIdentifier)
     {
         var success = dataStore.grantMorphToPlayer(player, disguiseIdentifier);
 
@@ -146,8 +146,8 @@ public class FabricMorphManager extends ServerPluginObject
 
         var meta = this.getDisguiseMetaFrom(disguiseIdentifier);
 
-        var message = Text.translatableWithFallback("morph.disguise_unlocked", "Unlocked disguise of %s!", meta.asComponent());
-        player.sendMessage(message);
+        var message = Component.translatableWithFallback("morph.disguise_unlocked", "Unlocked disguise of %s!", meta.asComponent());
+        player.sendSystemMessage(message);
 
 /*
         var config = dataStore.getPlayerMeta(player.getUuid());
@@ -168,7 +168,7 @@ public class FabricMorphManager extends ServerPluginObject
         return success;
     }
 
-    public boolean revokeDisguiseFromPlayer(ServerPlayerEntity player, String disguiseIdentifier)
+    public boolean revokeDisguiseFromPlayer(ServerPlayer player, String disguiseIdentifier)
     {
         var success = dataStore.revokeMorphFromPlayer(player, disguiseIdentifier);
 
@@ -179,8 +179,8 @@ public class FabricMorphManager extends ServerPluginObject
 
             var meta = this.getDisguiseMetaFrom(disguiseIdentifier);
 
-            var message = Text.translatableWithFallback("morph.disguise_lost", "Lost disguise of %s!", meta.asComponent());
-            player.sendMessage(message);
+            var message = Component.translatableWithFallback("morph.disguise_lost", "Lost disguise of %s!", meta.asComponent());
+            player.sendSystemMessage(message);
 
             var disguiseState = this.getSessionFor(player);
             if (disguiseState != null && disguiseState.disguiseIdentifier().equalsIgnoreCase(disguiseIdentifier))
@@ -192,12 +192,12 @@ public class FabricMorphManager extends ServerPluginObject
 
     //endregion Data Access
 
-    public boolean morph(ServerPlayerEntity player, String identifier)
+    public boolean morph(ServerPlayer player, String identifier)
     {
         return morph(player, identifier, false);
     }
 
-    public boolean morph(ServerPlayerEntity player,
+    public boolean morph(ServerPlayer player,
                       String identifier,
                       boolean bypassAvailableCheck)
     {
@@ -207,20 +207,20 @@ public class FabricMorphManager extends ServerPluginObject
 
         if (provider == null)
         {
-            player.sendMessage(Text.translatableWithFallback("morph.error.invalid_namespace", "Error: Invalid namespace \"%s\"", idNamespace), false);
+            player.displayClientMessage(Component.translatableWithFallback("morph.error.invalid_namespace", "Error: Invalid namespace \"%s\"", idNamespace), false);
             return false;
         }
 
         if (!provider.isValid(identifier))
         {
-            player.sendMessage(Text.translatableWithFallback("morph.error.invalid_id", "Error: Identifier \"%s\" not valid for \"%s\"", identifier, idNamespace), false);
+            player.displayClientMessage(Component.translatableWithFallback("morph.error.invalid_id", "Error: Identifier \"%s\" not valid for \"%s\"", identifier, idNamespace), false);
             return false;
         }
 
         var available = getUnlockedDisguiseIds(player);
         if (!bypassAvailableCheck && !available.contains(identifier))
         {
-            player.sendMessage(Text.translatableWithFallback("morph.error.not_unlocked", "Error: That disguise is not unlocked yet"), false);
+            player.displayClientMessage(Component.translatableWithFallback("morph.error.not_unlocked", "Error: That disguise is not unlocked yet"), false);
             return false;
         }
 
@@ -239,7 +239,7 @@ public class FabricMorphManager extends ServerPluginObject
         revealMap.put(player.getId(), player.getName().getString());
 
         var cmdReveal = new S2CPartialMapCommand(revealMap);
-        for (ServerPlayerEntity serverPlayerEntity : MorphServerLoader.mcserver.getPlayerManager().getPlayerList())
+        for (ServerPlayer serverPlayerEntity : MorphServerLoader.mcserver.getPlayerList().getPlayers())
         {
             clientHandler.sendCommand(serverPlayerEntity, cmd);
             clientHandler.sendCommand(serverPlayerEntity, cmdReveal);
@@ -247,36 +247,36 @@ public class FabricMorphManager extends ServerPluginObject
 
         spawnParticle(player);
 
-        player.getWorld().playSound(
+        player.level().playSound(
                 player,
-                BlockPos.ofFloored(player.getPos()),
+                BlockPos.containing(player.position()),
                 SoundEvents.UI_LOOM_TAKE_RESULT,
-                SoundCategory.PLAYERS,
+                SoundSource.PLAYERS,
                 1, 1
         );
 
-        player.sendMessage(Text.translatableWithFallback("morph.disguising_as", "Disguising as %s", provider.getDisplayName(identifier)));
+        player.sendSystemMessage(Component.translatableWithFallback("morph.disguising_as", "Disguising as %s", provider.getDisplayName(identifier)));
 
         return true;
     }
 
-    public void spawnParticle(ServerPlayerEntity player)
+    public void spawnParticle(ServerPlayer player)
     {
-        if (player.interactionManager.getGameMode() == GameMode.SPECTATOR) return;
+        if (player.gameMode.getGameModeForPlayer() == GameType.SPECTATOR) return;
 
         double collX, collY, collZ;
 
-        collX = player.getBoundingBox().getLengthX();
-        collY = player.getBoundingBox().getLengthY();
-        collZ = player.getBoundingBox().getLengthZ();
+        collX = player.getBoundingBox().getXsize();
+        collY = player.getBoundingBox().getYsize();
+        collZ = player.getBoundingBox().getZsize();
 
-        var location = player.getPos().add(0, collY / 2, 0);
+        var location = player.position().add(0, collY / 2, 0);
 
         //根据碰撞箱计算粒子数量缩放
         //缩放为碰撞箱体积的1/15，最小为1
         var particleScale = Math.max(1, (collX * collY * collZ) / 15);
 
-        ((ServerWorld)player.getWorld()).spawnParticles(ParticleTypes.CLOUD,
+        ((ServerLevel)player.level()).sendParticles(ParticleTypes.CLOUD,
                 false,
                 false,
                 location.x, location.y, location.z,
@@ -291,14 +291,14 @@ public class FabricMorphManager extends ServerPluginObject
         //        particleScale >= 10 ? 0.2 : 0.05); //速度
     }
 
-    public void unMorph(ServerPlayerEntity player)
+    public void unMorph(ServerPlayer player)
     {
         if (!playerDisguised(player))
             return;
 
         disguiseSessionMap.remove(player);
 
-        if (player.isDisconnected())
+        if (player.hasDisconnected())
             return;
 
         clientHandler.sendCommand(player, new S2CCurrentCommand(null));
@@ -306,7 +306,7 @@ public class FabricMorphManager extends ServerPluginObject
 
         var cmd = new S2CRenderMapRemoveCommand(player.getId());
         var cmdReveal = new S2CMapRemoveCommand(player.getId());
-        for (ServerPlayerEntity serverPlayerEntity : MorphServerLoader.mcserver.getPlayerManager().getPlayerList())
+        for (ServerPlayer serverPlayerEntity : MorphServerLoader.mcserver.getPlayerList().getPlayers())
         {
             clientHandler.sendCommand(serverPlayerEntity, cmd);
             clientHandler.sendCommand(serverPlayerEntity, cmdReveal);
@@ -314,7 +314,7 @@ public class FabricMorphManager extends ServerPluginObject
 
         spawnParticle(player);
 
-        player.sendMessage(Text.literal("Undisguised"));
+        player.sendSystemMessage(Component.literal("Undisguised"));
     }
 
     public void update()
@@ -323,7 +323,7 @@ public class FabricMorphManager extends ServerPluginObject
 
         disguiseSessionMap.forEach((player, session) ->
         {
-            if (player.isDisconnected())
+            if (player.hasDisconnected())
                 unMorph(player);
             else
                 session.update();

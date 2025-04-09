@@ -1,15 +1,5 @@
 package xyz.nifeather.morph.client.graphics;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.LightmapTextureManager;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
-import net.minecraft.client.render.entity.state.EntityRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.Entity;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
 import xyz.nifeather.morph.client.FeatherMorphClient;
@@ -17,8 +7,16 @@ import xyz.nifeather.morph.client.entities.IDisguiseRenderState;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.graphics.color.ColorUtils;
 import xyz.nifeather.morph.client.graphics.color.MaterialColors;
-
+import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 public class EntityRendererHelper
 {
@@ -66,7 +64,7 @@ public class EntityRendererHelper
                 id = syncer.getBindingPlayer().getId();
 
                 renderState.morphclient$setDisguiseSyncer(syncer);
-                renderState.morphclient$setMasterPosition(masterEntity.getPos());
+                renderState.morphclient$setMasterPosition(masterEntity.position());
 
                 syncer.onEntityRenderStateSetup((EntityRenderState)renderState, renderState);
             }
@@ -82,12 +80,12 @@ public class EntityRendererHelper
         String text = "%s(%s)".formatted(disguiseEntityName, revealName);
 
         renderState.morphclient$setRevealName(text);
-        renderState.morphclient$setClientPlayer(renderingEntity == MinecraftClient.getInstance().player);
+        renderState.morphclient$setClientPlayer(renderingEntity == Minecraft.getInstance().player);
     }
 
     public final void renderRevealNameIfPossible(EntityRenderDispatcher dispatcher,
-                                                 EntityRenderState state, TextRenderer textRenderer,
-                                           MatrixStack matrices, VertexConsumerProvider vertexConsumers)
+                                                 EntityRenderState state, Font textRenderer,
+                                           PoseStack matrices, MultiBufferSource vertexConsumers)
     {
         if (!doRenderRealName) return;
 
@@ -121,52 +119,52 @@ public class EntityRendererHelper
                 asDisguiseRenderState.morphclient$getRevealName(), asDisguiseRenderState.morphclient$masterPosition());
     }
 
-    public void renderLabelOnTop(MatrixStack matrices, VertexConsumerProvider vertexConsumers,
-                                 TextRenderer textRenderer,
+    public void renderLabelOnTop(PoseStack matrices, MultiBufferSource vertexConsumers,
+                                 Font textRenderer,
                                  EntityRenderState renderState, EntityRenderDispatcher dispatcher,
                                  String textToRender,
-                                 @Nullable Vec3d anchorPosition)
+                                 @Nullable Vec3 anchorPosition)
     {
-        matrices.push();
+        matrices.pushPose();
 
-        Vec3d labelRelativePosition = renderState.nameLabelPos;
+        Vec3 labelRelativePosition = renderState.nameTagAttachment;
 
         if (labelRelativePosition == null)
-            labelRelativePosition = new Vec3d(0, 0.25, 0);
+            labelRelativePosition = new Vec3(0, 0.25, 0);
 
-        labelRelativePosition.add(renderState.height);
+        labelRelativePosition.add(renderState.boundingBoxHeight);
 
         matrices.translate(labelRelativePosition.x, labelRelativePosition.y + 0.5f, labelRelativePosition.z);
 
-        matrices.multiply(dispatcher.getRotation());
+        matrices.mulPose(dispatcher.cameraOrientation());
         matrices.scale(0.025F, -0.025F, 0.025F);
 
         if (FeatherMorphClient.getInstance().getModConfigData().scaleNameTag && anchorPosition != null)
         {
             var labelWorldPosition = anchorPosition.add(labelRelativePosition);
-            var distance = dispatcher.camera.getPos().distanceTo(labelWorldPosition);
+            var distance = dispatcher.camera.getPosition().distanceTo(labelWorldPosition);
             var scale = Math.max(1, (float)distance / 7.5f);
             matrices.scale(scale, scale, scale);
         }
 
-        float clientBackgroundOpacity = MinecraftClient.getInstance().options.getTextBackgroundOpacity(0.25F);
+        float clientBackgroundOpacity = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
         int finalColor = (int)(clientBackgroundOpacity * 255.0f) << 24;
 
-        var positionMatrix = matrices.peek().getPositionMatrix();
-        var x = textRenderer.getWidth(textToRender) / -2f;
+        var positionMatrix = matrices.last().pose();
+        var x = textRenderer.width(textToRender) / -2f;
 
         //背景+文字
-        textRenderer.draw(textToRender, x, 0,
+        textRenderer.drawInBatch(textToRender, x, 0,
                 textColorTransparent, false,
                 positionMatrix, vertexConsumers,
-                TextRenderer.TextLayerType.SEE_THROUGH, finalColor, LightmapTextureManager.MAX_LIGHT_COORDINATE);
+                Font.DisplayMode.SEE_THROUGH, finalColor, LightTexture.FULL_BRIGHT);
 
         //文字
-        textRenderer.draw(textToRender, x, 0,
+        textRenderer.drawInBatch(textToRender, x, 0,
                 textColor, false,
                 positionMatrix, vertexConsumers,
-                TextRenderer.TextLayerType.NORMAL, 0, LightmapTextureManager.MAX_LIGHT_COORDINATE);
+                Font.DisplayMode.NORMAL, 0, LightTexture.FULL_BRIGHT);
 
-        matrices.pop();
+        matrices.popPose();
     }
 }

@@ -1,14 +1,14 @@
 package xyz.nifeather.morph.client.syncers;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.render.entity.state.EntityRenderState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.ClientMorphManager;
@@ -31,7 +31,7 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
         return currentInstance;
     }
 
-    public ClientDisguiseSyncer(AbstractClientPlayerEntity clientPlayer, String morphId, int networkId)
+    public ClientDisguiseSyncer(AbstractClientPlayer clientPlayer, String morphId, int networkId)
     {
         super(clientPlayer, morphId, networkId);
 
@@ -41,7 +41,7 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     @Resolved(shouldSolveImmediately = true)
     private ClientMorphManager morphManager;
 
-    private final Bindable<NbtCompound> currentNbtCompound = new Bindable<>(null);
+    private final Bindable<CompoundTag> currentNbtCompound = new Bindable<>(null);
 
     @Initializer
     private void load(ServerHandler serverHandler)
@@ -72,9 +72,9 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
         acceptSyncing = true;
         beamTarget = null;
 
-        var clientPlayer = MinecraftClient.getInstance().player;
+        var clientPlayer = Minecraft.getInstance().player;
         if (clientPlayer != null)
-            clientPlayer.calculateDimensions();
+            clientPlayer.refreshDimensions();
 
         return true;
     }
@@ -100,15 +100,15 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     @Override
     protected void onTickError()
     {
-        var clientPlayer = MinecraftClient.getInstance().player;
+        var clientPlayer = Minecraft.getInstance().player;
         assert clientPlayer != null;
 
         acceptSyncing = false;
 
         FeatherMorphClient.getInstance().updateClientView(true, false);
 
-        clientPlayer.sendMessage(Text.translatable("text.morphclient.error.update_disguise1").formatted(Formatting.RED), false);
-        clientPlayer.sendMessage(Text.translatable("text.morphclient.error.update_disguise2").formatted(Formatting.RED), false);
+        clientPlayer.displayClientMessage(Component.translatable("text.morphclient.error.update_disguise1").withStyle(ChatFormatting.RED), false);
+        clientPlayer.displayClientMessage(Component.translatable("text.morphclient.error.update_disguise2").withStyle(ChatFormatting.RED), false);
     }
 
     @Nullable
@@ -126,18 +126,18 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
             return;
 
         // workaround: When an entity is far away from the player, EMF will reduce the update rate for it.
-        var playerPos = bindingPlayer.getPos();
-        disguiseInstance.setPos(playerPos.x, playerPos.y, playerPos.z);
+        var playerPos = bindingPlayer.position();
+        disguiseInstance.setPosRaw(playerPos.x, playerPos.y, playerPos.z);
 
-        disguiseInstance.lastX = bindingPlayer.lastX;
-        disguiseInstance.lastY = bindingPlayer.lastY;
-        disguiseInstance.lastZ = bindingPlayer.lastZ;
+        disguiseInstance.xo = bindingPlayer.xo;
+        disguiseInstance.yo = bindingPlayer.yo;
+        disguiseInstance.zo = bindingPlayer.zo;
 
         // And this is for 3d skin layer compatibility
         // See https://github.com/tr7zw/3d-Skin-Layers/blob/bd8637d2fedd0b9d836b3932b5b0e2415337a40c/src/main/java/dev/tr7zw/skinlayers/mixin/CustomHeadLayerMixin.java#L49
-        disguiseInstance.lastRenderX = bindingPlayer.lastRenderX;
-        disguiseInstance.lastRenderY = bindingPlayer.lastRenderY;
-        disguiseInstance.lastRenderZ = bindingPlayer.lastRenderZ;
+        disguiseInstance.xOld = bindingPlayer.xOld;
+        disguiseInstance.yOld = bindingPlayer.yOld;
+        disguiseInstance.zOld = bindingPlayer.zOld;
     }
 
     @Override
@@ -146,18 +146,18 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
         if (disguiseInstance == null)
             return;
 
-        var playerPos = bindingPlayer.getPos();
+        var playerPos = bindingPlayer.position();
 
-        disguiseInstance.setPos(playerPos.x, playerPos.y - 4096, playerPos.z);
-        disguiseInstance.lastRenderX = playerPos.x;
-        disguiseInstance.lastRenderY = playerPos.y - 4096;
-        disguiseInstance.lastRenderZ = playerPos.z;
+        disguiseInstance.setPosRaw(playerPos.x, playerPos.y - 4096, playerPos.z);
+        disguiseInstance.xOld = playerPos.x;
+        disguiseInstance.yOld = playerPos.y - 4096;
+        disguiseInstance.zOld = playerPos.z;
 
         // We may not set lastXYZ to lastRenderXYZ, but I'm too lazy to create another field to store the values.
         // Hope this won't break things!
-        disguiseInstance.lastX = disguiseInstance.lastRenderX;
-        disguiseInstance.lastY = disguiseInstance.lastRenderY;
-        disguiseInstance.lastZ = disguiseInstance.lastRenderZ;
+        disguiseInstance.xo = disguiseInstance.xOld;
+        disguiseInstance.yo = disguiseInstance.yOld;
+        disguiseInstance.zo = disguiseInstance.zOld;
     }
 
     @Override
@@ -165,13 +165,13 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     {
         super.onEntityRenderStateSetup(state, asDisguiseRenderState);
 
-        var tickManager = MinecraftClient.getInstance().getRenderTickCounter();
-        var tickProgress = tickManager.getTickProgress(true);
+        var tickManager = Minecraft.getInstance().getDeltaTracker();
+        var tickProgress = tickManager.getGameTimeDeltaPartialTick(true);
 
         // workaround for 3d skin layer
-        state.x = MathHelper.lerp(tickProgress, bindingPlayer.lastRenderX, bindingPlayer.getX());
-        state.y = MathHelper.lerp(tickProgress, bindingPlayer.lastRenderY, bindingPlayer.getY());
-        state.z = MathHelper.lerp(tickProgress, bindingPlayer.lastRenderZ, bindingPlayer.getZ());
+        state.x = Mth.lerp(tickProgress, bindingPlayer.xOld, bindingPlayer.getX());
+        state.y = Mth.lerp(tickProgress, bindingPlayer.yOld, bindingPlayer.getY());
+        state.z = Mth.lerp(tickProgress, bindingPlayer.zOld, bindingPlayer.getZ());
     }
 
     @Override
@@ -183,19 +183,19 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
         assert disguiseInstance != null;
 
         //更新prevXYZ和披风
-        entity.lastX = clientPlayer.lastX;
-        entity.lastY = clientPlayer.lastY - 4096;
-        entity.lastZ = clientPlayer.lastZ;
+        entity.xo = clientPlayer.xo;
+        entity.yo = clientPlayer.yo - 4096;
+        entity.zo = clientPlayer.zo;
 
         if (entity instanceof MorphLocalPlayer player)
         {
-            player.capeX = clientPlayer.capeX;
-            player.capeY = clientPlayer.capeY;
-            player.capeZ = clientPlayer.capeZ;
+            player.xCloak = clientPlayer.xCloak;
+            player.yCloak = clientPlayer.yCloak;
+            player.zCloak = clientPlayer.zCloak;
 
-            player.lastCapeX = clientPlayer.lastCapeX;
-            player.lastCapeY = clientPlayer.lastCapeY;
-            player.lastCapeZ = clientPlayer.lastCapeZ;
+            player.xCloakO = clientPlayer.xCloakO;
+            player.yCloakO = clientPlayer.yCloakO;
+            player.zCloakO = clientPlayer.zCloakO;
         }
     }
 
@@ -206,8 +206,8 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     {
         if (disguiseInstance == null) return;
 
-        var playerPos = bindingPlayer.getPos();
-        disguiseInstance.setPosition(playerPos.x, playerPos.y - 4096, playerPos.z);
+        var playerPos = bindingPlayer.position();
+        disguiseInstance.setPos(playerPos.x, playerPos.y - 4096, playerPos.z);
     }
 
     private boolean acceptSyncing;
@@ -221,11 +221,11 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
         if (!acceptSyncing)
             return;
 
-        var clientPlayer = MinecraftClient.getInstance().player;
+        var clientPlayer = Minecraft.getInstance().player;
         if (bindingPlayer != clientPlayer && clientPlayer != null)
             bindingPlayer = clientPlayer;
 
-        if (disguiseInstance == null || disguiseInstance.isRemoved() || disguiseInstance.getWorld() == null)
+        if (disguiseInstance == null || disguiseInstance.isRemoved() || disguiseInstance.level() == null)
         {
             if (!this.refreshEntity())
                 acceptSyncing = false;
@@ -238,7 +238,7 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     }
 
     @Override
-    protected @Nullable NbtCompound getCompound()
+    protected @Nullable CompoundTag getCompound()
     {
         return morphManager.currentNbtCompound.get();
     }
@@ -251,25 +251,25 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
         //同步装备
         if (!morphManager.equipOverriden.get())
         {
-            disguiseInstance.equipStack(EquipmentSlot.MAINHAND, bindingPlayer.getEquippedStack(EquipmentSlot.MAINHAND));
-            disguiseInstance.equipStack(EquipmentSlot.OFFHAND, bindingPlayer.getEquippedStack(EquipmentSlot.OFFHAND));
+            disguiseInstance.setItemSlot(EquipmentSlot.MAINHAND, bindingPlayer.getItemBySlot(EquipmentSlot.MAINHAND));
+            disguiseInstance.setItemSlot(EquipmentSlot.OFFHAND, bindingPlayer.getItemBySlot(EquipmentSlot.OFFHAND));
 
-            disguiseInstance.equipStack(EquipmentSlot.HEAD, bindingPlayer.getEquippedStack(EquipmentSlot.HEAD));
-            disguiseInstance.equipStack(EquipmentSlot.CHEST, bindingPlayer.getEquippedStack(EquipmentSlot.CHEST));
-            disguiseInstance.equipStack(EquipmentSlot.LEGS, bindingPlayer.getEquippedStack(EquipmentSlot.LEGS));
-            disguiseInstance.equipStack(EquipmentSlot.FEET, bindingPlayer.getEquippedStack(EquipmentSlot.FEET));
+            disguiseInstance.setItemSlot(EquipmentSlot.HEAD, bindingPlayer.getItemBySlot(EquipmentSlot.HEAD));
+            disguiseInstance.setItemSlot(EquipmentSlot.CHEST, bindingPlayer.getItemBySlot(EquipmentSlot.CHEST));
+            disguiseInstance.setItemSlot(EquipmentSlot.LEGS, bindingPlayer.getItemBySlot(EquipmentSlot.LEGS));
+            disguiseInstance.setItemSlot(EquipmentSlot.FEET, bindingPlayer.getItemBySlot(EquipmentSlot.FEET));
         }
         else
         {
             var manager = FeatherMorphClient.getInstance().morphManager;
 
-            disguiseInstance.equipStack(EquipmentSlot.MAINHAND, manager.getOverridedItemStackOn(EquipmentSlot.MAINHAND));
-            disguiseInstance.equipStack(EquipmentSlot.OFFHAND, manager.getOverridedItemStackOn(EquipmentSlot.OFFHAND));
+            disguiseInstance.setItemSlot(EquipmentSlot.MAINHAND, manager.getOverridedItemStackOn(EquipmentSlot.MAINHAND));
+            disguiseInstance.setItemSlot(EquipmentSlot.OFFHAND, manager.getOverridedItemStackOn(EquipmentSlot.OFFHAND));
 
-            disguiseInstance.equipStack(EquipmentSlot.HEAD, manager.getOverridedItemStackOn(EquipmentSlot.HEAD));
-            disguiseInstance.equipStack(EquipmentSlot.CHEST, manager.getOverridedItemStackOn(EquipmentSlot.CHEST));
-            disguiseInstance.equipStack(EquipmentSlot.LEGS, manager.getOverridedItemStackOn(EquipmentSlot.LEGS));
-            disguiseInstance.equipStack(EquipmentSlot.FEET, manager.getOverridedItemStackOn(EquipmentSlot.FEET));
+            disguiseInstance.setItemSlot(EquipmentSlot.HEAD, manager.getOverridedItemStackOn(EquipmentSlot.HEAD));
+            disguiseInstance.setItemSlot(EquipmentSlot.CHEST, manager.getOverridedItemStackOn(EquipmentSlot.CHEST));
+            disguiseInstance.setItemSlot(EquipmentSlot.LEGS, manager.getOverridedItemStackOn(EquipmentSlot.LEGS));
+            disguiseInstance.setItemSlot(EquipmentSlot.FEET, manager.getOverridedItemStackOn(EquipmentSlot.FEET));
         }
 
     }

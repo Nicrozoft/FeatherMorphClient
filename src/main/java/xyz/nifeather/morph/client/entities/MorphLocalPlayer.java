@@ -3,17 +3,22 @@ package xyz.nifeather.morph.client.entities;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.yggdrasil.ProfileResult;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.OtherClientPlayerEntity;
-import net.minecraft.client.util.SkinTextures;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerModelPart;
-import net.minecraft.item.ItemStack;
+import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.RemotePlayer;
+import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.Services;
+import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.util.*;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.PlayerModelPart;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -26,26 +31,26 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class MorphLocalPlayer extends OtherClientPlayerEntity
+public class MorphLocalPlayer extends RemotePlayer
 {
-    private final Pair<Integer, GameProfile> currentProfilePair = new Pair<>(0, null);
+    private final Tuple<Integer, GameProfile> currentProfilePair = new Tuple<>(0, null);
 
     private final String playerName;
 
     @NotNull
-    private Identifier morphTextureIdentifier = Identifier.of("minecraft", "textures/entity/player/wide/steve.png");
+    private ResourceLocation morphTextureIdentifier = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/entity/player/wide/steve.png");
 
     @Nullable
-    private Identifier capeTextureIdentifier;
+    private ResourceLocation capeTextureIdentifier;
 
     @Nullable
-    private Identifier ofCapeIdentifier;
+    private ResourceLocation ofCapeIdentifier;
 
     @Nullable
     private String skinTextureUrl;
 
     @NotNull
-    private SkinTextures.Model model = SkinTextures.Model.SLIM;
+    private PlayerSkin.Model model = PlayerSkin.Model.SLIM;
 
     public boolean personEquals(MorphLocalPlayer other)
     {
@@ -61,17 +66,17 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
 
         this.model = prevPlayer.model;
 
-        this.currentProfilePair.setLeft(requestId);
-        this.currentProfilePair.setRight(prevPlayer.currentProfilePair.getRight());
+        this.currentProfilePair.setA(requestId);
+        this.currentProfilePair.setB(prevPlayer.currentProfilePair.getB());
 
         this.skinTextureUrl = prevPlayer.skinTextureUrl;
     }
 
     @Nullable
-    private PlayerEntity bindingPlayer;
+    private Player bindingPlayer;
 
     @Nullable
-    public PlayerEntity getBindingPlayer()
+    public Player getBindingPlayer()
     {
         return bindingPlayer;
     }
@@ -81,12 +86,12 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
         return bindingPlayer != null;
     }
 
-    public void setBindingPlayer(@Nullable PlayerEntity newInstance)
+    public void setBindingPlayer(@Nullable Player newInstance)
     {
         bindingPlayer = newInstance;
     }
 
-    public MorphLocalPlayer(ClientWorld clientWorld, GameProfile profile, @Nullable PlayerEntity bindingPlayer)
+    public MorphLocalPlayer(ClientLevel clientWorld, GameProfile profile, @Nullable Player bindingPlayer)
     {
         super(clientWorld, profile);
 
@@ -97,10 +102,10 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
 
         this.playerName = profile.getName();
 
-        currentProfilePair.setLeft(0);
-        currentProfilePair.setRight(profile);
+        currentProfilePair.setA(0);
+        currentProfilePair.setB(profile);
 
-        this.dataTracker.set(PLAYER_MODEL_PARTS, (byte)127);
+        this.entityData.set(DATA_PLAYER_MODE_CUSTOMISATION, (byte)127);
         this.updateSkin(profile, true);
     }
 
@@ -110,10 +115,10 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
 
     private static final Logger logger = FeatherMorphClient.LOGGER;
 
-    private static ApiServices apiServices;
+    private static Services apiServices;
     private static Executor apiExecutor;
 
-    public static void setMinecraftAPIServices(ApiServices apiSrv, Executor apiExec)
+    public static void setMinecraftAPIServices(Services apiSrv, Executor apiExec)
     {
         apiServices = apiSrv;
         apiExecutor = apiExec;
@@ -127,7 +132,7 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
                 ? CompletableFuture.completedFuture(Optional.of(profile))
                 : CompletableFuture.supplyAsync(() ->
                     {
-                        var sessionService = MinecraftClient.getInstance().getSessionService();
+                        var sessionService = Minecraft.getInstance().getMinecraftSessionService();
 
                         if (sessionService != null)
                         {
@@ -137,20 +142,20 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
                         {
                             return Optional.empty();
                         }
-                    }, Util.getMainWorkerExecutor());
+                    }, Util.backgroundExecutor());
     }
 
-    private static UserCache userCache;
+    private static GameProfileCache userCache;
 
     private static CompletableFuture<Optional<GameProfile>> fetchProfile(String name)
     {
         if (userCache == null && apiServices != null)
-            userCache = apiServices.userCache();
+            userCache = apiServices.profileCache();
 
-        UserCache userCache = MorphLocalPlayer.userCache;
+        GameProfileCache userCache = MorphLocalPlayer.userCache;
         return userCache == null
                 ? CompletableFuture.completedFuture(Optional.empty())
-                : userCache.findByNameAsync(name).thenCompose((optional) ->
+                : userCache.getAsync(name).thenCompose((optional) ->
                 {
                     return optional.isPresent() ? fetchProfileWithTextures(optional.get()) : CompletableFuture.completedFuture(Optional.empty());
                 }).thenApplyAsync((profile) ->
@@ -228,8 +233,8 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
                 return null;
 
             // 反之，获取其中的皮肤
-            var skinProvider = MinecraftClient.getInstance().getSkinProvider();
-            var skinFetchTask = skinProvider.fetchSkinTextures(profile);
+            var skinProvider = Minecraft.getInstance().getSkinManager();
+            var skinFetchTask = skinProvider.getOrLoad(profile);
             skinFetchTask.thenAccept(texturesOptional ->
             {
                 if (texturesOptional.isEmpty())
@@ -242,11 +247,11 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
         }));
     }
 
-    private void onFetchComplete(int invokeId, SkinTextures tex, GameProfile profile)
+    private void onFetchComplete(int invokeId, PlayerSkin tex, GameProfile profile)
     {
         if (this.isRemoved()) return;
 
-        var currentId = currentProfilePair.getLeft();
+        var currentId = currentProfilePair.getA();
 
         if (invokeId < currentId)
         {
@@ -255,8 +260,8 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
         }
 
         this.capeTextureIdentifier = tex.capeTexture();
-        currentProfilePair.setLeft(requestId);
-        currentProfilePair.setRight(profile);
+        currentProfilePair.setA(requestId);
+        currentProfilePair.setB(profile);
 
         this.skinTextureUrl = tex.textureUrl();
 
@@ -281,7 +286,7 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
     {
         var cape = ofCapeIdentifier == null ? capeTextureIdentifier : ofCapeIdentifier;
 
-        this.skinTextures = new SkinTextures(morphTextureIdentifier,
+        this.skinTextures = new PlayerSkin(morphTextureIdentifier,
                 skinTextureUrl,
                 cape, cape,
                 model, false);
@@ -291,12 +296,12 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
     private BlockPos overrideSleepPos;
 
     @Override
-    public Optional<BlockPos> getSleepingPosition()
+    public Optional<BlockPos> getSleepingPos()
     {
         if (overrideSleepPos != null)
             return Optional.of(overrideSleepPos);
 
-        return super.getSleepingPosition();
+        return super.getSleepingPos();
     }
 
     public void overrideSleepPos(BlockPos pos)
@@ -311,21 +316,21 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
     }
 
     @Override
-    public Arm getMainArm()
+    public HumanoidArm getMainArm()
     {
         return bindingPlayer == null ? super.getMainArm() : bindingPlayer.getMainArm();
     }
 
     @Override
-    public boolean isGliding()
+    public boolean isFallFlying()
     {
-        return bindingPlayer == null ? super.isGliding() : bindingPlayer.isGliding();
+        return bindingPlayer == null ? super.isFallFlying() : bindingPlayer.isFallFlying();
     }
 
     @Override
-    public ItemStack getActiveItem()
+    public ItemStack getUseItem()
     {
-        return bindingPlayer == null ? super.getActiveItem() : bindingPlayer.getActiveItem();
+        return bindingPlayer == null ? super.getUseItem() : bindingPlayer.getUseItem();
     }
 
     @Override
@@ -335,68 +340,68 @@ public class MorphLocalPlayer extends OtherClientPlayerEntity
     }
 
     @Override
-    public int getItemUseTime()
+    public int getTicksUsingItem()
     {
-        return bindingPlayer == null ? super.getItemUseTime() : bindingPlayer.getItemUseTime();
+        return bindingPlayer == null ? super.getTicksUsingItem() : bindingPlayer.getTicksUsingItem();
     }
 
     @Override
-    public int getItemUseTimeLeft()
+    public int getUseItemRemainingTicks()
     {
-        return bindingPlayer == null ? super.getItemUseTimeLeft() : bindingPlayer.getItemUseTimeLeft();
+        return bindingPlayer == null ? super.getUseItemRemainingTicks() : bindingPlayer.getUseItemRemainingTicks();
     }
 
     @Override
-    public boolean isUsingRiptide()
+    public boolean isAutoSpinAttack()
     {
-        return bindingPlayer == null ? super.isUsingRiptide() : bindingPlayer.isUsingRiptide();
+        return bindingPlayer == null ? super.isAutoSpinAttack() : bindingPlayer.isAutoSpinAttack();
     }
 
     @Override
-    public Vec3d getPos()
+    public Vec3 position()
     {
-        return bindingPlayer == null ? super.getPos() : bindingPlayer.getPos();
+        return bindingPlayer == null ? super.position() : bindingPlayer.position();
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder)
+    protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        super.initDataTracker(builder);
+        super.defineSynchedData(builder);
     }
 
     @Override
-    public boolean isPartVisible(PlayerModelPart modelPart)
+    public boolean isModelPartShown(PlayerModelPart modelPart)
     {
-        return bindingPlayer == null || bindingPlayer.isPartVisible(modelPart);
+        return bindingPlayer == null || bindingPlayer.isModelPartShown(modelPart);
     }
 
     @Nullable
-    private SkinTextures skinTextures;
+    private PlayerSkin skinTextures;
 
     @Override
-    public SkinTextures getSkinTextures()
+    public PlayerSkin getSkin()
     {
         if (skinTextures != null) return skinTextures;
 
-        return new SkinTextures(morphTextureIdentifier,
+        return new PlayerSkin(morphTextureIdentifier,
                 skinTextureUrl,
                 capeTextureIdentifier, capeTextureIdentifier,
                 model, true);
     }
 
     @Override
-    public boolean shouldRenderName()
+    public boolean shouldShowName()
     {
-        return hasBindingPlayer() && (MinecraftClient.getInstance().cameraEntity != bindingPlayer || bindingPlayer != MinecraftClient.getInstance().player);
+        return hasBindingPlayer() && (Minecraft.getInstance().cameraEntity != bindingPlayer || bindingPlayer != Minecraft.getInstance().player);
     }
 
     @Override
-    public double squaredDistanceTo(Vec3d vector)
+    public double distanceToSqr(Vec3 vector)
     {
         // compat with 3d skin layers
-        if (vector.equals(MinecraftClient.getInstance().gameRenderer.getCamera().getPos()))
+        if (vector.equals(Minecraft.getInstance().gameRenderer.getMainCamera().getPosition()))
             return 0d;
 
-        return super.squaredDistanceTo(vector);
+        return super.distanceToSqr(vector);
     }
 }

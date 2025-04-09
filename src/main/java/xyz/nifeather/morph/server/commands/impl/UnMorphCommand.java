@@ -1,9 +1,9 @@
 package xyz.nifeather.morph.server.commands.impl;
 
 import com.mojang.brigadier.CommandDispatcher;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xyz.nifeather.morph.server.morphs.FabricMorphManager;
 import xyz.nifeather.morph.server.ServerPluginObject;
@@ -15,19 +15,19 @@ public class UnMorphCommand extends ServerPluginObject implements IBrigadierComm
     private FabricMorphManager morphManager;
 
     @Override
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher)
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
         dispatcher.register(
-                CommandManager.literal("unmorph")
+                Commands.literal("unmorph")
                         .executes(ctx ->
                         {
-                            if (!ctx.getSource().isExecutedByPlayer())
+                            if (!ctx.getSource().isPlayer())
                             {
-                                ctx.getSource().sendError(Text.literal("You must be a player to use this command"));
+                                ctx.getSource().sendFailure(Component.literal("You must be a player to use this command"));
                                 return 0;
                             }
 
-                            var executor = ctx.getSource().getPlayerOrThrow();
+                            var executor = ctx.getSource().getPlayerOrException();
 
                             morphManager.unMorph(executor);
 

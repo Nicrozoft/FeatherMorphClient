@@ -1,10 +1,10 @@
 package xyz.nifeather.morph.client.screens.disguise;
 
 import me.shedaniel.math.Color;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.math.Vector2f;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.model.geom.builders.UVPair;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.FeatherMorphClient;
 import xyz.nifeather.morph.client.graphics.*;
@@ -21,12 +21,12 @@ public class DisguiseScreenNew extends FeatherScreen
 {
     private final MGridWidget grid = new MGridWidget();
 
-    protected DisguiseScreenNew(Text title)
+    protected DisguiseScreenNew(Component title)
     {
         super(title);
 
-        grid.setSpacing(2);
-        grid.setRowSpacing(2);
+        grid.spacing(2);
+        grid.rowSpacing(2);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class DisguiseScreenNew extends FeatherScreen
         float flowWidthRatio = 0.6f;
         var otherContainer = new Container();
         otherContainer.setRelativeSizeAxes(Axes.Both);
-        otherContainer.setSize(new Vector2f(1 - flowWidthRatio, 1));
+        otherContainer.setSize(new UVPair(1 - flowWidthRatio, 1));
         otherContainer.setAnchor(Anchor.TopRight);
         otherContainer.setX(Math.round(-this.width * (1 - flowWidthRatio)));
         otherContainer.setY(20);
@@ -47,14 +47,14 @@ public class DisguiseScreenNew extends FeatherScreen
         var flow = new FlowContainer();
         flow.setSpacing(3);
         flow.setFlowAxes(Axes.Both);
-        flow.setSize(new Vector2f(flowWidthRatio, 1));
+        flow.setSize(new UVPair(flowWidthRatio, 1));
         flow.setRelativeSizeAxes(Axes.Both);
         flow.setMargin(new MarginPadding(5, 0, 20 + 5, 0));
 
         FeatherMorphClient.getInstance().morphManager.getAvailableMorphs().forEach(id ->
         {
             var widget = new DisplayWdgt(id);
-            widget.setSize(new Vector2f(36, 48));
+            widget.setSize(new UVPair(36, 48));
             flow.add(widget);
         });
 
@@ -64,13 +64,13 @@ public class DisguiseScreenNew extends FeatherScreen
 
         var titleFlow = new FlowContainer();
         titleFlow.setFlowAxes(Axes.Y);
-        titleFlow.setSize(new Vector2f(1, 20));
+        titleFlow.setSize(new UVPair(1, 20));
         titleFlow.setRelativeSizeAxes(Axes.X);
 
         var box = new Box();
         box.color = ColorUtils.forOpacity(ColorUtils.fromHex("#000000"), 0.5f).getColor();
         box.setRelativeSizeAxes(Axes.X);
-        box.setSize(new Vector2f(1, 19));
+        box.setSize(new UVPair(1, 19));
 
         var line = new Box();
         line.color = MaterialColors.Blue500.getColor();
@@ -109,7 +109,7 @@ public class DisguiseScreenNew extends FeatherScreen
 
             display.setParent(this);
             display.setRelativeSizeAxes(Axes.Both);
-            display.setSize(new Vector2f(0.6f, 0.6f));
+            display.setSize(new UVPair(0.6f, 0.6f));
             display.setAnchor(Anchor.Centre);
 
             nameText.setRelativeSizeAxes(Axes.X);
@@ -134,7 +134,7 @@ public class DisguiseScreenNew extends FeatherScreen
         private final EntityDisplay display;
 
         @Override
-        protected void onRender(DrawContext context, int mouseX, int mouseY, float delta)
+        protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
         {
             display.render(context, 30, -6, delta);
 
@@ -143,7 +143,7 @@ public class DisguiseScreenNew extends FeatherScreen
             if (contentColor.get() != null)
                 context.fill(0, 0, renderWidth, renderHeight, contentColor.get().getColor());
 
-            context.drawBorder(0, 0, renderWidth, renderHeight, ColorUtils.fromHex("#888888").getColor() );
+            context.renderOutline(0, 0, renderWidth, renderHeight, ColorUtils.fromHex("#888888").getColor() );
         }
 
         private final DrawableText nameText = new DrawableText();

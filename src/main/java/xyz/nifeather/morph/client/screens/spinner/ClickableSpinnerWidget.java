@@ -1,9 +1,9 @@
 package xyz.nifeather.morph.client.screens.spinner;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
 import org.lwjgl.glfw.GLFW;
 import xyz.nifeather.morph.client.graphics.Axes;
 import xyz.nifeather.morph.client.graphics.DrawableSprite;
@@ -16,9 +16,9 @@ public class ClickableSpinnerWidget extends Container
     protected final DrawableSprite spriteBorder;
     protected final DrawableSprite spriteHover;
 
-    protected Identifier getPathOf(String variant)
+    protected ResourceLocation getPathOf(String variant)
     {
-        return Identifier.of("morphclient", "spinner_default/" + variant);
+        return ResourceLocation.fromNamespaceAndPath("morphclient", "spinner_default/" + variant);
     }
 
     protected long getFadeDuration()
@@ -26,7 +26,7 @@ public class ClickableSpinnerWidget extends Container
         return 300;
     }
 
-    protected DrawableSprite createDrawableSprite(Identifier textureIdentifier)
+    protected DrawableSprite createDrawableSprite(ResourceLocation textureIdentifier)
     {
         var drawableSprite = new DrawableSprite(textureIdentifier);
 
@@ -70,7 +70,7 @@ public class ClickableSpinnerWidget extends Container
             if (this.onClick != null)
                 this.onClick.run();
 
-            MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
         }
 
         return super.mouseClicked(mouseX, mouseY, button);

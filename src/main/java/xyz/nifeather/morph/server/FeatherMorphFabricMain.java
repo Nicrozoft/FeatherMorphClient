@@ -2,10 +2,10 @@ package xyz.nifeather.morph.server;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.Util;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Util;
-import net.minecraft.util.WorldSavePath;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.storage.LevelResource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -58,7 +58,7 @@ public class FeatherMorphFabricMain extends XiaMoJavaPlugin
     @Override
     public void runAsync(Runnable r)
     {
-        Util.getMainWorkerExecutor().execute(r);
+        Util.backgroundExecutor().execute(r);
     }
 
     public FabricClientHandler clientHandler;
@@ -101,9 +101,9 @@ public class FeatherMorphFabricMain extends XiaMoJavaPlugin
     {
         if (dataFolder == null)
         {
-            ServerWorld serverWorld = MorphServerLoader.mcserver.getOverworld();
+            ServerLevel serverWorld = MorphServerLoader.mcserver.overworld();
 
-            var dataFile = new File(serverWorld.getServer().getSavePath(WorldSavePath.ROOT).toFile(), "data");
+            var dataFile = new File(serverWorld.getServer().getWorldPath(LevelResource.ROOT).toFile(), "data");
             dataFolder = new File(dataFile, "feathermorph-fabric");
         }
 

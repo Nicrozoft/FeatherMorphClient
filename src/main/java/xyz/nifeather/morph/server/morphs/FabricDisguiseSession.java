@@ -1,7 +1,5 @@
 package xyz.nifeather.morph.server.morphs;
 
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import xiamomc.morph.network.commands.S2C.S2CAnimationCommand;
 import xiamomc.pluginbase.Annotations.Resolved;
@@ -12,12 +10,14 @@ import xyz.nifeather.morph.server.disguise.animations.SingleAnimation;
 import xyz.nifeather.morph.server.disguise.providers.AbstractDisguiseProvider;
 
 import java.util.List;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 
 public class FabricDisguiseSession extends ServerPluginObject
 {
-    private final ServerPlayerEntity bindingPlayer;
+    private final ServerPlayer bindingPlayer;
 
-    public ServerPlayerEntity player()
+    public ServerPlayer player()
     {
         return bindingPlayer;
     }
@@ -37,7 +37,7 @@ public class FabricDisguiseSession extends ServerPluginObject
         return disguiseProvider;
     }
 
-    public FabricDisguiseSession(ServerPlayerEntity bindingPlayer,
+    public FabricDisguiseSession(ServerPlayer bindingPlayer,
                                  String disguiseIdentifier,
                                  @NotNull AbstractDisguiseProvider disguiseProvider)
     {
@@ -70,11 +70,11 @@ public class FabricDisguiseSession extends ServerPluginObject
         this.animationSequence.scheduleNext(sequenceIdentifier, sequence);
 
         var player = player();
-        var message = Text.translatableWithFallback("morph.commands.going_to_play_animation",
+        var message = Component.translatableWithFallback("morph.commands.going_to_play_animation",
                 "Going to play animation: %s",
-                Text.translatable("emote.morphclient." + sequenceIdentifier));
+                Component.translatable("emote.morphclient." + sequenceIdentifier));
 
-        player.sendMessage(message, false);
+        player.displayClientMessage(message, false);
 
         return true;
     }

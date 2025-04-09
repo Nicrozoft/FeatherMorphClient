@@ -1,8 +1,8 @@
 package xyz.nifeather.morph.client.screens.disguise.preview;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.navigation.GuiNavigation;
-import net.minecraft.client.gui.navigation.GuiNavigationPath;
+import net.minecraft.client.gui.ComponentPath;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.graphics.EntityDisplay;
 
@@ -19,11 +19,11 @@ public class DisguisePreviewDisplay extends EntityDisplay
     }
 
     @Override
-    protected void onRender(DrawContext context, int mouseX, int mouseY, float delta)
+    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
     {
-        var matrices = context.getMatrices();
+        var matrices = context.pose();
 
-        matrices.push();
+        matrices.pushPose();
 
         matrices.translate(0, 0, 100);
 
@@ -36,12 +36,12 @@ public class DisguisePreviewDisplay extends EntityDisplay
         }
         finally
         {
-            matrices.pop();
+            matrices.popPose();
         }
     }
 
     @Override
-    public @Nullable GuiNavigationPath getNavigationPath(GuiNavigation navigation)
+    public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent navigation)
     {
         return null;
     }

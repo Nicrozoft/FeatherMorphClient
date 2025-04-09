@@ -2,9 +2,6 @@ package xyz.nifeather.morph.client;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
@@ -14,6 +11,9 @@ import xiamomc.pluginbase.Annotations.Resolved;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.world.entity.Entity;
 
 public class DisguiseInstanceTracker extends MorphClientObject
 {
@@ -61,7 +61,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
         var networkId = s2CRenderMapAddCommand.getPlayerNetworkId();
         trackingDisguises.put(networkId, s2CRenderMapAddCommand.getMobId());
 
-        if (MinecraftClient.getInstance().player.getId() == networkId)
+        if (Minecraft.getInstance().player.getId() == networkId)
         {
             //logger.info("Ignoring client player since we have another method.");
             return;
@@ -109,7 +109,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
             return;
         }
 
-        var registry = MinecraftClient.getInstance().player.getWorld().getRegistryManager();
+        var registry = Minecraft.getInstance().player.level().registryAccess();
         var newMeta = ConvertedMeta.of(meta, registry);
         var currentMeta = getMetaFor(networkId);
 
@@ -222,10 +222,10 @@ public class DisguiseInstanceTracker extends MorphClientObject
                 return syncer;
         };
 
-        var world = MinecraftClient.getInstance().world;
-        var entity = world.getEntityById(networkId);
+        var world = Minecraft.getInstance().level;
+        var entity = world.getEntity(networkId);
 
-        if (!(entity instanceof AbstractClientPlayerEntity player)) return null;
+        if (!(entity instanceof AbstractClientPlayer player)) return null;
 
         var syncer = manager.createSyncerFor(player, did, networkId);
         idSyncerMap.put(networkId, syncer);
@@ -236,7 +236,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
     @Nullable
     public DisguiseSyncer setSyncer(Entity entity, String newId)
     {
-        if (!(entity instanceof AbstractClientPlayerEntity player)) return null;
+        if (!(entity instanceof AbstractClientPlayer player)) return null;
 
         var networkId = entity.getId();
 
@@ -262,7 +262,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
         var tracking = trackingDisguises.getOrDefault(networkId, "no");
 
         if (tracking.equals("no")) return null;
-        if (!(entity instanceof AbstractClientPlayerEntity player)) return null;
+        if (!(entity instanceof AbstractClientPlayer player)) return null;
 
         var syncer = manager.createSyncerFor(player, tracking, player.getId());
         idSyncerMap.put(networkId, syncer);

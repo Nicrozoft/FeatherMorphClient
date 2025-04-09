@@ -1,6 +1,6 @@
 package xyz.nifeather.morph.client.utilties;
 
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screens.Screen;
 import org.jetbrains.annotations.Nullable;
 import xiamomc.pluginbase.Bindables.Bindable;
 

@@ -1,12 +1,13 @@
 package xyz.nifeather.morph.client.mixin;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.entity.*;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -17,16 +18,16 @@ import xyz.nifeather.morph.client.EntityTickHandler;
 import xyz.nifeather.morph.client.ServerHandler;
 import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
 
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public abstract class PlayerMixin
 {
     @Unique
-    private PlayerEntity featherMorph$playerInstance;
+    private Player featherMorph$playerInstance;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void featherMorph$onInit(World world, BlockPos pos, float yaw, GameProfile gameProfile, CallbackInfo ci)
+    private void featherMorph$onInit(Level world, BlockPos pos, float yaw, GameProfile gameProfile, CallbackInfo ci)
     {
-        featherMorph$playerInstance = (PlayerEntity) (Object) this;
+        featherMorph$playerInstance = (Player) (Object) this;
     }
 
     @Unique
@@ -39,10 +40,10 @@ public abstract class PlayerMixin
             tracker = DisguiseInstanceTracker.getInstance();
     }
 
-    @Inject(method = "getBaseDimensions", at = @At("HEAD"), cancellable = true)
-    private void featherMorph$overrideDimensions(EntityPose pose, CallbackInfoReturnable<EntityDimensions> cir)
+    @Inject(method = "getDefaultDimensions", at = @At("HEAD"), cancellable = true)
+    private void featherMorph$overrideDimensions(Pose pose, CallbackInfoReturnable<EntityDimensions> cir)
     {
-        if (featherMorph$playerInstance.getWorld().isClient())
+        if (featherMorph$playerInstance.level().isClientSide())
         {
             ensureTrackerPresent();
             var syncer = tracker.getSyncerFor(featherMorph$playerInstance.getId());
@@ -60,7 +61,7 @@ public abstract class PlayerMixin
                 {
                     // 坑: 我们要返回的是BaseDimension, 但获取了目标实体的Dimensions
                     //     目标实体的Dimensions会随着SCALE缩放
-                    EntityDimensions dimensions = entity.getBaseDimensions(pose);
+                    EntityDimensions dimensions = entity.getDefaultDimensions(pose);
 
                     // 扩大其他玩家的碰撞箱来使其能被客户端玩家攻击到
                     if (syncer != ClientDisguiseSyncer.getCurrentInstance())
@@ -68,7 +69,7 @@ public abstract class PlayerMixin
                         if (dimensions.fixed())
                             dimensions = EntityDimensions.fixed(dimensions.width() + 0.001f, dimensions.height() + 0.001f);
                         else
-                            dimensions = EntityDimensions.changing(dimensions.width() + 0.001f, dimensions.height() + 0.001f);
+                            dimensions = EntityDimensions.scalable(dimensions.width() + 0.001f, dimensions.height() + 0.001f);
                     }
 
                     cir.setReturnValue(dimensions);
@@ -84,14 +85,14 @@ public abstract class PlayerMixin
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void featherMorph$onTick(CallbackInfo ci)
     {
-        if (featherMorph$playerInstance.getWorld().isClient())
+        if (featherMorph$playerInstance.level().isClientSide())
             EntityTickHandler.cancelIfIsDisguiseAndNotSyncing(ci, this);
     }
 
     @Inject(method = "attack", at = @At("HEAD"))
     private void featherMorph$onAttack(Entity target, CallbackInfo ci)
     {
-        if (featherMorph$playerInstance.getWorld().isClient())
+        if (featherMorph$playerInstance.level().isClientSide())
         {
             var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(featherMorph$playerInstance.getId());
             if (syncer != null)

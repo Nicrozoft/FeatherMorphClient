@@ -5,12 +5,12 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
-import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,15 +30,15 @@ public class MorphServerLoader
 
         CommandRegistrationCallback.EVENT.register(this::onCommandRegister);
 
-        ServerTickEvents.START_SERVER_TICK.register(Identifier.of("feathermorph_fabric_server", "server_tick") ,this::onServerTick);
+        ServerTickEvents.START_SERVER_TICK.register(ResourceLocation.fromNamespaceAndPath("feathermorph_fabric_server", "server_tick") ,this::onServerTick);
     }
 
     @Nullable
     private CommandRegistrationContext registrationContext;
 
-    public void onCommandRegister(CommandDispatcher<ServerCommandSource> dispatcher,
-                                  CommandRegistryAccess registryAccess,
-                                  CommandManager.RegistrationEnvironment environment)
+    public void onCommandRegister(CommandDispatcher<CommandSourceStack> dispatcher,
+                                  CommandBuildContext registryAccess,
+                                  Commands.CommandSelection environment)
     {
         LOGGER.info("Caching CommandRegistrationContext as we register commands later.");
 
@@ -51,7 +51,7 @@ public class MorphServerLoader
     @Nullable
     private FeatherMorphFabricMain fabricMain;
 
-    private void onServerStart(MinecraftServer startingServer, ServerWorld world)
+    private void onServerStart(MinecraftServer startingServer, ServerLevel world)
     {
         if (mcserver == startingServer)
             return;

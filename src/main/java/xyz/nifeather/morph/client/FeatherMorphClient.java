@@ -1,5 +1,6 @@
 package xyz.nifeather.morph.client;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigHolder;
@@ -14,15 +15,14 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.text.StringVisitable;
-import net.minecraft.text.Text;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.Util;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.util.RandomSource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -97,7 +97,7 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
     @Override
     public void runAsync(Runnable r)
     {
-        Util.getMainWorkerExecutor().execute(r);
+        Util.backgroundExecutor().execute(r);
     }
 
     @Override
@@ -147,7 +147,7 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
 
     private ModelWorkarounds modelWorkarounds;
 
-    private void postWorldTick(ClientWorld clientWorld)
+    private void postWorldTick(ClientLevel clientWorld)
     {
         var syncersToRemove = new ObjectArrayList<DisguiseSyncer>();
 
@@ -163,102 +163,102 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
     @Nullable
     private Boolean attackPressedDown = null;
 
-    private KeyBinding toggleselfKeyBind;
-    private KeyBinding executeSkillKeyBind;
-    private KeyBinding unMorphKeyBind;
-    private KeyBinding morphKeyBind;
-    private KeyBinding resetCacheKeybind;
-    private KeyBinding displayOwnerBind;
-    private KeyBinding emoteKeyBind;
+    private KeyMapping toggleselfKeyBind;
+    private KeyMapping executeSkillKeyBind;
+    private KeyMapping unMorphKeyBind;
+    private KeyMapping morphKeyBind;
+    private KeyMapping resetCacheKeybind;
+    private KeyMapping displayOwnerBind;
+    private KeyMapping emoteKeyBind;
 
-    public KeyBinding getEmoteKeyBind()
+    public KeyMapping getEmoteKeyBind()
     {
         return emoteKeyBind;
     }
 
-    private KeyBinding testKeyBindGrant;
-    private KeyBinding testKeyBindLost;
+    private KeyMapping testKeyBindGrant;
+    private KeyMapping testKeyBindLost;
 
     private final int keybindCount = 4;
-    private final List<KeyBinding> quickDisguiseKeys = new ObjectArrayList<>(keybindCount);
+    private final List<KeyMapping> quickDisguiseKeys = new ObjectArrayList<>(keybindCount);
 
     private void registerKeys()
     {
         //初始化按键
-        executeSkillKeyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.morphclient.skill", InputUtil.Type.KEYSYM,
+        executeSkillKeyBind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                "key.morphclient.skill", InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_V, "category.morphclient.keybind"
         ));
 
-        unMorphKeyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.morphclient.unmorph", InputUtil.Type.KEYSYM,
+        unMorphKeyBind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                "key.morphclient.unmorph", InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_DOWN, "category.morphclient.keybind"
         ));
 
         if (debugToasts)
         {
-            testKeyBindGrant = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                    "key.morphclient.testToastGrant", InputUtil.Type.KEYSYM,
+            testKeyBindGrant = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                    "key.morphclient.testToastGrant", InputConstants.Type.KEYSYM,
                     GLFW.GLFW_KEY_Z, "category.morphclient.keybind"
             ));
 
-            testKeyBindLost = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                    "key.morphclient.testToastLost", InputUtil.Type.KEYSYM,
+            testKeyBindLost = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                    "key.morphclient.testToastLost", InputConstants.Type.KEYSYM,
                     GLFW.GLFW_KEY_X, "category.morphclient.keybind"
             ));
 
             for (int i = 1; i <= keybindCount; i++)
             {
-                var key = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                var key = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                         "key.morphclient.quick_disguise.%s".formatted(i),
-                        InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.morphclient.keybind"
+                        InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.morphclient.keybind"
                 ));
                 quickDisguiseKeys.add(key);
             }
         }
 
-        morphKeyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.morphclient.morph", InputUtil.Type.KEYSYM,
+        morphKeyBind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                "key.morphclient.morph", InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_N, "category.morphclient.keybind"
         ));
 
-        toggleselfKeyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.morphclient.toggle", InputUtil.Type.KEYSYM,
+        toggleselfKeyBind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                "key.morphclient.toggle", InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_RIGHT, "category.morphclient.keybind"
         ));
 
-        emoteKeyBind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.morphclient.emote", InputUtil.Type.KEYSYM,
+        emoteKeyBind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                "key.morphclient.emote", InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_G, "category.morphclient.keybind"
         ));
 
-        resetCacheKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.morphclient.reset_cache", InputUtil.Type.KEYSYM,
+        resetCacheKeybind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                "key.morphclient.reset_cache", InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_UNKNOWN, "category.morphclient.keybind"
         ));
 
-        displayOwnerBind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.morphclient.display_name", InputUtil.Type.KEYSYM,
+        displayOwnerBind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                "key.morphclient.display_name", InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_F8, "category.morphclient.keybind"
         ));
     }
 
-    private void updateKeys(MinecraftClient client)
+    private void updateKeys(Minecraft client)
     {
-        while (executeSkillKeyBind.wasPressed() && skillHandler.getCurrentCooldown() <= 0)
+        while (executeSkillKeyBind.consumeClick() && skillHandler.getCurrentCooldown() <= 0)
         {
             skillHandler.setSkillCooldown(skillHandler.getSkillCooldown());
             serverHandler.sendCommand(new C2SSkillCommand());
         }
 
-        while (unMorphKeyBind.wasPressed())
+        while (unMorphKeyBind.consumeClick())
             serverHandler.sendCommand(new C2SUnmorphCommand());
 
-        var attackPressed = MinecraftClient.getInstance().options.attackKey.isPressed();
+        var attackPressed = Minecraft.getInstance().options.keyAttack.isDown();
 
         if (attackPressed != Boolean.TRUE.equals(this.attackPressedDown))
         {
-            var clientPlayer = MinecraftClient.getInstance().player;
+            var clientPlayer = Minecraft.getInstance().player;
             if (clientPlayer != null && attackPressed)
             {
                 var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(clientPlayer);
@@ -270,37 +270,37 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
             this.attackPressedDown = attackPressed;
         }
 
-        if (displayOwnerBind.wasPressed())
+        if (displayOwnerBind.consumeClick())
         {
             var doRender = !EntityRendererHelper.doRenderRealName;
             EntityRendererHelper.doRenderRealName = doRender;
 
             var clientPlayer = client.player;
             if (clientPlayer != null)
-                clientPlayer.sendMessage(Text.translatable("text.morphclient." + (doRender ? "display" : "hide") + "_real_names"), false);
+                clientPlayer.displayClientMessage(Component.translatable("text.morphclient." + (doRender ? "display" : "hide") + "_real_names"), false);
         }
 
         if (debugToasts)
         {
-            if (testKeyBindGrant.wasPressed())
+            if (testKeyBindGrant.consumeClick())
             {
                 var toasts = client.getToastManager();
                 var morphs = morphManager.getAvailableMorphs();
-                var random = Random.create();
-                var id = morphs.get(random.nextBetween(0, morphs.size() - 1));
+                var random = RandomSource.create();
+                var id = morphs.get(random.nextIntBetweenInclusive(0, morphs.size() - 1));
 
-                toasts.add(new DisguiseEntryToast(id, true));
+                toasts.addToast(new DisguiseEntryToast(id, true));
             }
 
-            if (testKeyBindLost.wasPressed())
+            if (testKeyBindLost.consumeClick())
             {
                 var toasts = client.getToastManager();
-                toasts.add(new RequestToast(S2CRequestCommand.Type.RequestSend, "Very_Loooong_Nammmmmme"));
+                toasts.addToast(new RequestToast(S2CRequestCommand.Type.RequestSend, "Very_Loooong_Nammmmmme"));
             }
 
         }
 
-        while (toggleselfKeyBind.wasPressed())
+        while (toggleselfKeyBind.consumeClick())
         {
             var config = getModConfigData();
 
@@ -309,34 +309,34 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
             updateClientView(config.allowClientView, val);
         }
 
-        while (morphKeyBind.wasPressed())
+        while (morphKeyBind.consumeClick())
         {
             var player = client.player;
 
-            if (player != null && player.input != null && player.input.playerInput.sneak())
+            if (player != null && player.input != null && player.input.keyPresses.shift())
             {
                 serverHandler.sendCommand(new C2SMorphCommand(null));
             }
-            else if (client.currentScreen == null)
+            else if (client.screen == null)
             {
                 client.setScreen(new WaitingForServerScreen(new DisguiseScreen()));
             }
         }
 
-        while (resetCacheKeybind.wasPressed())
+        while (resetCacheKeybind.consumeClick())
         {
             EntityCache.getGlobalCache().clearCache();
             modelWorkarounds.initWorkarounds();
         }
 
-        while (emoteKeyBind.wasPressed())
-            MinecraftClient.getInstance().setScreen(new WaitingForServerScreen(new EmoteScreen()));
+        while (emoteKeyBind.consumeClick())
+            Minecraft.getInstance().setScreen(new WaitingForServerScreen(new EmoteScreen()));
 
         for (int i = 0; i < this.quickDisguiseKeys.size(); i++)
         {
             var key = quickDisguiseKeys.get(i);
 
-            while (key.wasPressed())
+            while (key.consumeClick())
                 morphManager.onQuickDisguise(i);
         }
     }
@@ -383,25 +383,25 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
     {
         ConfigBuilder builder = ConfigBuilder.create();
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
-        ConfigCategory categoryGeneral = builder.getOrCreateCategory(Text.translatable("stat.generalButton"));
+        ConfigCategory categoryGeneral = builder.getOrCreateCategory(Component.translatable("stat.generalButton"));
 
         var modConfigData = getModConfigData();
 
         categoryGeneral.addEntry(
-                entryBuilder.startBooleanToggle(Text.translatable("option.morphclient.previewInInventory.name"), modConfigData.alwaysShowPreviewInInventory)
-                        .setTooltip(Text.translatable("option.morphclient.previewInInventory.description"))
+                entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.previewInInventory.name"), modConfigData.alwaysShowPreviewInInventory)
+                        .setTooltip(Component.translatable("option.morphclient.previewInInventory.description"))
                         .setDefaultValue(false)
                         .setSaveConsumer(v -> modConfigData.alwaysShowPreviewInInventory = v)
                         .build()
         ).addEntry(
-                entryBuilder.startBooleanToggle(Text.translatable("option.morphclient.changeCameraHeight.name"), modConfigData.changeCameraHeight)
-                        .setTooltip(Text.translatable("option.morphclient.changeCameraHeight.description"))
+                entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.changeCameraHeight.name"), modConfigData.changeCameraHeight)
+                        .setTooltip(Component.translatable("option.morphclient.changeCameraHeight.description"))
                         .setDefaultValue(false)
                         .setSaveConsumer(v -> modConfigData.changeCameraHeight = v)
                         .build()
         ).addEntry(
-                entryBuilder.startBooleanToggle(Text.translatable("option.morphclient.allowClientView.name"), modConfigData.allowClientView)
-                        .setTooltip(Text.translatable("option.morphclient.allowClientView.description"))
+                entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.allowClientView.name"), modConfigData.allowClientView)
+                        .setTooltip(Component.translatable("option.morphclient.allowClientView.description"))
                         .setDefaultValue(true)
                         .setSaveConsumer(v ->
                         {
@@ -412,8 +412,8 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
                         })
                         .build()
         ).addEntry(
-                entryBuilder.startBooleanToggle(Text.translatable("option.morphclient.displayDisguiseOnHud.name"), modConfigData.displayDisguiseOnHud)
-                        .setTooltip(Text.translatable("option.morphclient.displayDisguiseOnHud.description"))
+                entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.displayDisguiseOnHud.name"), modConfigData.displayDisguiseOnHud)
+                        .setTooltip(Component.translatable("option.morphclient.displayDisguiseOnHud.description"))
                         .setDefaultValue(true)
                         .setSaveConsumer(v ->
                         {
@@ -424,57 +424,57 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
                         })
                         .build()
         ).addEntry(
-                entryBuilder.startFloatField(Text.translatable("option.morphclient.scrollSpeed.name"), modConfigData.scrollSpeed)
-                        .setTooltip(Text.translatable("option.morphclient.scrollSpeed.description"))
+                entryBuilder.startFloatField(Component.translatable("option.morphclient.scrollSpeed.name"), modConfigData.scrollSpeed)
+                        .setTooltip(Component.translatable("option.morphclient.scrollSpeed.description"))
                         .setMax(4F)
                         .setMin(0.5F)
                         .setDefaultValue(2.5f)
                         .setSaveConsumer(v -> modConfigData.scrollSpeed = v)
                         .build()
         ).addEntry(
-                entryBuilder.startBooleanToggle(Text.translatable("option.morphclient.verbosePackets.name"), modConfigData.verbosePackets)
-                        .setTooltip(Text.translatable("option.morphclient.verbosePackets.description"))
+                entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.verbosePackets.name"), modConfigData.verbosePackets)
+                        .setTooltip(Component.translatable("option.morphclient.verbosePackets.description"))
                         .setDefaultValue(false)
                         .setSaveConsumer(v -> modConfigData.verbosePackets = v)
                         .build()
         ).addEntry(
-                entryBuilder.startBooleanToggle(Text.translatable("option.morphclient.nametag_scaling"), modConfigData.scaleNameTag)
+                entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.nametag_scaling"), modConfigData.scaleNameTag)
                         .setDefaultValue(false)
                         .setSaveConsumer(v -> modConfigData.scaleNameTag = v)
                         .build()
         ).addEntry(
-                entryBuilder.startBooleanToggle(Text.translatable("option.morphclient.smoothscroll.name"), modConfigData.disguiseListSmoothScroll)
-                        .setTooltip(Text.translatable("option.morphclient.smoothscroll.description"))
+                entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.smoothscroll.name"), modConfigData.disguiseListSmoothScroll)
+                        .setTooltip(Component.translatable("option.morphclient.smoothscroll.description"))
                         .setDefaultValue(true)
                         .setSaveConsumer(v -> modConfigData.disguiseListSmoothScroll = v)
                         .build()
         );
 
-        ConfigCategory categoryToast = builder.getOrCreateCategory(Text.translatable("category.morphclient.config_toasts"));
+        ConfigCategory categoryToast = builder.getOrCreateCategory(Component.translatable("category.morphclient.config_toasts"));
 
         categoryToast.addEntry(
-                entryBuilder.startBooleanToggle(Text.translatable("option.morphclient.grant_revoke_toasts"), modConfigData.displayGrantRevokeToast)
+                entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.grant_revoke_toasts"), modConfigData.displayGrantRevokeToast)
                         .setDefaultValue(true)
                         .setSaveConsumer(v -> modConfigData.displayGrantRevokeToast = v)
                         .build()
         ).addEntry(
-                entryBuilder.startBooleanToggle(Text.translatable("option.morphclient.query_set_toasts"), modConfigData.displayQuerySetToast)
-                        .setTooltip(Text.translatable("option.morphclient.query_set_toasts.desc"))
+                entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.query_set_toasts"), modConfigData.displayQuerySetToast)
+                        .setTooltip(Component.translatable("option.morphclient.query_set_toasts.desc"))
                         .setDefaultValue(false)
                         .setSaveConsumer(v -> modConfigData.displayQuerySetToast = v)
                         .build())
                 .addEntry(
-                        entryBuilder.startBooleanToggle(Text.translatable("option.morphclient.toast_progress"), modConfigData.displayToastProgress)
+                        entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.toast_progress"), modConfigData.displayToastProgress)
                                 .setDefaultValue(false)
                                 .setSaveConsumer(v -> modConfigData.displayToastProgress = v)
                                 .build());
 
-        ConfigCategory debugCategory = builder.getOrCreateCategory(Text.translatable("category.morphclient.debug"));
-        debugCategory.setDescription(new StringVisitable[] {Text.translatable("category.morphclient.debug.description")});
+        ConfigCategory debugCategory = builder.getOrCreateCategory(Component.translatable("category.morphclient.debug"));
+        debugCategory.setDescription(new FormattedText[] {Component.translatable("category.morphclient.debug.description")});
 
         debugCategory.addEntry(
-                entryBuilder.startBooleanToggle(Text.translatable("option.morphclient.singleplayer_debug"), SharedValues.allowSinglePlayerDebugging)
-                        .setTooltip(Text.translatable("option.morphclient.singleplayer_debug.tooltip"))
+                entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.singleplayer_debug"), SharedValues.allowSinglePlayerDebugging)
+                        .setTooltip(Component.translatable("option.morphclient.singleplayer_debug.tooltip"))
                         .setDefaultValue(false)
                         .setSaveConsumer(v ->
                                 {
@@ -485,7 +485,7 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
         );
 
         builder.setParentScreen(parent)
-                .setTitle(Text.translatable("title.morphclient.config"))
+                .setTitle(Component.translatable("title.morphclient.config"))
                 .transparentBackground();
 
         builder.setSavingRunnable(this::onConfigSave);
@@ -497,7 +497,7 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
 
     //region tick相关
 
-    private void tick(MinecraftClient client)
+    private void tick(Minecraft client)
     {
         if (mainLoopRunnable != null)
             mainLoopRunnable.run();

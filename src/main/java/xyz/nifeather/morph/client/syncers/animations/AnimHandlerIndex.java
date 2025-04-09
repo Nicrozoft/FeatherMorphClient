@@ -1,11 +1,11 @@
 package xyz.nifeather.morph.client.syncers.animations;
 
-import net.minecraft.entity.EntityType;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.syncers.animations.impl.*;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.world.entity.EntityType;
 
 public class AnimHandlerIndex
 {
@@ -32,7 +32,7 @@ public class AnimHandlerIndex
 
     public void register(EntityType<?> type, AnimationHandler handler)
     {
-        this.register(EntityType.getId(type).toString(), handler);
+        this.register(EntityType.getKey(type).toString(), handler);
     }
 
     public void register(String disguiseIdentifier, AnimationHandler handler)

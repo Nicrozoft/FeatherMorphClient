@@ -1,45 +1,43 @@
 package xyz.nifeather.morph.client.graphics;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.navigation.GuiNavigation;
-import net.minecraft.client.gui.navigation.GuiNavigationPath;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.ComponentPath;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 public class DrawableSprite extends MDrawable
 {
-    private final Identifier textureIdentifier;
+    private final ResourceLocation textureIdentifier;
     private final boolean isGuiTexture;
 
-    public DrawableSprite(Identifier textureIdentifier, boolean isGuiTexture)
+    public DrawableSprite(ResourceLocation textureIdentifier, boolean isGuiTexture)
     {
         this.textureIdentifier = textureIdentifier;
         this.isGuiTexture = isGuiTexture;
     }
 
-    public DrawableSprite(Identifier textureIdentifier)
+    public DrawableSprite(ResourceLocation textureIdentifier)
     {
         this(textureIdentifier, true);
     }
 
     @Override
-    protected void onRender(DrawContext context, int mouseX, int mouseY, float delta)
+    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
     {
         int texWidth = Math.round(this.getRenderWidth());
         int texHeight = Math.round(this.getRenderHeight());
 
         if (isGuiTexture)
         {
-            context.drawGuiTexture(RenderLayer::getGuiTextured, textureIdentifier,
+            context.blitSprite(RenderType::guiTextured, textureIdentifier,
                     0, 0,
                     texWidth, texHeight);
         }
         else
         {
-            context.drawTexture(RenderLayer::getGuiTextured, textureIdentifier,
+            context.blit(RenderType::guiTextured, textureIdentifier,
                     0, 0,
                     0, 0,
                     texWidth, texHeight,
@@ -48,7 +46,7 @@ public class DrawableSprite extends MDrawable
     }
 
     @Override
-    public @Nullable GuiNavigationPath getNavigationPath(GuiNavigation navigation)
+    public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent navigation)
     {
         return null;
     }

@@ -2,8 +2,8 @@ package xyz.nifeather.morph.server.network;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 import xiamomc.morph.network.BasicClientHandler;
 import xiamomc.morph.network.InitializeState;
@@ -27,7 +27,7 @@ import xyz.nifeather.morph.shared.payload.MorphCommandPayload;
 import java.util.List;
 import java.util.Map;
 
-public class FabricClientHandler extends ServerPluginObject implements BasicClientHandler<ServerPlayerEntity>
+public class FabricClientHandler extends ServerPluginObject implements BasicClientHandler<ServerPlayer>
 {
     private final CommandRegistries commandRegistries = new CommandRegistries();
 
@@ -45,12 +45,12 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
 
     private final Bindable<Boolean> logInComingPackets = new Bindable<>(true);
 
-    private void logPacket(boolean isOutGoingPacket, ServerPlayerEntity player, String channel, String data, int size)
+    private void logPacket(boolean isOutGoingPacket, ServerPlayer player, String channel, String data, int size)
     {
         var arrow = isOutGoingPacket ? " -> " : " <- ";
 
         String builder = channel + arrow
-                + player.getName().getLiteralString()
+                + player.getName().tryCollapseToString()
                 + " :: "
                 + "'%s'".formatted(data)
                 + " (≈ %s bytes)".formatted(size);
@@ -70,7 +70,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
         }
 */
         if (logInComingPackets.get())
-            logPacket(false, player, morphCommandPayload.getId().id().toString(), input, input.length());
+            logPacket(false, player, morphCommandPayload.type().id().toString(), input, input.length());
 
         var str = input.split(" ", 2);
 
@@ -95,12 +95,12 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     }
 
     // todo: Implement this
-    public boolean clientConnected(ServerPlayerEntity player)
+    public boolean clientConnected(ServerPlayer player)
     {
         return true;
     }
 
-    private boolean sendCommand(ServerPlayerEntity player, AbstractS2CCommand<?> command, boolean forceSend)
+    private boolean sendCommand(ServerPlayer player, AbstractS2CCommand<?> command, boolean forceSend)
     {
         var cmd = command.buildCommand();
         if (cmd == null || cmd.isEmpty() || cmd.isBlank()) return false;
@@ -114,7 +114,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     }
 
     @Override
-    public boolean sendCommand(ServerPlayerEntity player, AbstractS2CCommand<?> basicS2CCommand)
+    public boolean sendCommand(ServerPlayer player, AbstractS2CCommand<?> basicS2CCommand)
     {
         return this.sendCommand(player, basicS2CCommand, false);
     }
@@ -126,7 +126,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
      * @return 此玩家的客户端版本
      */
     @Override
-    public int getPlayerVersion(ServerPlayerEntity ServerPlayerEntity)
+    public int getPlayerVersion(ServerPlayer ServerPlayerEntity)
     {
         return 0;
     }
@@ -138,7 +138,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
      * @apiNote 此列表可能包含已连接但未初始化的玩家
      */
     @Override
-    public List<ServerPlayerEntity> getConnectedPlayers()
+    public List<ServerPlayer> getConnectedPlayers()
     {
         return List.of();
     }
@@ -150,7 +150,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
      * @return 此玩家的连接状态
      */
     @Override
-    public InitializeState getInitializeState(ServerPlayerEntity ServerPlayerEntity)
+    public InitializeState getInitializeState(ServerPlayer ServerPlayerEntity)
     {
         return null;
     }
@@ -162,7 +162,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
      * @return 此玩家是否已经初始化
      */
     @Override
-    public boolean isPlayerInitialized(ServerPlayerEntity ServerPlayerEntity)
+    public boolean isPlayerInitialized(ServerPlayer ServerPlayerEntity)
     {
         return false;
     }
@@ -174,7 +174,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
      * @return 此玩家的连接状态
      */
     @Override
-    public boolean isPlayerConnected(ServerPlayerEntity ServerPlayerEntity)
+    public boolean isPlayerConnected(ServerPlayer ServerPlayerEntity)
     {
         return false;
     }
@@ -185,7 +185,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
      * @param ServerPlayerEntity 目标玩家
      */
     @Override
-    public void disconnect(ServerPlayerEntity ServerPlayerEntity)
+    public void disconnect(ServerPlayer ServerPlayerEntity)
     {
     }
 
@@ -195,7 +195,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
      * @param ServerPlayerEntity 目标玩家
      */
     @Override
-    public @Nullable PlayerOptions<ServerPlayerEntity> getPlayerOption(ServerPlayerEntity ServerPlayerEntity)
+    public @Nullable PlayerOptions<ServerPlayer> getPlayerOption(ServerPlayer ServerPlayerEntity)
     {
         logger.warn("getPlayerOption is not implemented yet.");
         return null;
@@ -207,7 +207,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     @Override
     public void onInitialCommand(C2SInitialCommand command)
     {
-        ServerPlayerEntity player = command.getOwner();
+        ServerPlayer player = command.getOwner();
 
         var unlocked = morphManager.getUnlockedDisguiseIds(player);
         var cmd = new S2CQueryCommand(QueryType.SET, unlocked.toArray(new String[0]));
@@ -225,7 +225,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
         Map<Integer, String> revealMap = new Object2ObjectOpenHashMap<>();
 
         for (FabricDisguiseSession session : morphManager.listAllSession())
-            revealMap.put(session.player().getId(), session.player().getName().getLiteralString());
+            revealMap.put(session.player().getId(), session.player().getName().tryCollapseToString());
 
         this.sendCommand(player, new S2CPartialMapCommand(revealMap));
     }
@@ -233,7 +233,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     @Override
     public void onMorphCommand(C2SMorphCommand command)
     {
-        ServerPlayerEntity player = command.getOwner();
+        ServerPlayer player = command.getOwner();
         String disguiseId = command.getArgumentAt(0, "");
 
         morphManager.morph(player, disguiseId);
@@ -252,7 +252,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     @Override
     public void onToggleSelfCommand(C2SToggleSelfCommand command)
     {
-        ServerPlayerEntity player = command.getOwner();
+        ServerPlayer player = command.getOwner();
         var val = command.getSelfViewMode();
 
         switch (val)
@@ -265,7 +265,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     @Override
     public void onUnmorphCommand(C2SUnmorphCommand command)
     {
-        ServerPlayerEntity player = command.getOwner();
+        ServerPlayer player = command.getOwner();
 
         morphManager.unMorph(player);
     }
@@ -278,12 +278,12 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     @Override
     public void onAnimationCommand(C2SAnimationCommand command)
     {
-        ServerPlayerEntity player = command.getOwner();
+        ServerPlayer player = command.getOwner();
 
         var session = morphManager.getSessionFor(player);
         if (session == null)
         {
-            player.sendMessage(Text.literal("Session is NULL, you are not disguised!"));
+            player.sendSystemMessage(Component.literal("Session is NULL, you are not disguised!"));
             return;
         }
 
@@ -292,7 +292,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
         var seqPair = animationProvider.getAnimationSetFor(session.disguiseIdentifier()).sequenceOf(animationId);
 
         if (!session.tryScheduleSequence(animationId, seqPair.left()))
-            player.sendMessage(Text.literal("Playing Animation is not available now."));
+            player.sendSystemMessage(Component.literal("Playing Animation is not available now."));
     }
 
     /**
@@ -302,7 +302,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
      * @param removal 删除
      * @param player 目标玩家
      */
-    public void sendDiff(@Nullable List<String> addits, @Nullable List<String> removal, ServerPlayerEntity player)
+    public void sendDiff(@Nullable List<String> addits, @Nullable List<String> removal, ServerPlayer player)
     {
         if (addits != null)
             this.sendCommand(player, new S2CQueryCommand(QueryType.ADD, addits.toArray(new String[]{})));

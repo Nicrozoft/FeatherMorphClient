@@ -2,8 +2,8 @@ package xyz.nifeather.morph.client.network.commands;
 
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,13 +39,13 @@ public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack>
     @Nullable
     private static ItemStack jsonToStack(String rawJson)
     {
-        var world = MinecraftClient.getInstance().world;
+        var world = Minecraft.getInstance().level;
         if (world == null)
             throw new NullPointerException("Called jsonToStack but client world is null?!");
 
-        var registry = MinecraftClient.getInstance().world.getRegistryManager();
+        var registry = Minecraft.getInstance().level.registryAccess();
 
-        var item = ItemStack.CODEC.decode(registry.getOps(JsonOps.INSTANCE), JsonParser.parseString(rawJson));
+        var item = ItemStack.CODEC.decode(registry.createSerializationContext(JsonOps.INSTANCE), JsonParser.parseString(rawJson));
 
         if (item.result().isPresent())
             return item.result().get().getFirst();
