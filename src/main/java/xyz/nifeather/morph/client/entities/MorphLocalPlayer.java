@@ -6,6 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.core.BlockPos;
@@ -112,8 +113,6 @@ public class MorphLocalPlayer extends RemotePlayer
     private int requestId = 0;
 
     private final static ICapeProvider customCapeProvider = new KappaCapeProvider();
-
-    private static final Logger logger = FeatherMorphClient.LOGGER;
 
     private static Services apiServices;
     private static Executor apiExecutor;
@@ -254,10 +253,7 @@ public class MorphLocalPlayer extends RemotePlayer
         var currentId = currentProfilePair.getA();
 
         if (invokeId < currentId)
-        {
-            //logger.info("Not setting skin for " + this + ": A newer request has been finished! " + invokeId + " <-> " + currentProfilePair.getLeft());
             return;
-        }
 
         this.capeTextureIdentifier = tex.capeTexture();
         currentProfilePair.setA(requestId);
@@ -268,28 +264,16 @@ public class MorphLocalPlayer extends RemotePlayer
         this.morphTextureIdentifier = tex.texture();
         this.model = tex.model();
 
-        updateSkinTextures();
-
-        //为披风提供器单独创建新的GameProfile以避免影响皮肤功能
-        customCapeProvider.getCapeAsync(new GameProfile(profile.getId(), profile.getName()))
-                .thenAccept(optional ->
-                {
-                    if (optional.isEmpty())
-                        return;
-
-                    this.ofCapeIdentifier = optional.get();
-                    updateSkinTextures();
-                });
+        updateSkinTextures(profile);
     }
 
-    private void updateSkinTextures()
-    {
-        var cape = ofCapeIdentifier == null ? capeTextureIdentifier : ofCapeIdentifier;
+    @Nullable
+    private PlayerInfo playerInfo;
 
-        this.skinTextures = new PlayerSkin(morphTextureIdentifier,
-                skinTextureUrl,
-                cape, cape,
-                model, false);
+    private void updateSkinTextures(GameProfile profile)
+    {
+        RenderSystem.assertOnRenderThread();
+        this.playerInfo = new PlayerInfo(profile, false);
     }
 
     @Nullable
@@ -375,18 +359,10 @@ public class MorphLocalPlayer extends RemotePlayer
         return bindingPlayer == null || bindingPlayer.isModelPartShown(modelPart);
     }
 
-    @Nullable
-    private PlayerSkin skinTextures;
-
     @Override
-    public PlayerSkin getSkin()
+    public @Nullable PlayerInfo getPlayerInfo()
     {
-        if (skinTextures != null) return skinTextures;
-
-        return new PlayerSkin(morphTextureIdentifier,
-                skinTextureUrl,
-                capeTextureIdentifier, capeTextureIdentifier,
-                model, true);
+        return playerInfo;
     }
 
     @Override

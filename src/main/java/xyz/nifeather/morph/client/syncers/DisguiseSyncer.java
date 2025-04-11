@@ -366,11 +366,13 @@ public abstract class DisguiseSyncer extends MorphClientObject
         if (!RenderSystem.isOnRenderThread())
             throw new RuntimeException("May not invoke updateSkin() while not on the render thread.");
 
-        if (disguiseInstance instanceof MorphLocalPlayer localPlayer)
-            localPlayer.updateSkin(profile);
-        else
-            LoggerFactory.getLogger("MorphClient")
-                    .warn(this + " Received a GameProfile while current disguise is not a player! Current instance is %s".formatted(disguiseInstance));
+        if (!(disguiseInstance instanceof MorphLocalPlayer localPlayer))
+        {
+            FeatherMorphClient.LOGGER.warn(this + " Received a GameProfile while current disguise is not a player! Current instance is %s".formatted(disguiseInstance));
+            return;
+        }
+
+        localPlayer.updateSkin(profile);
     }
 
     public abstract void syncTick();
