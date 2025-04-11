@@ -8,6 +8,7 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityType;
@@ -338,6 +339,13 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     public void postEntityRender()
     {
+        if (disguiseInstance == null)
+            return;
+
+        var playerPos = bindingPlayer.position();
+
+        disguiseInstance.setPosRaw(playerPos.x, playerPos.y - 4096, playerPos.z);
+        posRecorder.applyToPlayer(disguiseInstance);
     }
 
     public void onEarlyEntityRender()
@@ -352,6 +360,57 @@ public abstract class DisguiseSyncer extends MorphClientObject
         {
             onSyncError(e);
         }
+    }
+
+    private static class PositionRecorder
+    {
+        private double xOld, yOld, zOld, renderXOld, renderYOld, renderZOld;
+
+        public void readFromPlayer(LivingEntity player)
+        {
+            this.xOld = player.xo;
+            this.yOld = player.yo;
+            this.zOld = player.zo;
+
+            this.renderXOld = player.xOld;
+            this.renderYOld = player.yOld;
+            this.renderZOld = player.zOld;
+        }
+
+        public void applyToPlayer(LivingEntity player)
+        {
+            player.xo = xOld;
+            player.yo = yOld;
+            player.zo = zOld;
+
+            player.xOld = renderXOld;
+            player.yOld = renderYOld;
+            player.zOld = renderZOld;
+        }
+    }
+
+    private static final PositionRecorder posRecorder = new PositionRecorder();
+
+    public void preEntityRender()
+    {
+        if (disguiseInstance == null)
+            return;
+
+        // workaround: When an entity is far away from the player, EMF will reduce the update rate for it.
+        var playerPos = bindingPlayer.position();
+        disguiseInstance.setPosRaw(playerPos.x, playerPos.y, playerPos.z);
+
+        posRecorder.readFromPlayer(disguiseInstance);
+
+        disguiseInstance.xo = bindingPlayer.xo;
+        disguiseInstance.yo = bindingPlayer.yo;
+        disguiseInstance.zo = bindingPlayer.zo;
+
+        // And this is for 3d skin layer compatibility
+        // See https://github.com/tr7zw/3d-Skin-Layers/blob/bd8637d2fedd0b9d836b3932b5b0e2415337a40c/src/main/java/dev/tr7zw/skinlayers/mixin/CustomHeadLayerMixin.java#L49
+        disguiseInstance.xOld = bindingPlayer.xOld;
+        disguiseInstance.yOld = bindingPlayer.yOld;
+        disguiseInstance.zOld = bindingPlayer.zOld;
     }
 
     public void updateSkin(GameProfile profile)
@@ -379,9 +438,14 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     public void onEntityRenderStateSetup(EntityRenderState renderState, IDisguiseRenderState asDisguiseRenderState)
     {
-    }
+        var tickManager = Minecraft.getInstance().getDeltaTracker();
+        var tickProgress = tickManager.getGameTimeDeltaPartialTick(true);
 
-    public abstract void preEntityRender();
+        // workaround for 3d skin layer
+        renderState.x = Mth.lerp(tickProgress, bindingPlayer.xOld, bindingPlayer.getX());
+        renderState.y = Mth.lerp(tickProgress, bindingPlayer.yOld, bindingPlayer.getY());
+        renderState.z = Mth.lerp(tickProgress, bindingPlayer.zOld, bindingPlayer.getZ());
+    }
 
     protected abstract void initialSync();
 
@@ -452,7 +516,13 @@ public abstract class DisguiseSyncer extends MorphClientObject
         disguiseInstance.setItemSlot(EquipmentSlot.FEET, feetStack);
     }
 
-    protected abstract void syncPosition();
+    protected void syncPosition()
+    {
+        if (disguiseInstance == null) return;
+
+        var playerPos = bindingPlayer.position();
+        disguiseInstance.setPos(playerPos.x, playerPos.y - 4096, playerPos.z);
+    }
 
     private void preMetaChange(ConvertedMeta meta)
     {

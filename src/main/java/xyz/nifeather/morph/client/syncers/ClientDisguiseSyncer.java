@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.ClientMorphManager;
@@ -120,95 +121,13 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     //private boolean isSpider = false;
 
     @Override
-    public void preEntityRender()
-    {
-        if (disguiseInstance == null)
-            return;
-
-        // workaround: When an entity is far away from the player, EMF will reduce the update rate for it.
-        var playerPos = bindingPlayer.position();
-        disguiseInstance.setPosRaw(playerPos.x, playerPos.y, playerPos.z);
-
-        disguiseInstance.xo = bindingPlayer.xo;
-        disguiseInstance.yo = bindingPlayer.yo;
-        disguiseInstance.zo = bindingPlayer.zo;
-
-        // And this is for 3d skin layer compatibility
-        // See https://github.com/tr7zw/3d-Skin-Layers/blob/bd8637d2fedd0b9d836b3932b5b0e2415337a40c/src/main/java/dev/tr7zw/skinlayers/mixin/CustomHeadLayerMixin.java#L49
-        disguiseInstance.xOld = bindingPlayer.xOld;
-        disguiseInstance.yOld = bindingPlayer.yOld;
-        disguiseInstance.zOld = bindingPlayer.zOld;
-    }
-
-    @Override
-    public void postEntityRender()
-    {
-        if (disguiseInstance == null)
-            return;
-
-        var playerPos = bindingPlayer.position();
-
-        disguiseInstance.setPosRaw(playerPos.x, playerPos.y - 4096, playerPos.z);
-        disguiseInstance.xOld = playerPos.x;
-        disguiseInstance.yOld = playerPos.y - 4096;
-        disguiseInstance.zOld = playerPos.z;
-
-        // We may not set lastXYZ to lastRenderXYZ, but I'm too lazy to create another field to store the values.
-        // Hope this won't break things!
-        disguiseInstance.xo = disguiseInstance.xOld;
-        disguiseInstance.yo = disguiseInstance.yOld;
-        disguiseInstance.zo = disguiseInstance.zOld;
-    }
-
-    @Override
-    public void onEntityRenderStateSetup(EntityRenderState state, IDisguiseRenderState asDisguiseRenderState)
-    {
-        super.onEntityRenderStateSetup(state, asDisguiseRenderState);
-
-        var tickManager = Minecraft.getInstance().getDeltaTracker();
-        var tickProgress = tickManager.getGameTimeDeltaPartialTick(true);
-
-        // workaround for 3d skin layer
-        state.x = Mth.lerp(tickProgress, bindingPlayer.xOld, bindingPlayer.getX());
-        state.y = Mth.lerp(tickProgress, bindingPlayer.yOld, bindingPlayer.getY());
-        state.z = Mth.lerp(tickProgress, bindingPlayer.zOld, bindingPlayer.getZ());
-    }
-
-    @Override
     protected void initialSync()
     {
-        var entity = disguiseInstance;
-        var clientPlayer = bindingPlayer;
-
-        assert disguiseInstance != null;
-
-        //更新prevXYZ和披风
-        entity.xo = clientPlayer.xo;
-        entity.yo = clientPlayer.yo - 4096;
-        entity.zo = clientPlayer.zo;
-
-        if (entity instanceof MorphLocalPlayer player)
-        {
-            player.xCloak = clientPlayer.xCloak;
-            player.yCloak = clientPlayer.yCloak;
-            player.zCloak = clientPlayer.zCloak;
-
-            player.xCloakO = clientPlayer.xCloakO;
-            player.yCloakO = clientPlayer.yCloakO;
-            player.zCloakO = clientPlayer.zCloakO;
-        }
+        syncPosition();
+        syncYawPitch();
     }
 
     public static boolean syncing;
-
-    @Override
-    protected void syncPosition()
-    {
-        if (disguiseInstance == null) return;
-
-        var playerPos = bindingPlayer.position();
-        disguiseInstance.setPos(playerPos.x, playerPos.y - 4096, playerPos.z);
-    }
 
     private boolean acceptSyncing;
 
@@ -271,7 +190,6 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
             disguiseInstance.setItemSlot(EquipmentSlot.LEGS, manager.getOverridedItemStackOn(EquipmentSlot.LEGS));
             disguiseInstance.setItemSlot(EquipmentSlot.FEET, manager.getOverridedItemStackOn(EquipmentSlot.FEET));
         }
-
     }
 
     @Override
@@ -285,8 +203,5 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     {
         currentNbtCompound.unBindFromTarget();
         currentNbtCompound.unBindBindings();
-
-        //isThirdPerson.unBindFromTarget();
-        //isThirdPerson.unBindBindings();
     }
 }
