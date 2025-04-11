@@ -1,5 +1,6 @@
 package xyz.nifeather.morph.client.graphics;
 
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
 import xyz.nifeather.morph.client.FeatherMorphClient;
@@ -54,19 +55,28 @@ public class EntityRendererHelper
         Entity masterEntity = null;
 
         // client renderer
-        if (renderingEntity instanceof IMorphClientEntity iMorphEntity && iMorphEntity.featherMorph$isDisguiseEntity())
+        if (renderingEntity instanceof IMorphClientEntity iMorphEntity)
         {
-            var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(iMorphEntity.featherMorph$getMasterEntityId());
-
-            if (syncer != null)
+            // 如果被我们的Syncer标记为了伪装实体，那么从syncer读取主实体位置
+            if (iMorphEntity.featherMorph$isDisguiseEntity())
             {
-                masterEntity = syncer.getBindingPlayer();
-                id = syncer.getBindingPlayer().getId();
+                var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(iMorphEntity.featherMorph$getMasterEntityId());
 
-                renderState.morphclient$setDisguiseSyncer(syncer);
-                renderState.morphclient$setMasterPosition(masterEntity.position());
+                if (syncer != null)
+                {
+                    masterEntity = syncer.getBindingPlayer();
+                    id = syncer.getBindingPlayer().getId();
 
-                syncer.onEntityRenderStateSetup((EntityRenderState)renderState, renderState);
+                    renderState.morphclient$setDisguiseSyncer(syncer);
+                    renderState.morphclient$setMasterPosition(masterEntity.position());
+
+                    syncer.onEntityRenderStateSetup((EntityRenderState)renderState, renderState);
+                }
+            }
+            else
+            {
+                // 否则，该实体的位置就是主实体的位置
+                renderState.morphclient$setMasterPosition(renderingEntity.position());
             }
         }
 
@@ -91,21 +101,7 @@ public class EntityRendererHelper
 
         if (!(state instanceof IDisguiseRenderState asDisguiseRenderState))
             return;
-/*
-        if (((IDisguiseRenderState) state).morphclient$getDisguiseSyncer() != null)
-        {
-            var syncer = ((IDisguiseRenderState) state).morphclient$getDisguiseSyncer();
-            var bindingPlayer = syncer.getBindingPlayer();
 
-            var distance = MinecraftClient.getInstance().gameRenderer.getCamera().getPos().squaredDistanceTo(
-                    state.x, state.y, state.z
-            );
-
-            MinecraftClient.getInstance().player.sendMessage(Text.literal("State XYZ: %s, %s, %s".formatted(
-                    state.x, state.y, state.z
-            )), false);
-        }
-*/
         // 服务器发送来的揭示数据是 玩家ID <-> 玩家名 的格式
         // 因此当客户端玩家有伪装时，渲染其本体也会显示揭示标签
         // 但我们不想这样，所以跳过此实体的渲染
