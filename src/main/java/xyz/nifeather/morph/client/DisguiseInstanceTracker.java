@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
-import xiamomc.morph.network.commands.S2C.clientrender.*;
+import xyz.nifeather.morph.network.commands.S2C.clientrender.*;
 import xiamomc.pluginbase.Annotations.Resolved;
 
 import java.util.HashMap;
@@ -98,7 +98,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
         if (meta == null)
         {
             logger.warn("Received S2CRenderMapMetaCommand with no meta! Not Processing...");
-            logger.warn("Packet: " + metaCommand.buildCommand());
+            //logger.warn("Packet: " + metaCommand.buildCommand());
             return;
         }
 

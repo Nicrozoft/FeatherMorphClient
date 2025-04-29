@@ -41,9 +41,9 @@ import xyz.nifeather.morph.client.screens.disguise.DisguiseScreen;
 import xyz.nifeather.morph.client.screens.emote.EmoteScreen;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 import xyz.nifeather.morph.client.syncers.animations.AnimHandlerIndex;
-import xiamomc.morph.network.Constants;
-import xiamomc.morph.network.commands.C2S.*;
-import xiamomc.morph.network.commands.S2C.S2CRequestCommand;
+import xyz.nifeather.morph.network.Constants;
+import xyz.nifeather.morph.network.commands.C2S.*;
+import xyz.nifeather.morph.network.commands.S2C.S2CRequestCommand;
 import xyz.nifeather.morph.shared.SharedValues;
 
 import java.io.File;
@@ -248,7 +248,7 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
         while (executeSkillKeyBind.consumeClick() && skillHandler.getCurrentCooldown() <= 0)
         {
             skillHandler.setSkillCooldown(skillHandler.getSkillCooldown());
-            serverHandler.sendCommand(new C2SSkillCommand());
+            serverHandler.sendCommand(new C2SActivateSkillCommand());
         }
 
         while (unMorphKeyBind.consumeClick())
@@ -420,7 +420,7 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
                             modConfigData.displayDisguiseOnHud = v;
 
                             if (serverHandler.serverReady())
-                                serverHandler.sendCommand(new C2SOptionCommand(C2SOptionCommand.ClientOptions.HUD).setValue(v));
+                                serverHandler.sendCommand(new C2SSetSingleOptionCommand(C2SSetSingleOptionCommand.ClientOptionEnum.HUD).setValue(v));
                         })
                         .build()
         ).addEntry(

@@ -7,7 +7,11 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xiamomc.morph.network.commands.S2C.set.S2CSetFakeEquipCommand;
+import xyz.nifeather.morph.network.commands.S2C.set.S2CSetFakeEquipCommand;
+import xyz.nifeather.morph.network.utils.Asserts;
+
+import java.util.List;
+import java.util.Objects;
 
 public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack>
 {
@@ -16,6 +20,17 @@ public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack>
     public ClientSetEquipCommand(ItemStack item, ProtocolEquipmentSlot slot)
     {
         super(item, slot);
+    }
+
+    public static ClientSetEquipCommand fromArguments(List<String> arguments) throws RuntimeException
+    {
+        Asserts.assertArgumentCountAtLeast(arguments, ClientSetEquipCommand.class, 2);
+        var slot = ProtocolEquipmentSlot.valueOf(arguments.getFirst());
+        var stack = jsonToStack(arguments.get(1));
+
+        Objects.requireNonNull(stack, "No item stack for input NBT '%s'".formatted(arguments.get(1)));
+
+        return new ClientSetEquipCommand(stack, slot);
     }
 
     public static ClientSetEquipCommand from(String rawArguments)

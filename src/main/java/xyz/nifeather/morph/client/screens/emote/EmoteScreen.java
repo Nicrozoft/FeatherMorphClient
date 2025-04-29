@@ -11,7 +11,7 @@ import xyz.nifeather.morph.client.graphics.DrawableText;
 import xyz.nifeather.morph.client.graphics.transforms.easings.Easing;
 import xyz.nifeather.morph.client.screens.spinner.SpinnerScreen;
 import xyz.nifeather.morph.client.screens.WaitingForServerScreen;
-import xiamomc.morph.network.commands.C2S.C2SAnimationCommand;
+import xyz.nifeather.morph.network.commands.C2S.C2SAnimationCommand;
 import xiamomc.pluginbase.Bindables.Bindable;
 
 import java.util.Objects;

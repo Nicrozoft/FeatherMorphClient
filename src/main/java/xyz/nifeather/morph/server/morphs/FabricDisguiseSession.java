@@ -1,7 +1,7 @@
 package xyz.nifeather.morph.server.morphs;
 
 import org.jetbrains.annotations.NotNull;
-import xiamomc.morph.network.commands.S2C.S2CAnimationCommand;
+import xyz.nifeather.morph.network.commands.S2C.S2CAnimationCommand;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xyz.nifeather.morph.server.ServerPluginObject;
 import xyz.nifeather.morph.server.network.FabricClientHandler;

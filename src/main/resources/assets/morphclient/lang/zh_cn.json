@@ -1,9 +1,9 @@
 {
   "category.morphclient.keybind": "FeatherMorph",
   "category.morphclient.config_toasts": "弹窗",
-  "gui.morphclient.current_disguise": "当前伪装: %s",
+  "gui.morphclient.current_disguise": "当前形态: %s",
   "gui.morphclient.loading": "加载中...",
-  "gui.morphclient.select_disguise": "选择伪装",
+  "gui.morphclient.select_disguise": "伪装选择",
   "gui.morphclient.version_mismatch": "API版本不匹配",
   "gui.morphclient.waiting_for_server": "等待服务器响应...",
   "gui.morphclient.emote_select": "伪装动作",

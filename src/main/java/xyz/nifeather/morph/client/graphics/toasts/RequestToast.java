@@ -2,7 +2,7 @@ package xyz.nifeather.morph.client.graphics.toasts;
 
 import xyz.nifeather.morph.client.graphics.color.MaterialColors;
 import net.minecraft.network.chat.Component;
-import xiamomc.morph.network.commands.S2C.S2CRequestCommand;
+import xyz.nifeather.morph.network.commands.S2C.S2CRequestCommand;
 
 public class RequestToast extends LinedToast
 {

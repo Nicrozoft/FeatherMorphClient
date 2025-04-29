@@ -1,22 +1,25 @@
 package xyz.nifeather.morph.server.network;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
-import xiamomc.morph.network.BasicClientHandler;
-import xiamomc.morph.network.InitializeState;
-import xiamomc.morph.network.PlayerOptions;
-import xiamomc.morph.network.commands.C2S.*;
-import xiamomc.morph.network.commands.CommandRegistries;
-import xiamomc.morph.network.commands.S2C.AbstractS2CCommand;
-import xiamomc.morph.network.commands.S2C.S2CAnimationCommand;
-import xiamomc.morph.network.commands.S2C.clientrender.S2CRenderMapSyncCommand;
-import xiamomc.morph.network.commands.S2C.map.S2CPartialMapCommand;
-import xiamomc.morph.network.commands.S2C.query.QueryType;
-import xiamomc.morph.network.commands.S2C.query.S2CQueryCommand;
-import xiamomc.morph.network.commands.S2C.set.S2CSetSelfViewingCommand;
+import xyz.nifeather.morph.network.BasicClientHandler;
+import xyz.nifeather.morph.network.InitializeState;
+import xyz.nifeather.morph.network.PlayerOptions;
+import xyz.nifeather.morph.network.commands.C2S.*;
+import xyz.nifeather.morph.network.commands.CommandRegistries;
+import xyz.nifeather.morph.network.commands.CommandRegistriesNew;
+import xyz.nifeather.morph.network.commands.S2C.AbstractS2CCommand;
+import xyz.nifeather.morph.network.commands.S2C.S2CCommandRecord;
+import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CPartialRevealCommand;
+import xyz.nifeather.morph.network.commands.S2C.clientrender.S2CRenderMapSyncCommand;
+import xyz.nifeather.morph.network.commands.S2C.query.QueryType;
+import xyz.nifeather.morph.network.commands.S2C.query.S2CQueryCommand;
+import xyz.nifeather.morph.network.commands.S2C.set.S2CSetSelfViewingCommand;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xiamomc.pluginbase.Bindables.Bindable;
 import xyz.nifeather.morph.server.ServerPluginObject;
@@ -29,18 +32,18 @@ import java.util.Map;
 
 public class FabricClientHandler extends ServerPluginObject implements BasicClientHandler<ServerPlayer>
 {
-    private final CommandRegistries commandRegistries = new CommandRegistries();
+    private final CommandRegistriesNew commandRegistries = new CommandRegistriesNew();
 
     public FabricClientHandler()
     {
-        commandRegistries.registerC2S(C2SCommandNames.Initial, a -> new C2SInitialCommand())
-                .registerC2S(C2SCommandNames.Morph, C2SMorphCommand::new)
-                .registerC2S(C2SCommandNames.Skill, a -> new C2SSkillCommand())
-                .registerC2S(C2SCommandNames.Option, C2SOptionCommand::fromString)
-                .registerC2S(C2SCommandNames.ToggleSelf, a -> new C2SToggleSelfCommand(C2SToggleSelfCommand.SelfViewMode.fromString(a)))
-                .registerC2S(C2SCommandNames.Unmorph, a -> new C2SUnmorphCommand())
-                .registerC2S(C2SCommandNames.Request, C2SRequestCommand::new)
-                .registerC2S("animation", C2SAnimationCommand::new);
+        commandRegistries.registerC2S(C2SCommandNames.Initial, C2SRequestInitialCommand::fromArguments)
+                .registerC2S(C2SCommandNames.Morph, C2SMorphCommand::fromArguments)
+                .registerC2S(C2SCommandNames.Skill, C2SActivateSkillCommand::fromArguments)
+                .registerC2S(C2SCommandNames.SetSingleOption, C2SSetSingleOptionCommand::fromArguments)
+                .registerC2S(C2SCommandNames.ToggleSelf, C2SToggleSelfCommand::fromArguments)
+                .registerC2S(C2SCommandNames.Unmorph, C2SUnmorphCommand::fromArguments)
+                .registerC2S(C2SCommandNames.Request, C2SRequestCommand::fromArguments)
+                .registerC2S("animation", C2SAnimationCommand::fromArguments);
     }
 
     private final Bindable<Boolean> logInComingPackets = new Bindable<>(true);
@@ -72,25 +75,18 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
         if (logInComingPackets.get())
             logPacket(false, player, morphCommandPayload.type().id().toString(), input, input.length());
 
-        var str = input.split(" ", 2);
-
-        if (str.length < 1)
+        try
         {
-            logger.warn("Incomplete server command: " + input);
-            return;
+            var record = gson.fromJson(input, C2SCommandRecord.class);
+            var command = commandRegistries.createC2SCommand(record.commandName(), record.arguments());
+            command.setOwner(player);
+            command.onCommand(this);
         }
-
-        var baseCommand = str[0];
-        var c2sCommand = commandRegistries.createC2SCommand(baseCommand, str.length == 2 ? str[1] : "");
-
-        if (c2sCommand != null)
+        catch (Throwable t)
         {
-            c2sCommand.setOwner(player);
-            c2sCommand.onCommand(this);
-        }
-        else
-        {
-            logger.warn("Unknown server command: " + baseCommand);
+            logger.error("Failed to handle client command '%s': %s".formatted(input, t.getMessage()));
+            logger.error("Disconnecting player " + player.getScoreboardName());
+            disconnect(player);
         }
     }
 
@@ -100,10 +96,12 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
         return true;
     }
 
+    private final Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+
     private boolean sendCommand(ServerPlayer player, AbstractS2CCommand<?> command, boolean forceSend)
     {
-        var cmd = command.buildCommand();
-        if (cmd == null || cmd.isEmpty() || cmd.isBlank()) return false;
+        var record = S2CCommandRecord.fromS2CCommand(command);
+        var cmd = gson.toJson(record);
 
         logPacket(true, player, MorphCommandPayload.id.id().toString(), cmd, cmd.length());
 
@@ -205,12 +203,12 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     private FabricMorphManager morphManager;
 
     @Override
-    public void onInitialCommand(C2SInitialCommand command)
+    public void onInitialCommand(C2SRequestInitialCommand command)
     {
         ServerPlayer player = command.getOwner();
 
         var unlocked = morphManager.getUnlockedDisguiseIds(player);
-        var cmd = new S2CQueryCommand(QueryType.SET, unlocked.toArray(new String[0]));
+        var cmd = new S2CQueryCommand(QueryType.SET, unlocked);
 
         this.sendCommand(player, cmd);
         this.sendCommand(player, new S2CSetSelfViewingCommand(true));
@@ -227,7 +225,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
         for (FabricDisguiseSession session : morphManager.listAllSession())
             revealMap.put(session.player().getId(), session.player().getName().tryCollapseToString());
 
-        this.sendCommand(player, new S2CPartialMapCommand(revealMap));
+        this.sendCommand(player, new S2CPartialRevealCommand(revealMap));
     }
 
     @Override
@@ -240,12 +238,12 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     }
 
     @Override
-    public void onOptionCommand(C2SOptionCommand command)
+    public void onOptionCommand(C2SSetSingleOptionCommand command)
     {
     }
 
     @Override
-    public void onSkillCommand(C2SSkillCommand command)
+    public void onSkillCommand(C2SActivateSkillCommand command)
     {
     }
 
@@ -305,9 +303,9 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     public void sendDiff(@Nullable List<String> addits, @Nullable List<String> removal, ServerPlayer player)
     {
         if (addits != null)
-            this.sendCommand(player, new S2CQueryCommand(QueryType.ADD, addits.toArray(new String[]{})));
+            this.sendCommand(player, new S2CQueryCommand(QueryType.ADD, addits));
 
         if (removal != null)
-            this.sendCommand(player, new S2CQueryCommand(QueryType.REMOVE, removal.toArray(new String[]{})));
+            this.sendCommand(player, new S2CQueryCommand(QueryType.REMOVE, removal));
     }
 }

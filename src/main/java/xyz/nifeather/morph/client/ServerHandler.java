@@ -1,5 +1,8 @@
 package xyz.nifeather.morph.client;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.llamalad7.mixinextras.sugar.Share;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.Function;
@@ -22,29 +25,29 @@ import xyz.nifeather.morph.client.config.ModConfigData;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
 import xyz.nifeather.morph.client.utilties.NbtUtils;
+import xyz.nifeather.morph.network.commands.C2S.*;
+import xyz.nifeather.morph.network.commands.CommandRegistriesNew;
+import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CClearRevealCommand;
+import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CPartialRevealCommand;
+import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CRemoveRevealCommand;
+import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CSetRenderRevealCommand;
 import xyz.nifeather.morph.shared.SharedValues;
 import xyz.nifeather.morph.shared.payload.*;
 import xyz.nifeather.morph.client.utilties.NbtHelperCopy;
-import xiamomc.morph.network.BasicServerHandler;
-import xiamomc.morph.network.Constants;
-import xiamomc.morph.network.commands.C2S.AbstractC2SCommand;
-import xiamomc.morph.network.commands.C2S.C2SInitialCommand;
-import xiamomc.morph.network.commands.C2S.C2SOptionCommand;
-import xiamomc.morph.network.commands.CommandRegistries;
-import xiamomc.morph.network.commands.S2C.*;
-import xiamomc.morph.network.commands.S2C.clientrender.*;
-import xiamomc.morph.network.commands.S2C.map.S2CMapClearCommand;
-import xiamomc.morph.network.commands.S2C.map.S2CMapCommand;
-import xiamomc.morph.network.commands.S2C.map.S2CMapRemoveCommand;
-import xiamomc.morph.network.commands.S2C.map.S2CPartialMapCommand;
-import xiamomc.morph.network.commands.S2C.query.S2CQueryCommand;
-import xiamomc.morph.network.commands.S2C.set.*;
+import xyz.nifeather.morph.network.BasicServerHandler;
+import xyz.nifeather.morph.network.Constants;
+import xyz.nifeather.morph.network.commands.CommandRegistries;
+import xyz.nifeather.morph.network.commands.S2C.*;
+import xyz.nifeather.morph.network.commands.S2C.clientrender.*;
+import xyz.nifeather.morph.network.commands.S2C.query.S2CQueryCommand;
+import xyz.nifeather.morph.network.commands.S2C.set.*;
 import xiamomc.pluginbase.Annotations.Initializer;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xiamomc.pluginbase.Bindables.Bindable;
 import xiamomc.pluginbase.Exceptions.NullDependencyException;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -52,7 +55,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
 {
     private final FeatherMorphClient client;
 
-    private final CommandRegistries registries = new CommandRegistries();
+    private final CommandRegistriesNew registries = new CommandRegistriesNew();
 
     public ServerHandler(FeatherMorphClient client)
     {
@@ -64,40 +67,35 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Initializer
     private void load()
     {
-        agent.register(S2CCommandNames.SetFakeEquip, ClientSetEquipCommand::from)
-                .register(S2CCommandNames.SetRevealing, a ->
-        {
-            try
-            {
-                var val = Float.parseFloat(a);
-                return new S2CSetRevealingCommand(val);
-            }
-            catch (Throwable t)
-            {
-                logger.error(t.getMessage());
-                t.printStackTrace();
-            }
+        agent.register(S2CCommandNames.SetFakeEquip, ClientSetEquipCommand::fromArguments)
+                .register(S2CCommandNames.SetRevealing, S2CSetRevealingCommand::fromArguments);
 
-            return new S2CSetRevealingCommand(0);
-        });
-
-        registries.registerS2C(S2CCommandNames.Current, S2CCurrentCommand::new)
-                .registerS2C(S2CCommandNames.Query, S2CQueryCommand::from)
-                .registerS2C(S2CCommandNames.ReAuth, a -> new S2CReAuthCommand())
-                .registerS2C(S2CCommandNames.UnAuth, a -> new S2CUnAuthCommand())
-                .registerS2C(S2CCommandNames.SwapHands, a -> new S2CSwapCommand())
-                .registerS2C(S2CCommandNames.BaseSet, agent::getCommand)
-                .registerS2C(S2CCommandNames.Request, S2CRequestCommand::new)
-                .registerS2C(S2CCommandNames.Map, S2CMapCommand::ofStr)
-                .registerS2C(S2CCommandNames.MapPartial, S2CPartialMapCommand::ofStr)
-                .registerS2C(S2CCommandNames.MapClear, a -> new S2CMapClearCommand())
-                .registerS2C(S2CCommandNames.MapRemove, a -> new S2CMapRemoveCommand(Integer.parseInt(a)))
-                .registerS2C(S2CCommandNames.CRAdd, S2CRenderMapAddCommand::of)
-                .registerS2C(S2CCommandNames.CRClear, a -> new S2CRenderMapClearCommand())
-                .registerS2C(S2CCommandNames.CRMap, S2CRenderMapSyncCommand::ofStr)
-                .registerS2C(S2CCommandNames.CRRemove, S2CRenderMapRemoveCommand::of)
-                .registerS2C(S2CCommandNames.CRMeta, S2CRenderMapMetaCommand::fromStr)
-                .registerS2C("animation", S2CAnimationCommand::new);
+        registries.registerS2C(S2CCommandNames.Current, S2CCurrentCommand::fromArguments)
+                .registerS2C(S2CCommandNames.Query, S2CQueryCommand::fromArguments)
+                .registerS2C(S2CCommandNames.ReAuth, S2CReAuthCommand::fromArguments)
+                .registerS2C(S2CCommandNames.UnAuth, S2CUnAuthCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SwapHands, S2CSwapCommand::fromArguments)
+                .registerS2C(S2CCommandNames.BaseSet, agent::fromArguments)
+                .registerS2C(S2CCommandNames.Request, S2CRequestCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetReveal, S2CSetRenderRevealCommand::fromArguments)
+                .registerS2C(S2CCommandNames.AddReveal, S2CPartialRevealCommand::fromArguments)
+                .registerS2C(S2CCommandNames.ClearReveal, S2CClearRevealCommand::fromArguments)
+                .registerS2C(S2CCommandNames.RemoveReveal, S2CRemoveRevealCommand::fromArguments)
+                .registerS2C(S2CCommandNames.CRAdd, S2CRenderMapAddCommand::fromArguments)
+                .registerS2C(S2CCommandNames.CRClear, S2CRenderMapClearCommand::fromArguments)
+                .registerS2C(S2CCommandNames.CRMap, S2CRenderMapSyncCommand::fromArguments)
+                .registerS2C(S2CCommandNames.CRRemove, S2CRenderMapRemoveCommand::fromArguments)
+                .registerS2C(S2CCommandNames.CRMeta, S2CRenderMapMetaCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetSelfViewing, S2CSetSelfViewingCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetModifyBoundingBox, S2CSetModifyBoundingBoxCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetAvailableAnimations, S2CSetAvailableAnimationsCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetDisplayingFakeEquip, S2CSetDisplayingFakeEquipCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetSNbt, S2CSetSNbtCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetSkillCooldown, S2CSetSkillCooldownCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetSelfViewIdentifier, S2CSetSelfViewIdentifierCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetProfile, S2CSetProfileCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SwapHands, S2CSwapCommand::fromArguments)
+                .registerS2C("animation", S2CAnimationCommand::fromArguments);
     }
 
     //region Common
@@ -146,7 +144,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
 
         payloadMap.put(SharedValues.initializeChannelIdentifier, raw -> new MorphInitChannelPayload(raw.toString()));
         payloadMap.put(SharedValues.commandChannelIdentifier, raw -> new MorphCommandPayload(raw.toString()));
-        payloadMap.put(SharedValues.versionChannelIdentifier, raw -> new MorphVersionChannelPayload(MorphVersionChannelPayload.parseInt(raw.toString())));
+        //payloadMap.put(SharedValues.versionChannelIdentifier, raw -> new MorphVersionChannelPayload(MorphVersionChannelPayload.parseInt(raw.toString())));
 
         payloadMap.put(SharedValues.commandChannelIdentifierLegacy, raw -> new LegacyMorphCommandPayload(raw.toString()));
         payloadMap.put(SharedValues.versionChannelIdentifierLegacy, raw -> new LegacyMorphVersionChannelPayload(LegacyMorphVersionChannelPayload.parseInt(raw.toString())));
@@ -180,16 +178,12 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         ClientPlayNetworking.send(payload);
     }
 
+    private final Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+
     public boolean sendCommand(AbstractC2SCommand<?> command)
     {
-        var cmd = command.buildCommand();
-        if (cmd == null || cmd.isEmpty() || cmd.isBlank())
-        {
-            logger.warn("Command '%s' returns an empty or blank cmd string!".formatted(command));
-            return false;
-        }
-
-        cmd = cmd.trim();
+        var record = C2SCommandRecord.fromC2SCommand(command);
+        var cmd = gson.toJson(record);
 
         if (!usingLegacyPackets)
             sendCommand(SharedValues.commandChannelIdentifier, cmd);
@@ -204,7 +198,8 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     {
         this.resetServerStatus();
 
-        this.sendCommand(SharedValues.initializeChannelIdentifier, SharedValues.newProtocolIdentify);
+        var command = new ClientInitializeRecordV3(List.of(SharedValues.newProtocolIdentify), getImplmentingApiVersion(), false);
+        this.sendCommand(SharedValues.initializeChannelIdentifier, gson.toJson(command));
     }
 
     @Override
@@ -228,27 +223,27 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     //region Impl of Serverhandler
 
     @Override
-    public void onCurrentCommand(xiamomc.morph.network.commands.S2C.S2CCurrentCommand s2CCurrentCommand)
+    public void onCurrentCommand(xyz.nifeather.morph.network.commands.S2C.S2CCurrentCommand s2CCurrentCommand)
     {
         var id = s2CCurrentCommand.getDisguiseIdentifier();
         morphManager.setCurrent(id.equals("null") ? null : id);
     }
 
     @Override
-    public void onReAuthCommand(xiamomc.morph.network.commands.S2C.S2CReAuthCommand s2CReAuthCommand)
+    public void onReAuthCommand(xyz.nifeather.morph.network.commands.S2C.S2CReAuthCommand s2CReAuthCommand)
     {
         this.disconnect();
         this.connect();
     }
 
     @Override
-    public void onUnAuthCommand(xiamomc.morph.network.commands.S2C.S2CUnAuthCommand s2CUnAuthCommand)
+    public void onUnAuthCommand(xyz.nifeather.morph.network.commands.S2C.S2CUnAuthCommand s2CUnAuthCommand)
     {
         this.disconnect();
     }
 
     @Override
-    public void onSwapCommand(xiamomc.morph.network.commands.S2C.S2CSwapCommand s2CSwapCommand)
+    public void onSwapCommand(xyz.nifeather.morph.network.commands.S2C.S2CSwapCommand s2CSwapCommand)
     {
         morphManager.swapHand();
     }
@@ -256,7 +251,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     private final AtomicBoolean displaySetToast = new AtomicBoolean();
 
     @Override
-    public void onQueryCommand(xiamomc.morph.network.commands.S2C.query.S2CQueryCommand s2CQueryCommand)
+    public void onQueryCommand(xyz.nifeather.morph.network.commands.S2C.query.S2CQueryCommand s2CQueryCommand)
     {
         var diff = s2CQueryCommand.getDiff();
         var modConfig = FeatherMorphClient.getInstance().getModConfigData();
@@ -316,7 +311,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Override
     public void onSetSNbtCommand(S2CSetSNbtCommand s2CSetSNbtCommand)
     {
-        var nbt = NbtUtils.parseSNbt(s2CSetSNbtCommand.serializeArguments());
+        var nbt = NbtUtils.parseSNbt(s2CSetSNbtCommand.getSNbt());
         if (nbt == null)
             nbt = new CompoundTag();
 
@@ -328,7 +323,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     {
         try
         {
-            var nbt = NbtUtils.parseOrThrow(s2CSetProfileCommand.serializeArguments());
+            var nbt = NbtUtils.parseOrThrow(s2CSetProfileCommand.getProfileSNbt());
 
             var profile = NbtHelperCopy.toGameProfile(nbt);
 
@@ -384,10 +379,10 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
 
     public static boolean modifyBoundingBox = false;
 
+    @SuppressWarnings("removal")
     @Override
     public void onSetReach(S2CSetReachCommand s2CSetReachCommand)
     {
-        reach = (float) (s2CSetReachCommand.getReach() / 10);
     }
 
     @Override
@@ -409,7 +404,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     }
 
     @Override
-    public void onMapCommand(S2CMapCommand s2CMapCommand)
+    public void onMapCommand(S2CSetRenderRevealCommand s2CMapCommand)
     {
         var map = s2CMapCommand.getMap();
 
@@ -418,19 +413,19 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     }
 
     @Override
-    public void onMapPartialCommand(S2CPartialMapCommand s2CPartialMapCommand)
+    public void onMapPartialCommand(S2CPartialRevealCommand s2CPartialMapCommand)
     {
         instanceTracker.playerMap.putAll(s2CPartialMapCommand.getMap());
     }
 
     @Override
-    public void onMapClearCommand(S2CMapClearCommand s2CMapClearCommand)
+    public void onMapClearCommand(S2CClearRevealCommand s2CMapClearCommand)
     {
         instanceTracker.playerMap.clear();
     }
 
     @Override
-    public void onMapRemoveCommand(S2CMapRemoveCommand s2CMapRemoveCommand)
+    public void onMapRemoveCommand(S2CRemoveRevealCommand s2CMapRemoveCommand)
     {
         var id = s2CMapRemoveCommand.getTargetId();
         instanceTracker.playerMap.remove(id);
@@ -492,8 +487,6 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
 
     //endregion Impl of ServerHandler
 
-    public static float reach = -1;
-
     public final Bindable<Boolean> serverReady = new Bindable<>(false);
     private boolean handshakeReceived;
     private boolean apiVersionChecked;
@@ -552,45 +545,54 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         //初始化网络
         ClientPlayNetworking.registerGlobalReceiver(MorphInitChannelPayload.id, (payload, context) ->
         {
-            var content = Arrays.stream(payload.message().split(" ")).toList();
-
             String msgDeny = "no";
 
-            if (content.stream().noneMatch(s -> s.equals(SharedValues.newProtocolIdentify)))
+            var respond = gson.fromJson(payload.message(), InitializeRespondV3.class);
+            serverVersion = respond.apiVersion();
+
+            SharedValues.client_UseNewPacketSerializeMethod = true;
+            usingLegacyPackets = false;
+            serverReady.set(true);
+/*
+            if (1+1<2)
             {
-                logger.info("The server is using legacy method to serialize commands.");
-                usingLegacyPackets = true;
+                if (content.stream().noneMatch(s -> s.equals(SharedValues.newProtocolIdentify)))
+                {
+                    logger.info("The server is using legacy method to serialize commands.");
+                    usingLegacyPackets = true;
 
-                SharedValues.client_UseNewPacketSerializeMethod = false;
+                    SharedValues.client_UseNewPacketSerializeMethod = false;
+                }
+                else
+                {
+                    logger.info("The server is using new method to serialize commands.");
+                    usingLegacyPackets = false;
+
+                    SharedValues.client_UseNewPacketSerializeMethod = true;
+                }
+
+                if (content.stream().anyMatch(s -> s.equals(msgDeny)))
+                {
+                    logger.error("Initialize failed: Denied by server");
+                    return;
+                }
             }
-            else
-            {
-                logger.info("The server is using new method to serialize commands.");
-                usingLegacyPackets = false;
-
-                SharedValues.client_UseNewPacketSerializeMethod = true;
-            }
-
-            if (content.stream().anyMatch(s -> s.equals(msgDeny)))
-            {
-                logger.error("Initialize failed: Denied by server");
-                return;
-            }
-
+*/
             handshakeReceived = true;
+            apiVersionChecked = true;
             updateServerStatus();
 
             // Server parses version with Integer.parseInt(), and client only accepts integer value not string
             // What a cursed pair :(
 
-            if (!usingLegacyPackets)
-                sendCommand(SharedValues.versionChannelIdentifier, "" + getImplmentingApiVersion());
-            else
-                sendCommand(SharedValues.versionChannelIdentifierLegacy, "" + getImplmentingApiVersion());
+            //if (!usingLegacyPackets)
+            //    sendCommand(SharedValues.versionChannelIdentifier, "" + getImplmentingApiVersion());
+            //else
+            //    sendCommand(SharedValues.versionChannelIdentifierLegacy, "" + getImplmentingApiVersion());
 
-            sendCommand(new C2SInitialCommand());
-            sendCommand(new C2SOptionCommand(C2SOptionCommand.ClientOptions.CLIENTVIEW).setValue(config.allowClientView));
-            sendCommand(new C2SOptionCommand(C2SOptionCommand.ClientOptions.HUD).setValue(config.displayDisguiseOnHud));
+            sendCommand(new C2SRequestInitialCommand());
+            sendCommand(new C2SSetSingleOptionCommand(C2SSetSingleOptionCommand.ClientOptionEnum.CLIENTVIEW).setValue(config.allowClientView));
+            sendCommand(new C2SSetSingleOptionCommand(C2SSetSingleOptionCommand.ClientOptionEnum.HUD).setValue(config.displayDisguiseOnHud));
         });
 
         ClientPlayNetworking.registerGlobalReceiver(MorphVersionChannelPayload.id, (payload, context) ->
@@ -623,35 +625,29 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
 
     private void handleCommand(String input)
     {
-        var str = input.split(" ", 2);
-
-        if (!serverReady.get() && !str[0].equals("reauth"))
-        {
-            if (config.verbosePackets)
-                logger.warn("Received command before initialize complete, not processing... ('%s')".formatted(input));
-
-            return;
-        }
-
         try
         {
             if (config.verbosePackets)
                 logger.info("Received client command: " + input);
 
-            if (str.length < 1) return;
+            var commandRecord = gson.fromJson(input, S2CCommandRecord.class);
 
-            var baseName = str[0];
-            var cmd = registries.createS2CCommand(baseName, str.length == 2 ? str[1] : "");
-
-            if (cmd != null)
+            if (!serverReady.get() && !commandRecord.commandName().equals("reauth"))
             {
-                if (RenderSystem.isOnRenderThread())
-                    cmd.onCommand(this);
-                else
-                    FeatherMorphClient.getInstance().schedule(() -> cmd.onCommand(this));
+                if (config.verbosePackets)
+                    logger.warn("Received command before initialize complete, not processing... ('%s')".formatted(input));
+
+                return;
             }
+
+            var baseName = commandRecord.commandName();
+            var arguments = commandRecord.arguments();
+            var cmd = registries.createS2CCommand(baseName, arguments);
+
+            if (RenderSystem.isOnRenderThread())
+                cmd.onCommand(this);
             else
-                logger.warn("Unknown client command: " + baseName);
+                FeatherMorphClient.getInstance().schedule(() -> cmd.onCommand(this));
         }
         catch (Exception e)
         {

@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xiamomc.morph.network.Constants;
+import xyz.nifeather.morph.network.Constants;
 import xiamomc.pluginbase.XiaMoJavaPlugin;
 import xyz.nifeather.morph.server.commands.CommandRegistrationContext;
 import xyz.nifeather.morph.server.commands.FabricCommandHub;

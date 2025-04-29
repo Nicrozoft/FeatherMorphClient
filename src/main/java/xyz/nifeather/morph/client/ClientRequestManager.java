@@ -2,7 +2,7 @@ package xyz.nifeather.morph.client;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import xyz.nifeather.morph.client.graphics.toasts.RequestToast;
-import xiamomc.morph.network.commands.S2C.S2CRequestCommand;
+import xyz.nifeather.morph.network.commands.S2C.S2CRequestCommand;
 import xiamomc.pluginbase.Annotations.Initializer;
 
 import java.util.List;

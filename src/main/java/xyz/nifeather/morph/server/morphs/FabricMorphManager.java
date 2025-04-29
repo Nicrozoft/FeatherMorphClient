@@ -3,13 +3,13 @@ package xyz.nifeather.morph.server.morphs;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
-import xiamomc.morph.network.commands.S2C.S2CAnimationCommand;
-import xiamomc.morph.network.commands.S2C.S2CCurrentCommand;
-import xiamomc.morph.network.commands.S2C.clientrender.S2CRenderMapAddCommand;
-import xiamomc.morph.network.commands.S2C.clientrender.S2CRenderMapRemoveCommand;
-import xiamomc.morph.network.commands.S2C.map.S2CMapRemoveCommand;
-import xiamomc.morph.network.commands.S2C.map.S2CPartialMapCommand;
-import xiamomc.morph.network.commands.S2C.set.S2CSetAvailableAnimationsCommand;
+import xyz.nifeather.morph.network.commands.S2C.S2CAnimationCommand;
+import xyz.nifeather.morph.network.commands.S2C.S2CCurrentCommand;
+import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CPartialRevealCommand;
+import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CRemoveRevealCommand;
+import xyz.nifeather.morph.network.commands.S2C.clientrender.S2CRenderMapAddCommand;
+import xyz.nifeather.morph.network.commands.S2C.clientrender.S2CRenderMapRemoveCommand;
+import xyz.nifeather.morph.network.commands.S2C.set.S2CSetAvailableAnimationsCommand;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xyz.nifeather.morph.server.misc.DisguiseMeta;
 import xyz.nifeather.morph.server.misc.DisguiseTypes;
@@ -238,7 +238,7 @@ public class FabricMorphManager extends ServerPluginObject
         Map<Integer, String> revealMap = new Object2ObjectOpenHashMap<>();
         revealMap.put(player.getId(), player.getName().getString());
 
-        var cmdReveal = new S2CPartialMapCommand(revealMap);
+        var cmdReveal = new S2CPartialRevealCommand(revealMap);
         for (ServerPlayer serverPlayerEntity : MorphServerLoader.mcserver.getPlayerList().getPlayers())
         {
             clientHandler.sendCommand(serverPlayerEntity, cmd);
@@ -302,10 +302,10 @@ public class FabricMorphManager extends ServerPluginObject
             return;
 
         clientHandler.sendCommand(player, new S2CCurrentCommand(null));
-        clientHandler.sendCommand(player, new S2CSetAvailableAnimationsCommand());
+        clientHandler.sendCommand(player, new S2CSetAvailableAnimationsCommand(List.of()));
 
         var cmd = new S2CRenderMapRemoveCommand(player.getId());
-        var cmdReveal = new S2CMapRemoveCommand(player.getId());
+        var cmdReveal = new S2CRemoveRevealCommand(player.getId());
         for (ServerPlayer serverPlayerEntity : MorphServerLoader.mcserver.getPlayerList().getPlayers())
         {
             clientHandler.sendCommand(serverPlayerEntity, cmd);

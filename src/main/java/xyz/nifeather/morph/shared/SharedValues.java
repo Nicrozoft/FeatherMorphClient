@@ -12,9 +12,12 @@ public class SharedValues
     private static final String morphNameSpace = "morphplugin";
     public static final String MOD_ID = "feathermorph-client";
 
-    public static ResourceLocation initializeChannelIdentifier = ResourceLocation.fromNamespaceAndPath(morphNameSpace, "init");
+    public static ResourceLocation initializeChannelIdentifier = ResourceLocation.fromNamespaceAndPath(morphNameSpace, "init_v3");
+
+    @Deprecated
     public static ResourceLocation versionChannelIdentifier = ResourceLocation.fromNamespaceAndPath(morphNameSpace, "version_v2");
-    public static ResourceLocation commandChannelIdentifier = ResourceLocation.fromNamespaceAndPath(morphNameSpace, "commands_v2");
+
+    public static ResourceLocation commandChannelIdentifier = ResourceLocation.fromNamespaceAndPath(morphNameSpace, "commands_v3");
 
     public static final String newProtocolIdentify = "1_21_3_packetbuf";
 

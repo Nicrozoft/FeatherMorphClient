@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.nifeather.morph.client.utilties.NbtHelperCopy;
 import xyz.nifeather.morph.client.utilties.NbtUtils;
-import xiamomc.morph.network.commands.S2C.clientrender.S2CRenderMeta;
+import xyz.nifeather.morph.network.commands.S2C.clientrender.S2CRenderMeta;
 
 public class ConvertedMeta
 {
