@@ -232,7 +232,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     public void onMorphCommand(C2SMorphCommand command)
     {
         ServerPlayer player = command.getOwner();
-        String disguiseId = command.getArgumentAt(0, "");
+        String disguiseId = command.identifier();
 
         morphManager.morph(player, disguiseId);
     }

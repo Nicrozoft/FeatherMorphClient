@@ -1,5 +1,6 @@
 package xyz.nifeather.morph.client.network.commands;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.client.Minecraft;
@@ -11,6 +12,7 @@ import xyz.nifeather.morph.network.commands.S2C.set.S2CSetFakeEquipCommand;
 import xyz.nifeather.morph.network.utils.Asserts;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack>
@@ -22,33 +24,29 @@ public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack>
         super(item, slot);
     }
 
-    public static ClientSetEquipCommand fromArguments(List<String> arguments) throws RuntimeException
+    public static ClientSetEquipCommand fromArguments(Map<String, String> arguments) throws RuntimeException
     {
-        Asserts.assertArgumentCountAtLeast(arguments, ClientSetEquipCommand.class, 2);
-        var slot = ProtocolEquipmentSlot.valueOf(arguments.getFirst());
-        var stack = jsonToStack(arguments.get(1));
+        var slot = ProtocolEquipmentSlot.valueOf(Asserts.getStringOrThrow(arguments, "slot"));
+        var stack = jsonToStack(Asserts.getStringOrThrow(arguments, "item"));
 
-        Objects.requireNonNull(stack, "No item stack for input NBT '%s'".formatted(arguments.get(1)));
+        Objects.requireNonNull(stack, "No item stack for input NBT '%s'".formatted(Asserts.getStringOrThrow(arguments, "item")));
 
         return new ClientSetEquipCommand(stack, slot);
     }
 
-    public static ClientSetEquipCommand from(String rawArguments)
+    @Override
+    public Map<String, String> generateArgumentMap()
     {
-        log.info("~RAW IS " + rawArguments);
+        var registry = Minecraft.getInstance().level.registryAccess();
+        var json = ItemStack.CODEC.encodeStart(registry.createSerializationContext(JsonOps.INSTANCE), getItemStack()).result();
 
-        //temp to array
-        var dat = rawArguments.split(" ", 2);
+        if (json.isEmpty())
+            throw new RuntimeException("Failed to encode item!");
 
-        if (dat.length != 2) return null;
-
-        log.info("~DECODING: " + dat[1]);
-        var stack = jsonToStack(dat[1]);
-        if (stack == null) return null;
-
-        var slot = ProtocolEquipmentSlot.valueOf(dat[0].toUpperCase());
-
-        return new ClientSetEquipCommand(stack, slot);
+        return Map.of(
+                "slot", getSlot().toString(),
+                "item", gson().toJson(json.get())
+        );
     }
 
     @Nullable

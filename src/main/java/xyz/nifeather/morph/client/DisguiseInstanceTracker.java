@@ -93,7 +93,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
 
     public void onMetaCommand(S2CRenderMapMetaCommand metaCommand)
     {
-        var meta = metaCommand.getArgumentAt(0);
+        var meta = metaCommand.renderMeta;
 
         if (meta == null)
         {

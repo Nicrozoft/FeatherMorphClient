@@ -420,7 +420,7 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
                             modConfigData.displayDisguiseOnHud = v;
 
                             if (serverHandler.serverReady())
-                                serverHandler.sendCommand(new C2SSetSingleOptionCommand(C2SSetSingleOptionCommand.ClientOptionEnum.HUD).setValue(v));
+                                serverHandler.sendCommand(new C2SSetSingleOptionCommand(C2SSetSingleOptionCommand.ClientOptionEnum.HUD, v));
                         })
                         .build()
         ).addEntry(

@@ -62,20 +62,14 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         this.client = client;
     }
 
-    private final S2CSetCommandsAgent agent = new S2CSetCommandsAgent();
-
     @Initializer
     private void load()
     {
-        agent.register(S2CCommandNames.SetFakeEquip, ClientSetEquipCommand::fromArguments)
-                .register(S2CCommandNames.SetRevealing, S2CSetRevealingCommand::fromArguments);
-
         registries.registerS2C(S2CCommandNames.Current, S2CCurrentCommand::fromArguments)
                 .registerS2C(S2CCommandNames.Query, S2CQueryCommand::fromArguments)
                 .registerS2C(S2CCommandNames.ReAuth, S2CReAuthCommand::fromArguments)
                 .registerS2C(S2CCommandNames.UnAuth, S2CUnAuthCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SwapHands, S2CSwapCommand::fromArguments)
-                .registerS2C(S2CCommandNames.BaseSet, agent::fromArguments)
                 .registerS2C(S2CCommandNames.Request, S2CRequestCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetReveal, S2CSetRenderRevealCommand::fromArguments)
                 .registerS2C(S2CCommandNames.AddReveal, S2CPartialRevealCommand::fromArguments)
@@ -86,7 +80,10 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
                 .registerS2C(S2CCommandNames.CRMap, S2CRenderMapSyncCommand::fromArguments)
                 .registerS2C(S2CCommandNames.CRRemove, S2CRenderMapRemoveCommand::fromArguments)
                 .registerS2C(S2CCommandNames.CRMeta, S2CRenderMapMetaCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SetSelfViewing, S2CSetSelfViewingCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SwapHands, S2CSwapCommand::fromArguments)
+                .registerS2C("animation", S2CAnimationCommand::fromArguments);
+
+        registries.registerS2C(S2CCommandNames.SetSelfViewing, S2CSetSelfViewingCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetModifyBoundingBox, S2CSetModifyBoundingBoxCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetAvailableAnimations, S2CSetAvailableAnimationsCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetDisplayingFakeEquip, S2CSetDisplayingFakeEquipCommand::fromArguments)
@@ -94,8 +91,9 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
                 .registerS2C(S2CCommandNames.SetSkillCooldown, S2CSetSkillCooldownCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetSelfViewIdentifier, S2CSetSelfViewIdentifierCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetProfile, S2CSetProfileCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SwapHands, S2CSwapCommand::fromArguments)
-                .registerS2C("animation", S2CAnimationCommand::fromArguments);
+                .registerS2C(S2CCommandNames.SetAggressive, S2CSetAggressiveCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetFakeEquip, ClientSetEquipCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetRevealing, S2CSetMobRevealingCommand::fromArguments);
     }
 
     //region Common
@@ -270,7 +268,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Override
     public void onSetAggressiveCommand(S2CSetAggressiveCommand s2CSetAggressiveCommand)
     {
-        var aggressive = s2CSetAggressiveCommand.getArgumentAt(0, false);
+        var aggressive = s2CSetAggressiveCommand.val;
 
         var syncer = instanceTracker.getSyncerFor(Minecraft.getInstance().player);
 
@@ -305,7 +303,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Override
     public void onSetDisplayingFakeEquipCommand(S2CSetDisplayingFakeEquipCommand s2CSetFakeEquipCommand)
     {
-        morphManager.equipOverriden.set(s2CSetFakeEquipCommand.getArgumentAt(0, false));
+        morphManager.equipOverriden.set(s2CSetFakeEquipCommand.displaying);
     }
 
     @Override
@@ -346,20 +344,19 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Override
     public void onSetSkillCooldownCommand(S2CSetSkillCooldownCommand s2CSetSkillCooldownCommand)
     {
-        skillHandler.setSkillCooldown(s2CSetSkillCooldownCommand.getArgumentAt(0, 0L));
+        skillHandler.setSkillCooldown(s2CSetSkillCooldownCommand.val);
     }
 
     @Override
     public void onSetSneakingCommand(S2CSetSneakingCommand s2CSetSneakingCommand)
     {
-        serverSideSneaking = s2CSetSneakingCommand.getArgumentAt(0);
+        serverSideSneaking = s2CSetSneakingCommand.sneaking;
     }
 
     @Override
     public void onSetSelfViewingCommand(S2CSetSelfViewingCommand s2CSetToggleSelfCommand)
     {
-        var enabled = s2CSetToggleSelfCommand.getArgumentAt(0);
-        enabled = enabled != null && enabled;
+        var enabled = s2CSetToggleSelfCommand.selfViewing();
 
         morphManager.selfVisibleEnabled.set(enabled);
 
@@ -379,14 +376,8 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
 
     public static boolean modifyBoundingBox = false;
 
-    @SuppressWarnings("removal")
     @Override
-    public void onSetReach(S2CSetReachCommand s2CSetReachCommand)
-    {
-    }
-
-    @Override
-    public void onSetRevealing(S2CSetRevealingCommand command)
+    public void onSetRevealing(S2CSetMobRevealingCommand command)
     {
         morphManager.revealingValue.set(command.getValue());
     }
@@ -465,7 +456,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     public void onAnimationCommand(S2CAnimationCommand command)
     {
         //logger.info("Update animation : " + command.getArgumentAt(0, "???"));
-        morphManager.playEmote(command.getArgumentAt(0, "???"));
+        morphManager.playEmote(command.getAnimId());
     }
 
     @Override
@@ -591,8 +582,8 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
             //    sendCommand(SharedValues.versionChannelIdentifierLegacy, "" + getImplmentingApiVersion());
 
             sendCommand(new C2SRequestInitialCommand());
-            sendCommand(new C2SSetSingleOptionCommand(C2SSetSingleOptionCommand.ClientOptionEnum.CLIENTVIEW).setValue(config.allowClientView));
-            sendCommand(new C2SSetSingleOptionCommand(C2SSetSingleOptionCommand.ClientOptionEnum.HUD).setValue(config.displayDisguiseOnHud));
+            sendCommand(new C2SSetSingleOptionCommand(C2SSetSingleOptionCommand.ClientOptionEnum.CLIENTVIEW, config.allowClientView));
+            sendCommand(new C2SSetSingleOptionCommand(C2SSetSingleOptionCommand.ClientOptionEnum.HUD, config.displayDisguiseOnHud));
         });
 
         ClientPlayNetworking.registerGlobalReceiver(MorphVersionChannelPayload.id, (payload, context) ->
