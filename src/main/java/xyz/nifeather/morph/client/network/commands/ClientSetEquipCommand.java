@@ -26,7 +26,7 @@ public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack>
 
     public static ClientSetEquipCommand fromArguments(Map<String, String> arguments) throws RuntimeException
     {
-        var slot = ProtocolEquipmentSlot.valueOf(Asserts.getStringOrThrow(arguments, "slot"));
+        var slot = ProtocolEquipmentSlot.valueOf(Asserts.getStringOrThrow(arguments, "slot").toUpperCase());
         var stack = jsonToStack(Asserts.getStringOrThrow(arguments, "item"));
 
         Objects.requireNonNull(stack, "No item stack for input NBT '%s'".formatted(Asserts.getStringOrThrow(arguments, "item")));

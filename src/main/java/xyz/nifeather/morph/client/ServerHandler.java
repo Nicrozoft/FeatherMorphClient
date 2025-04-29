@@ -224,7 +224,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     public void onCurrentCommand(xyz.nifeather.morph.network.commands.S2C.S2CCurrentCommand s2CCurrentCommand)
     {
         var id = s2CCurrentCommand.getDisguiseIdentifier();
-        morphManager.setCurrent(id.equals("null") ? null : id);
+        morphManager.setCurrent(id);
     }
 
     @Override
@@ -642,7 +642,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         }
         catch (Exception e)
         {
-            logger.error("发生异常：" + e.getMessage());
+            logger.error("Error handling server command：" + e.getMessage());
             e.printStackTrace();
         }
     }
