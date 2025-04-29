@@ -45,7 +45,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
         return new Object2ObjectArrayMap<>(trackingDisguises);
     }
 
-    public void onSyncCommand(S2CRenderMapSyncCommand s2CRenderMapSyncCommand)
+    public void onSyncCommand(S2CCRSyncRegisterCommand s2CRenderMapSyncCommand)
     {
         this.reset();
 
@@ -54,7 +54,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
         map.forEach(this::addSyncerIfNotExist);
     }
 
-    public void onAddCommand(S2CRenderMapAddCommand s2CRenderMapAddCommand)
+    public void onAddCommand(S2CCRRegisterCommand s2CRenderMapAddCommand)
     {
         if (!s2CRenderMapAddCommand.isValid()) return;
 
@@ -74,7 +74,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
         addSyncerIfNotExist(networkId, s2CRenderMapAddCommand.getMobId());
     }
 
-    public void onRemoveCommand(S2CRenderMapRemoveCommand s2CRenderMapRemoveCommand)
+    public void onRemoveCommand(S2CCRUnregisterCommand s2CRenderMapRemoveCommand)
     {
         if (!s2CRenderMapRemoveCommand.isValid()) return;
 
@@ -86,12 +86,12 @@ public class DisguiseInstanceTracker extends MorphClientObject
             this.removeSyncer(syncer);
     }
 
-    public void onClearCommand(S2CRenderMapClearCommand s2CRenderMapClearCommand)
+    public void onClearCommand(S2CCRClearCommand s2CRenderMapClearCommand)
     {
         this.reset();
     }
 
-    public void onMetaCommand(S2CRenderMapMetaCommand metaCommand)
+    public void onMetaCommand(S2CCRSetMetaCommand metaCommand)
     {
         var meta = metaCommand.renderMeta;
 

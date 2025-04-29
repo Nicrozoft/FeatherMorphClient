@@ -15,13 +15,13 @@ import xyz.nifeather.morph.network.commands.CommandRegistries;
 import xyz.nifeather.morph.network.commands.CommandRegistriesNew;
 import xyz.nifeather.morph.network.commands.S2C.AbstractS2CCommand;
 import xyz.nifeather.morph.network.commands.S2C.S2CCommandRecord;
-import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CPartialRevealCommand;
-import xyz.nifeather.morph.network.commands.S2C.clientrender.S2CRenderMapSyncCommand;
+import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CAddAdminRevealCommand;
+import xyz.nifeather.morph.network.commands.S2C.clientrender.S2CCRSyncRegisterCommand;
 import xyz.nifeather.morph.network.commands.S2C.query.QueryType;
 import xyz.nifeather.morph.network.commands.S2C.query.S2CQueryCommand;
-import xyz.nifeather.morph.network.commands.S2C.set.S2CSetSelfViewingCommand;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xiamomc.pluginbase.Bindables.Bindable;
+import xyz.nifeather.morph.network.commands.S2C.set.S2CSetSelfViewingStatusCommand;
 import xyz.nifeather.morph.server.ServerPluginObject;
 import xyz.nifeather.morph.server.morphs.FabricDisguiseSession;
 import xyz.nifeather.morph.server.morphs.FabricMorphManager;
@@ -211,21 +211,21 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
         var cmd = new S2CQueryCommand(QueryType.SET, unlocked);
 
         this.sendCommand(player, cmd);
-        this.sendCommand(player, new S2CSetSelfViewingCommand(true));
+        this.sendCommand(player, new S2CSetSelfViewingStatusCommand(true));
 
         Map<Integer, String> renderMap = new Object2ObjectOpenHashMap<>();
 
         for (FabricDisguiseSession session : morphManager.listAllSession())
             renderMap.put(session.player().getId(), session.disguiseIdentifier());
 
-        this.sendCommand(player, new S2CRenderMapSyncCommand(renderMap));
+        this.sendCommand(player, new S2CCRSyncRegisterCommand(renderMap));
 
         Map<Integer, String> revealMap = new Object2ObjectOpenHashMap<>();
 
         for (FabricDisguiseSession session : morphManager.listAllSession())
             revealMap.put(session.player().getId(), session.player().getName().tryCollapseToString());
 
-        this.sendCommand(player, new S2CPartialRevealCommand(revealMap));
+        this.sendCommand(player, new S2CAddAdminRevealCommand(revealMap));
     }
 
     @Override
@@ -255,8 +255,8 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
 
         switch (val)
         {
-            case ON, CLIENT_ON -> sendCommand(player, new S2CSetSelfViewingCommand(true));
-            default -> sendCommand(player, new S2CSetSelfViewingCommand(false));
+            case ON, CLIENT_ON -> sendCommand(player, new S2CSetSelfViewingStatusCommand(true));
+            default -> sendCommand(player, new S2CSetSelfViewingStatusCommand(false));
         }
     }
 

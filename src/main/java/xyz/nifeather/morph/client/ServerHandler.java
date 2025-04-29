@@ -27,10 +27,10 @@ import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
 import xyz.nifeather.morph.client.utilties.NbtUtils;
 import xyz.nifeather.morph.network.commands.C2S.*;
 import xyz.nifeather.morph.network.commands.CommandRegistriesNew;
-import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CClearRevealCommand;
-import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CPartialRevealCommand;
-import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CRemoveRevealCommand;
-import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CSetRenderRevealCommand;
+import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CAddAdminRevealCommand;
+import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CClearAdminRevealCommand;
+import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CRemoveAdminRevealCommand;
+import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CSyncAdminRevealCommand;
 import xyz.nifeather.morph.shared.SharedValues;
 import xyz.nifeather.morph.shared.payload.*;
 import xyz.nifeather.morph.client.utilties.NbtHelperCopy;
@@ -71,19 +71,19 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
                 .registerS2C(S2CCommandNames.UnAuth, S2CUnAuthCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SwapHands, S2CSwapCommand::fromArguments)
                 .registerS2C(S2CCommandNames.Request, S2CRequestCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SetReveal, S2CSetRenderRevealCommand::fromArguments)
-                .registerS2C(S2CCommandNames.AddReveal, S2CPartialRevealCommand::fromArguments)
-                .registerS2C(S2CCommandNames.ClearReveal, S2CClearRevealCommand::fromArguments)
-                .registerS2C(S2CCommandNames.RemoveReveal, S2CRemoveRevealCommand::fromArguments)
-                .registerS2C(S2CCommandNames.CRAdd, S2CRenderMapAddCommand::fromArguments)
-                .registerS2C(S2CCommandNames.CRClear, S2CRenderMapClearCommand::fromArguments)
-                .registerS2C(S2CCommandNames.CRMap, S2CRenderMapSyncCommand::fromArguments)
-                .registerS2C(S2CCommandNames.CRRemove, S2CRenderMapRemoveCommand::fromArguments)
-                .registerS2C(S2CCommandNames.CRMeta, S2CRenderMapMetaCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetReveal, S2CSyncAdminRevealCommand::fromArguments)
+                .registerS2C(S2CCommandNames.AddReveal, S2CAddAdminRevealCommand::fromArguments)
+                .registerS2C(S2CCommandNames.ClearReveal, S2CClearAdminRevealCommand::fromArguments)
+                .registerS2C(S2CCommandNames.RemoveReveal, S2CRemoveAdminRevealCommand::fromArguments)
+                .registerS2C(S2CCommandNames.CRAdd, S2CCRRegisterCommand::fromArguments)
+                .registerS2C(S2CCommandNames.CRClear, S2CCRClearCommand::fromArguments)
+                .registerS2C(S2CCommandNames.CRSyncRender, S2CCRSyncRegisterCommand::fromArguments)
+                .registerS2C(S2CCommandNames.CRRemove, S2CCRUnregisterCommand::fromArguments)
+                .registerS2C(S2CCommandNames.CRMeta, S2CCRSetMetaCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SwapHands, S2CSwapCommand::fromArguments)
                 .registerS2C("animation", S2CAnimationCommand::fromArguments);
 
-        registries.registerS2C(S2CCommandNames.SetSelfViewing, S2CSetSelfViewingCommand::fromArguments)
+        registries.registerS2C(S2CCommandNames.SetSelfViewing, S2CSetSelfViewingStatusCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetModifyBoundingBox, S2CSetModifyBoundingBoxCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetAvailableAnimations, S2CSetAvailableAnimationsCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetDisplayingFakeEquip, S2CSetDisplayingFakeEquipCommand::fromArguments)
@@ -354,7 +354,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     }
 
     @Override
-    public void onSetSelfViewingCommand(S2CSetSelfViewingCommand s2CSetToggleSelfCommand)
+    public void onSetSelfViewingCommand(S2CSetSelfViewingStatusCommand s2CSetToggleSelfCommand)
     {
         var enabled = s2CSetToggleSelfCommand.selfViewing();
 
@@ -395,7 +395,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     }
 
     @Override
-    public void onMapCommand(S2CSetRenderRevealCommand s2CMapCommand)
+    public void onMapCommand(S2CSyncAdminRevealCommand s2CMapCommand)
     {
         var map = s2CMapCommand.getMap();
 
@@ -404,50 +404,50 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     }
 
     @Override
-    public void onMapPartialCommand(S2CPartialRevealCommand s2CPartialMapCommand)
+    public void onMapPartialCommand(S2CAddAdminRevealCommand s2CPartialMapCommand)
     {
         instanceTracker.playerMap.putAll(s2CPartialMapCommand.getMap());
     }
 
     @Override
-    public void onMapClearCommand(S2CClearRevealCommand s2CMapClearCommand)
+    public void onMapClearCommand(S2CClearAdminRevealCommand s2CMapClearCommand)
     {
         instanceTracker.playerMap.clear();
     }
 
     @Override
-    public void onMapRemoveCommand(S2CRemoveRevealCommand s2CMapRemoveCommand)
+    public void onMapRemoveCommand(S2CRemoveAdminRevealCommand s2CMapRemoveCommand)
     {
         var id = s2CMapRemoveCommand.getTargetId();
         instanceTracker.playerMap.remove(id);
     }
 
     @Override
-    public void onClientMapSyncCommand(S2CRenderMapSyncCommand s2CRenderMapSyncCommand)
+    public void onClientMapSyncCommand(S2CCRSyncRegisterCommand s2CRenderMapSyncCommand)
     {
         instanceTracker.onSyncCommand(s2CRenderMapSyncCommand);
     }
 
     @Override
-    public void onClientMapAddCommand(S2CRenderMapAddCommand s2CRenderMapAddCommand)
+    public void onClientMapAddCommand(S2CCRRegisterCommand s2CRenderMapAddCommand)
     {
         instanceTracker.onAddCommand(s2CRenderMapAddCommand);
     }
 
     @Override
-    public void onClientMapRemoveCommand(S2CRenderMapRemoveCommand s2CRenderMapRemoveCommand)
+    public void onClientMapRemoveCommand(S2CCRUnregisterCommand s2CRenderMapRemoveCommand)
     {
         instanceTracker.onRemoveCommand(s2CRenderMapRemoveCommand);
     }
 
     @Override
-    public void onClientMapClearCommand(S2CRenderMapClearCommand s2CRenderMapClearCommand)
+    public void onClientMapClearCommand(S2CCRClearCommand s2CRenderMapClearCommand)
     {
         instanceTracker.onClearCommand(s2CRenderMapClearCommand);
     }
 
     @Override
-    public void onClientMapMetaNbtCommand(S2CRenderMapMetaCommand s2CRenderMapMetaCommand)
+    public void onClientMapMetaNbtCommand(S2CCRSetMetaCommand s2CRenderMapMetaCommand)
     {
         instanceTracker.onMetaCommand(s2CRenderMapMetaCommand);
     }
