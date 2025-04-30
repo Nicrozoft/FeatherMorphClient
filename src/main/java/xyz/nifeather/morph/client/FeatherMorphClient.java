@@ -2,9 +2,6 @@ package xyz.nifeather.morph.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import me.shedaniel.autoconfig.AutoConfig;
-import me.shedaniel.autoconfig.ConfigHolder;
-import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
@@ -36,6 +33,7 @@ import xyz.nifeather.morph.client.graphics.ModelWorkarounds;
 import xyz.nifeather.morph.client.graphics.hud.HudRenderHelper;
 import xyz.nifeather.morph.client.graphics.toasts.DisguiseEntryToast;
 import xyz.nifeather.morph.client.graphics.toasts.RequestToast;
+import xyz.nifeather.morph.client.network.ServerHandler;
 import xyz.nifeather.morph.client.screens.WaitingForServerScreen;
 import xyz.nifeather.morph.client.screens.disguise.DisguiseScreen;
 import xyz.nifeather.morph.client.screens.emote.EmoteScreen;

@@ -48,13 +48,16 @@ public class FeatherMorphFabricInitializer implements ModInitializer
 
         // 注册Payload
 
-        PayloadTypeRegistry.playS2C().register(MorphInitChannelPayload.id, MorphInitChannelPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(V3MorphInitChannelPayload.id, V3MorphInitChannelPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(V3MorphCommandPayload.id, V3MorphCommandPayload.CODEC);
 
-        PayloadTypeRegistry.playS2C().register(MorphVersionChannelPayload.id, MorphVersionChannelPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(MorphCommandPayload.id, MorphCommandPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(V2MorphVersionChannelPayload.id, V2MorphVersionChannelPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(V2MorphCommandPayload.id, V2MorphCommandPayload.CODEC);
 
-        PayloadTypeRegistry.playS2C().register(LegacyMorphVersionChannelPayload.id, LegacyMorphVersionChannelPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(LegacyMorphCommandPayload.id, LegacyMorphCommandPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(V1MorphVersionChannelPayload.id, V1MorphVersionChannelPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(V1MorphCommandPayload.id, V1MorphCommandPayload.CODEC);
+
+        PayloadTypeRegistry.playS2C().register(V1V2MorphInitChannelPayload.id, V1V2MorphInitChannelPayload.CODEC);
 
         if (SharedValues.allowSinglePlayerDebugging)
         {

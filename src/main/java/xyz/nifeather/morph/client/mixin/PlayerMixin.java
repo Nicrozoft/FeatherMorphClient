@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
 import xyz.nifeather.morph.client.EntityTickHandler;
-import xyz.nifeather.morph.client.ServerHandler;
+import xyz.nifeather.morph.client.network.ServerHandler;
 import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
 
 @Mixin(Player.class)

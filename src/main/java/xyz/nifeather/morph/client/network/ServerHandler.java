@@ -1,19 +1,12 @@
-package xyz.nifeather.morph.client;
+package xyz.nifeather.morph.client.network;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.llamalad7.mixinextras.sugar.Share;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import it.unimi.dsi.fastutil.Function;
-import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -21,9 +14,12 @@ import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import xyz.nifeather.morph.client.*;
 import xyz.nifeather.morph.client.config.ModConfigData;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
+import xyz.nifeather.morph.client.network.handlers.IProtocolHandler;
+import xyz.nifeather.morph.client.network.handlers.V3ProtocolHandler;
 import xyz.nifeather.morph.client.utilties.NbtUtils;
 import xyz.nifeather.morph.network.commands.C2S.*;
 import xyz.nifeather.morph.network.commands.CommandRegistriesNew;
@@ -36,19 +32,14 @@ import xyz.nifeather.morph.shared.payload.*;
 import xyz.nifeather.morph.client.utilties.NbtHelperCopy;
 import xyz.nifeather.morph.network.BasicServerHandler;
 import xyz.nifeather.morph.network.Constants;
-import xyz.nifeather.morph.network.commands.CommandRegistries;
 import xyz.nifeather.morph.network.commands.S2C.*;
 import xyz.nifeather.morph.network.commands.S2C.clientrender.*;
 import xyz.nifeather.morph.network.commands.S2C.query.S2CQueryCommand;
 import xyz.nifeather.morph.network.commands.S2C.set.*;
-import xiamomc.pluginbase.Annotations.Initializer;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xiamomc.pluginbase.Bindables.Bindable;
-import xiamomc.pluginbase.Exceptions.NullDependencyException;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ServerHandler extends MorphClientObject implements BasicServerHandler<Player>
@@ -57,14 +48,12 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
 
     private final CommandRegistriesNew registries = new CommandRegistriesNew();
 
+    private final LegacyServerHandler legacyServerHandler = new LegacyServerHandler(this);
+
     public ServerHandler(FeatherMorphClient client)
     {
         this.client = client;
-    }
 
-    @Initializer
-    private void load()
-    {
         registries.registerS2C(S2CCommandNames.Current, S2CCurrentCommand::fromArguments)
                 .registerS2C(S2CCommandNames.Query, S2CQueryCommand::fromArguments)
                 .registerS2C(S2CCommandNames.ReAuth, S2CReAuthCommand::fromArguments)
@@ -96,8 +85,6 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
                 .registerS2C(S2CCommandNames.SetRevealing, S2CSetMobRevealingCommand::fromArguments);
     }
 
-    //region Common
-
     @Resolved
     private ClientMorphManager morphManager;
 
@@ -110,12 +97,20 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Resolved
     private ClientSkillHandler skillHandler;
 
-    @Resolved
-    private DisguiseInstanceTracker tracker;
-
-    //endregion
-
     //region Network
+
+    private IProtocolHandler protocolHandler = V3ProtocolHandler.INSTANCE;
+
+    public void setProtocolHandler(IProtocolHandler newHandler)
+    {
+        logger.info("ProtocolHandler set to " + newHandler.getClass().getSimpleName());
+        this.protocolHandler = newHandler;
+    }
+
+    public IProtocolHandler protocolHandler()
+    {
+        return protocolHandler;
+    }
 
     public boolean serverReady()
     {
@@ -134,61 +129,22 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         return this.getServerVersion() == getImplmentingApiVersion();
     }
 
-    private final Map<ResourceLocation, Function<String, CustomPacketPayload>> payloadMap = new Object2ObjectArrayMap<>();
-
-    private void initializePayloadMap()
-    {
-        logger.info("Registering payload types...");
-
-        payloadMap.put(SharedValues.initializeChannelIdentifier, raw -> new MorphInitChannelPayload(raw.toString()));
-        payloadMap.put(SharedValues.commandChannelIdentifier, raw -> new MorphCommandPayload(raw.toString()));
-        //payloadMap.put(SharedValues.versionChannelIdentifier, raw -> new MorphVersionChannelPayload(MorphVersionChannelPayload.parseInt(raw.toString())));
-
-        payloadMap.put(SharedValues.commandChannelIdentifierLegacy, raw -> new LegacyMorphCommandPayload(raw.toString()));
-        payloadMap.put(SharedValues.versionChannelIdentifierLegacy, raw -> new LegacyMorphVersionChannelPayload(LegacyMorphVersionChannelPayload.parseInt(raw.toString())));
-
-        logger.info("Done.");
-    }
-
-    private int objectToInteger(Object obj)
-    {
-        try
-        {
-            return Integer.parseInt(obj.toString());
-        }
-        catch (Throwable t)
-        {
-            logger.warn("Error occurred parsing server protocol version: " + t.getMessage());
-            t.printStackTrace();
-
-            return 1;
-        }
-    }
-
-    public void sendCommand(ResourceLocation channel, String cmd)
-    {
-        var func = payloadMap.getOrDefault(channel, null);
-        if (func == null)
-            throw new NullDependencyException("Null func for channel " + channel + "?!");
-
-        var payload = func.apply(cmd);
-
-        ClientPlayNetworking.send(payload);
-    }
-
-    private final Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-
     public boolean sendCommand(AbstractC2SCommand<?> command)
     {
-        var record = C2SCommandRecord.fromC2SCommand(command);
-        var cmd = gson.toJson(record);
-
-        if (!usingLegacyPackets)
-            sendCommand(SharedValues.commandChannelIdentifier, cmd);
-        else
-            sendCommand(SharedValues.commandChannelIdentifierLegacy, cmd);
-
+        protocolHandler.sendCommand(command);
         return true;
+    }
+
+    private void tryProtocols()
+    {
+        var initRecord = new ClientInitializeRecordV3(List.of(SharedValues.newProtocolIdentify), getImplmentingApiVersion(), false);
+        V3ProtocolHandler.INSTANCE.sendInitializeRequest(initRecord);
+
+        this.addSchedule(() ->
+        {
+            if (serverReady.get()) return;
+            legacyServerHandler.sendInitializeV2(List.of(SharedValues.newProtocolIdentify), getImplmentingApiVersion());
+        }, 20);
     }
 
     @Override
@@ -196,8 +152,8 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     {
         this.resetServerStatus();
 
-        var command = new ClientInitializeRecordV3(List.of(SharedValues.newProtocolIdentify), getImplmentingApiVersion(), false);
-        this.sendCommand(SharedValues.initializeChannelIdentifier, gson.toJson(command));
+        setProtocolHandler(V3ProtocolHandler.INSTANCE);
+        tryProtocols();
     }
 
     @Override
@@ -217,6 +173,141 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     {
         return Constants.PROTOCOL_VERSION;
     }
+
+    public final Bindable<Boolean> serverReady = new Bindable<>(false);
+    private boolean handshakeReceived;
+
+    public void resetServerStatus()
+    {
+        handshakeReceived = false;
+
+        morphManager.reset();
+        updateServerStatus();
+        instanceTracker.reset();
+    }
+
+    public void testSetServerReady()
+    {
+        serverReady.set(true);
+    }
+
+    private void updateServerStatus()
+    {
+        serverReady.set(handshakeReceived);
+        displaySetToast.set(false);
+    }
+
+    private boolean networkInitialized;
+
+    public void initializeNetwork()
+    {
+        if (networkInitialized)
+            throw new RuntimeException("The network has been initialized once!");
+
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> connect());
+
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> disconnect());
+
+        PayloadTypeRegistry.playC2S().register(V3MorphInitChannelPayload.id, V3MorphInitChannelPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(V3MorphCommandPayload.id, V3MorphCommandPayload.CODEC);
+
+        //初始化网络
+        ClientPlayNetworking.registerGlobalReceiver(V3MorphInitChannelPayload.id, (payload, context) ->
+        {
+            logPacket(false, SharedValues.initializeChannelV3, payload.message());
+
+            logger.info("Server is using V3 packets");
+            var respond = protocolHandler.handleInitializeRespond(payload);
+            this.handleServerInitRespond(respond);
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(V3MorphCommandPayload.id, (payload, context) ->
+        {
+            logPacket(false, SharedValues.commandChannelV3, payload.content());
+
+            var result = protocolHandler.handleCommandInput(payload);
+            if (!result.success())
+            {
+                //todo: do something
+                return;
+            }
+
+            this.handleCommand(result.result());
+        });
+
+        networkInitialized = true;
+    }
+
+    public void handleServerInitRespond(InitializeRespondV3 respond)
+    {
+        if (serverReady.get())
+        {
+            logger.warn("Received init respond while the server is ready?!");
+            Thread.dumpStack();
+            return;
+        }
+
+        serverVersion = respond.apiVersion();
+        logger.info("Server is using command API V" + serverVersion);
+
+        serverReady.set(true);
+
+        handshakeReceived = true;
+        updateServerStatus();
+
+        sendCommand(new C2SRequestInitialCommand());
+        sendCommand(new C2SSetSingleOptionCommand(C2SSetSingleOptionCommand.ClientOptionEnum.CLIENTVIEW, config.allowClientView));
+        sendCommand(new C2SSetSingleOptionCommand(C2SSetSingleOptionCommand.ClientOptionEnum.HUD, config.displayDisguiseOnHud));
+    }
+
+    public void handleCommand(S2CCommandRecord commandRecord)
+    {
+        try
+        {
+            //if (config.verbosePackets)
+            //    logger.info("Received client command: " + input);
+
+            if (!serverReady.get() && !commandRecord.commandName().equals("reauth"))
+            {
+                if (config.verbosePackets)
+                    logger.warn("Received command before initialize complete, not processing... ('%s')".formatted(commandRecord.commandName()));
+
+                return;
+            }
+
+            var baseName = commandRecord.commandName();
+            var arguments = commandRecord.arguments();
+            var cmd = registries.createS2CCommand(baseName, arguments);
+
+            if (RenderSystem.isOnRenderThread())
+                cmd.onCommand(this);
+            else
+                FeatherMorphClient.getInstance().schedule(() -> cmd.onCommand(this));
+        }
+        catch (Exception e)
+        {
+            logger.error("Error handling server command：" + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public static Boolean serverSideSneaking;
+
+    public static void logPacket(boolean isOutGoingPacket, ResourceLocation channel, String content)
+    {
+        if (!FeatherMorphClient.getInstance().getModConfigData().verbosePackets) return;
+
+        var arrow = isOutGoingPacket ? " -> " : " <- ";
+
+        String builder = channel.toString() + arrow
+                + "SERVER"
+                + " :: "
+                + "'%s'".formatted(content);
+
+        FeatherMorphClient.LOGGER.info(builder);
+    }
+
+    //endregion Network
 
     //region Impl of Serverhandler
 
@@ -477,186 +568,4 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     }
 
     //endregion Impl of ServerHandler
-
-    public final Bindable<Boolean> serverReady = new Bindable<>(false);
-    private boolean handshakeReceived;
-    private boolean apiVersionChecked;
-
-    public void resetServerStatus()
-    {
-        handshakeReceived = false;
-        apiVersionChecked = false;
-        usingLegacyPackets = false;
-
-        morphManager.reset();
-        updateServerStatus();
-        instanceTracker.reset();
-    }
-
-    public void testSetServerReady()
-    {
-        serverReady.set(true);
-    }
-
-    private void updateServerStatus()
-    {
-        serverReady.set(handshakeReceived && apiVersionChecked);
-        displaySetToast.set(false);
-    }
-
-    private boolean networkInitialized;
-
-    private boolean usingLegacyPackets;
-
-    public void initializeNetwork()
-    {
-        if (networkInitialized)
-            throw new RuntimeException("The network has been initialized once!");
-
-        initializePayloadMap();
-
-        ClientPlayConnectionEvents.INIT.register((handler, client) ->
-        {
-        });
-
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) ->
-        {
-            connect();
-        });
-
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
-        {
-            disconnect();
-        });
-
-        PayloadTypeRegistry.playC2S().register(MorphInitChannelPayload.id, MorphInitChannelPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(MorphVersionChannelPayload.id, MorphVersionChannelPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(MorphCommandPayload.id, MorphCommandPayload.CODEC);
-
-        //初始化网络
-        ClientPlayNetworking.registerGlobalReceiver(MorphInitChannelPayload.id, (payload, context) ->
-        {
-            String msgDeny = "no";
-
-            var respond = gson.fromJson(payload.message(), InitializeRespondV3.class);
-            serverVersion = respond.apiVersion();
-
-            SharedValues.client_UseNewPacketSerializeMethod = true;
-            usingLegacyPackets = false;
-            serverReady.set(true);
-/*
-            if (1+1<2)
-            {
-                if (content.stream().noneMatch(s -> s.equals(SharedValues.newProtocolIdentify)))
-                {
-                    logger.info("The server is using legacy method to serialize commands.");
-                    usingLegacyPackets = true;
-
-                    SharedValues.client_UseNewPacketSerializeMethod = false;
-                }
-                else
-                {
-                    logger.info("The server is using new method to serialize commands.");
-                    usingLegacyPackets = false;
-
-                    SharedValues.client_UseNewPacketSerializeMethod = true;
-                }
-
-                if (content.stream().anyMatch(s -> s.equals(msgDeny)))
-                {
-                    logger.error("Initialize failed: Denied by server");
-                    return;
-                }
-            }
-*/
-            handshakeReceived = true;
-            apiVersionChecked = true;
-            updateServerStatus();
-
-            // Server parses version with Integer.parseInt(), and client only accepts integer value not string
-            // What a cursed pair :(
-
-            //if (!usingLegacyPackets)
-            //    sendCommand(SharedValues.versionChannelIdentifier, "" + getImplmentingApiVersion());
-            //else
-            //    sendCommand(SharedValues.versionChannelIdentifierLegacy, "" + getImplmentingApiVersion());
-
-            sendCommand(new C2SRequestInitialCommand());
-            sendCommand(new C2SSetSingleOptionCommand(C2SSetSingleOptionCommand.ClientOptionEnum.CLIENTVIEW, config.allowClientView));
-            sendCommand(new C2SSetSingleOptionCommand(C2SSetSingleOptionCommand.ClientOptionEnum.HUD, config.displayDisguiseOnHud));
-        });
-
-        ClientPlayNetworking.registerGlobalReceiver(MorphVersionChannelPayload.id, (payload, context) ->
-        {
-            this.handleVersion(payload.protocolVersion());
-        });
-
-        ClientPlayNetworking.registerGlobalReceiver(MorphCommandPayload.id, (payload, context) ->
-        {
-            handleCommand(payload.content());
-        });
-
-        // Legacy
-
-        PayloadTypeRegistry.playC2S().register(LegacyMorphCommandPayload.id, LegacyMorphCommandPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(LegacyMorphVersionChannelPayload.id, LegacyMorphVersionChannelPayload.CODEC);
-
-        ClientPlayNetworking.registerGlobalReceiver(LegacyMorphVersionChannelPayload.id, (payload, context) ->
-        {
-            handleVersion(payload.getProtocolVersion());
-        });
-
-        ClientPlayNetworking.registerGlobalReceiver(LegacyMorphCommandPayload.id, (payload, context) ->
-        {
-            handleCommand(payload.content());
-        });
-
-        networkInitialized = true;
-    }
-
-    private void handleCommand(String input)
-    {
-        try
-        {
-            if (config.verbosePackets)
-                logger.info("Received client command: " + input);
-
-            var commandRecord = gson.fromJson(input, S2CCommandRecord.class);
-
-            if (!serverReady.get() && !commandRecord.commandName().equals("reauth"))
-            {
-                if (config.verbosePackets)
-                    logger.warn("Received command before initialize complete, not processing... ('%s')".formatted(input));
-
-                return;
-            }
-
-            var baseName = commandRecord.commandName();
-            var arguments = commandRecord.arguments();
-            var cmd = registries.createS2CCommand(baseName, arguments);
-
-            if (RenderSystem.isOnRenderThread())
-                cmd.onCommand(this);
-            else
-                FeatherMorphClient.getInstance().schedule(() -> cmd.onCommand(this));
-        }
-        catch (Exception e)
-        {
-            logger.error("Error handling server command：" + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void handleVersion(int input)
-    {
-        serverVersion = input;
-        apiVersionChecked = true;
-        updateServerStatus();
-
-        logger.info("Server API version: " + serverVersion);
-    }
-
-    public static Boolean serverSideSneaking;
-
-    //endregion Network
 }

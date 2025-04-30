@@ -11,7 +11,6 @@ import xyz.nifeather.morph.network.BasicClientHandler;
 import xyz.nifeather.morph.network.InitializeState;
 import xyz.nifeather.morph.network.PlayerOptions;
 import xyz.nifeather.morph.network.commands.C2S.*;
-import xyz.nifeather.morph.network.commands.CommandRegistries;
 import xyz.nifeather.morph.network.commands.CommandRegistriesNew;
 import xyz.nifeather.morph.network.commands.S2C.AbstractS2CCommand;
 import xyz.nifeather.morph.network.commands.S2C.S2CCommandRecord;
@@ -25,7 +24,7 @@ import xyz.nifeather.morph.network.commands.S2C.set.S2CSetSelfViewingStatusComma
 import xyz.nifeather.morph.server.ServerPluginObject;
 import xyz.nifeather.morph.server.morphs.FabricDisguiseSession;
 import xyz.nifeather.morph.server.morphs.FabricMorphManager;
-import xyz.nifeather.morph.shared.payload.MorphCommandPayload;
+import xyz.nifeather.morph.shared.payload.V2MorphCommandPayload;
 
 import java.util.List;
 import java.util.Map;
@@ -61,7 +60,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
         logger.info(builder);
     }
 
-    public void onCommandPayload(MorphCommandPayload morphCommandPayload, ServerPlayNetworking.Context context)
+    public void onCommandPayload(V2MorphCommandPayload morphCommandPayload, ServerPlayNetworking.Context context)
     {
         var player = context.player();
         var input = morphCommandPayload.content();
@@ -103,9 +102,9 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
         var record = S2CCommandRecord.fromS2CCommand(command);
         var cmd = gson.toJson(record);
 
-        logPacket(true, player, MorphCommandPayload.id.id().toString(), cmd, cmd.length());
+        logPacket(true, player, V2MorphCommandPayload.id.id().toString(), cmd, cmd.length());
 
-        var payload = new MorphCommandPayload(cmd);
+        var payload = new V2MorphCommandPayload(cmd);
 
         ServerPlayNetworking.send(player, payload);
         return true;

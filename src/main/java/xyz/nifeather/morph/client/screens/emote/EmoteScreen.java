@@ -5,7 +5,7 @@ import org.joml.Vector2i;
 import xyz.nifeather.morph.shared.AnimationNames;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.FeatherMorphClient;
-import xyz.nifeather.morph.client.ServerHandler;
+import xyz.nifeather.morph.client.network.ServerHandler;
 import xyz.nifeather.morph.client.graphics.Anchor;
 import xyz.nifeather.morph.client.graphics.DrawableText;
 import xyz.nifeather.morph.client.graphics.transforms.easings.Easing;

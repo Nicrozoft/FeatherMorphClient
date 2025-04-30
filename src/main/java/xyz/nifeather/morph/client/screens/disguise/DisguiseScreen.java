@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.EntityCache;
 import xyz.nifeather.morph.client.FeatherMorphClient;
-import xyz.nifeather.morph.client.ServerHandler;
+import xyz.nifeather.morph.client.network.ServerHandler;
 import xyz.nifeather.morph.client.graphics.*;
 import xyz.nifeather.morph.client.graphics.color.Colors;
 import xyz.nifeather.morph.client.graphics.color.MaterialColors;

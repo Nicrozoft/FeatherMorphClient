@@ -1,7 +1,6 @@
 package xyz.nifeather.morph.server;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -18,9 +17,9 @@ import xyz.nifeather.morph.server.events.CommonEventProcessor;
 import xyz.nifeather.morph.server.morphs.FabricMorphManager;
 import xyz.nifeather.morph.server.network.FabricClientHandler;
 import xyz.nifeather.morph.shared.SharedValues;
-import xyz.nifeather.morph.shared.payload.MorphCommandPayload;
-import xyz.nifeather.morph.shared.payload.MorphInitChannelPayload;
-import xyz.nifeather.morph.shared.payload.MorphVersionChannelPayload;
+import xyz.nifeather.morph.shared.payload.V2MorphCommandPayload;
+import xyz.nifeather.morph.shared.payload.V3MorphInitChannelPayload;
+import xyz.nifeather.morph.shared.payload.V2MorphVersionChannelPayload;
 
 import java.io.File;
 
@@ -67,9 +66,9 @@ public class FeatherMorphFabricMain extends XiaMoJavaPlugin
     @Override
     protected void enable()
     {
-        ServerPlayNetworking.registerGlobalReceiver(MorphInitChannelPayload.id, this::onInitPayload);
-        ServerPlayNetworking.registerGlobalReceiver(MorphVersionChannelPayload.id, this::onApiPayload);
-        ServerPlayNetworking.registerGlobalReceiver(MorphCommandPayload.id, this::onPlayCommandPayload);
+        ServerPlayNetworking.registerGlobalReceiver(V3MorphInitChannelPayload.id, this::onInitPayload);
+        ServerPlayNetworking.registerGlobalReceiver(V2MorphVersionChannelPayload.id, this::onApiPayload);
+        ServerPlayNetworking.registerGlobalReceiver(V2MorphCommandPayload.id, this::onPlayCommandPayload);
 
         // Global dependencies
         dependencyManager.cache(morphManager = new FabricMorphManager());
@@ -86,9 +85,9 @@ public class FeatherMorphFabricMain extends XiaMoJavaPlugin
     @Override
     protected void disable()
     {
-        ServerPlayNetworking.unregisterGlobalReceiver(MorphInitChannelPayload.id.id());
-        ServerPlayNetworking.unregisterGlobalReceiver(MorphVersionChannelPayload.id.id());
-        ServerPlayNetworking.unregisterGlobalReceiver(MorphCommandPayload.id.id());
+        ServerPlayNetworking.unregisterGlobalReceiver(V3MorphInitChannelPayload.id.id());
+        ServerPlayNetworking.unregisterGlobalReceiver(V2MorphVersionChannelPayload.id.id());
+        ServerPlayNetworking.unregisterGlobalReceiver(V2MorphCommandPayload.id.id());
 
         morphManager.dispose();
     }
@@ -127,27 +126,27 @@ public class FeatherMorphFabricMain extends XiaMoJavaPlugin
 
     //region Payload handle
 
-    private void onPlayCommandPayload(MorphCommandPayload morphCommandPayload, ServerPlayNetworking.Context context)
+    private void onPlayCommandPayload(V2MorphCommandPayload morphCommandPayload, ServerPlayNetworking.Context context)
     {
         clientHandler.onCommandPayload(morphCommandPayload, context);
     }
 
-    private void onInitPayload(MorphInitChannelPayload packet, ServerPlayNetworking.Context context)
+    private void onInitPayload(V3MorphInitChannelPayload packet, ServerPlayNetworking.Context context)
     {
         var player = context.player();
         LOGGER.info("On init payload! from " + player);
 
-        var payload = new MorphInitChannelPayload(SharedValues.newProtocolIdentify);
+        var payload = new V3MorphInitChannelPayload(SharedValues.newProtocolIdentify);
 
         ServerPlayNetworking.send(player, payload);
     }
 
-    private void onApiPayload(MorphVersionChannelPayload morphVersionChannelPayload, ServerPlayNetworking.Context context)
+    private void onApiPayload(V2MorphVersionChannelPayload v2MorphVersionChannelPayload, ServerPlayNetworking.Context context)
     {
         var player = context.player();
-        LOGGER.info("%s logged in with api version %s!".formatted(player.getName(), morphVersionChannelPayload.getProtocolVersion()));
+        LOGGER.info("%s logged in with api version %s!".formatted(player.getName(), v2MorphVersionChannelPayload.getProtocolVersion()));
 
-        var payload = new MorphVersionChannelPayload(Constants.PROTOCOL_VERSION);
+        var payload = new V2MorphVersionChannelPayload(Constants.PROTOCOL_VERSION);
         ServerPlayNetworking.send(player, payload);
     }
 

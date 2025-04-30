@@ -10,15 +10,15 @@ import xyz.nifeather.morph.shared.SharedValues;
 import java.nio.charset.StandardCharsets;
 
 @Environment(EnvType.CLIENT)
-public record LegacyMorphVersionChannelPayload(int protocolVersion) implements CustomPacketPayload
+public record V1MorphVersionChannelPayload(int protocolVersion) implements CustomPacketPayload
 {
     // Client --String-> Server
     // Bukkit Server --Integer-> Client
     // Fabric Server --String-> Client
     // :(
-    public static final StreamCodec<FriendlyByteBuf, LegacyMorphVersionChannelPayload> CODEC  = StreamCodec.ofMember(
-            (value, buf) -> BufferUtils.writeVersionBufAuto(value.protocolVersion, buf), //Client -> Server
-            buf -> new LegacyMorphVersionChannelPayload(BufferUtils.readVersionBuf(buf)) // Server -> Client
+    public static final StreamCodec<FriendlyByteBuf, V1MorphVersionChannelPayload> CODEC  = StreamCodec.ofMember(
+            (value, buf) -> BufferUtils.writeVersionBufLegacy(value.protocolVersion, buf), //Client -> Server
+            buf -> new V1MorphVersionChannelPayload(buf.readInt()) // Server -> Client
     );
 
     public int getProtocolVersion()
@@ -73,7 +73,7 @@ public record LegacyMorphVersionChannelPayload(int protocolVersion) implements C
         return read;
     }
 
-    public static final Type<LegacyMorphVersionChannelPayload> id = new Type<>(SharedValues.versionChannelIdentifierLegacy);
+    public static final Type<V1MorphVersionChannelPayload> id = new Type<>(SharedValues.versionChannelV1);
 
     @Override
     public Type<? extends CustomPacketPayload> type()

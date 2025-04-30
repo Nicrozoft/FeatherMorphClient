@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.nifeather.morph.client.ServerHandler;
+import xyz.nifeather.morph.client.network.ServerHandler;
 
 @Mixin(LocalPlayer.class)
 public class ClientPlayerEntityMixin
