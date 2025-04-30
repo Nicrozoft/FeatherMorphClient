@@ -62,9 +62,12 @@ dependencies {
     modImplementation("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
 
-    modImplementation("com.github.NiFeather:feathermorph-command-compat-layer:8177fbdad6")
+    val compatLayerVersion = "8177fbdad6"
 
-    //include("com.github.NiFeather:feathermorph-protocols:$protocolVersion")
+    modImplementation("com.github.NiFeather:feathermorph-command-compat-layer:$compatLayerVersion")
+    include("com.github.NiFeather:feathermorph-command-compat-layer:$compatLayerVersion")
+
+    include("com.github.NiFeather:feathermorph-protocols:$protocolVersion")
 }
 
 loom {
