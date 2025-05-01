@@ -85,10 +85,27 @@ public class DrawableText extends MDrawable
         this.drawShadow = val;
     }
 
+    @Nullable
+    private Component tooltip;
+
+    public void setTooltip(@Nullable Component tooltip)
+    {
+        this.tooltip = tooltip;
+    }
+
+    @Nullable
+    public Component getTooltip()
+    {
+        return tooltip;
+    }
+
     @Override
     public void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
     {
         context.drawString(renderer, text, 0, 0, color, drawShadow);
+
+        if (hovered() && tooltip != null)
+            context.renderTooltip(Minecraft.getInstance().font, getTooltip(), 0, 0);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package xyz.nifeather.morph.client.screens.disguise;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.EntityCache;
@@ -107,8 +108,6 @@ public class DisguiseScreen extends FeatherScreen
             refreshEntityPreview(n);
         }, true);
 
-        serverAPIText.setColor(0x99ffffff);
-
         titleText.setWidth(200);
         titleText.setHeight(20);
 
@@ -167,7 +166,7 @@ public class DisguiseScreen extends FeatherScreen
     private final DrawableText titleText = new DrawableText(Component.translatable("gui.morphclient.select_disguise"));
     private final DrawableText selectedIdentifierText = new DrawableText();
     private final DrawableText serverAPIText = new DrawableText();
-    private final DrawableText outdatedText = new DrawableText(Component.translatable("gui.morphclient.version_mismatch").withStyle(ChatFormatting.GOLD).withStyle(ChatFormatting.BOLD));
+    private final DrawableText handlerText = new DrawableText();
 
     private final int fontMargin = 4;
 
@@ -232,16 +231,12 @@ public class DisguiseScreen extends FeatherScreen
         topTextContainer.addRange(titleText, selectedIdentifierText);
         topTextContainer.setPadding(new MarginPadding(0, 0, fontMargin - 1, 0));
 
-        if (!FeatherMorphClient.getInstance().serverHandler.serverApiMatch())
-            bottomTextContainer.add(outdatedText);
+        //if (!FeatherMorphClient.getInstance().serverHandler.serverApiMatch())
+        bottomTextContainer.add(handlerText);
 
         bottomTextContainer.add(serverAPIText);
         bottomTextContainer.setAnchor(Anchor.BottomLeft);
         bottomTextContainer.setPadding(new MarginPadding(0, 0, fontMargin + 1, 0));
-
-        var fontHeight = font.lineHeight;
-        serverAPIText.setMargin(new MarginPadding(0, 0, fontHeight + 2, 0));
-        selectedIdentifierText.setMargin(new MarginPadding(0, 0, fontHeight + 2, 0));
 
         var containerHeight = 30;
         bottomTextContainer.setHeight(containerHeight);
@@ -291,7 +286,25 @@ public class DisguiseScreen extends FeatherScreen
         textBox.setX(-25);
         buttonContainer.setX(-25);
 
-        serverAPIText.setText("C %s :: S %s".formatted(serverHandler.getImplmentingApiVersion(), serverHandler.getServerApiVersion()));
+        var fontHeight = font.lineHeight;
+        serverAPIText.setMargin(new MarginPadding(0, 0, fontHeight + 2, 0));
+        serverAPIText.setColor(0x99ffffff);
+        handlerText.setColor(0x99ffffff);
+
+        selectedIdentifierText.setMargin(new MarginPadding(0, 0, fontHeight + 2, 0));
+
+        handlerText.setText("H: %s".formatted(serverHandler.protocolHandler().getClass().getSimpleName()));
+
+        MutableComponent apiText = Component.literal("C %s :: S %s".formatted(serverHandler.getImplmentingApiVersion(), serverHandler.getServerApiVersion()));
+
+        if (!serverHandler.serverApiMatch())
+        {
+            apiText = apiText.withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD);
+            serverAPIText.setTooltip(Component.translatable("gui.morphclient.version_mismatch"));
+            serverAPIText.setColor(0xffffffff);
+        }
+
+        serverAPIText.setText(apiText);
 
         this.addRange(new IMDrawable[]
         {
