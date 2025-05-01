@@ -24,7 +24,6 @@ import xyz.nifeather.morph.network.commands.S2C.set.S2CSetSelfViewingStatusComma
 import xyz.nifeather.morph.server.ServerPluginObject;
 import xyz.nifeather.morph.server.morphs.FabricDisguiseSession;
 import xyz.nifeather.morph.server.morphs.FabricMorphManager;
-import xyz.nifeather.morph.shared.payload.V2MorphCommandPayload;
 import xyz.nifeather.morph.shared.payload.V3MorphCommandPayload;
 
 import java.util.List;
@@ -97,9 +96,9 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
         var record = S2CCommandRecord.fromS2CCommand(command);
         var cmd = gson.toJson(record);
 
-        logPacket(true, player, V2MorphCommandPayload.id.id().toString(), cmd, cmd.length());
+        logPacket(true, player, V3MorphCommandPayload.id.id().toString(), cmd, cmd.length());
 
-        var payload = new V2MorphCommandPayload(cmd);
+        var payload = new V3MorphCommandPayload(cmd);
 
         ServerPlayNetworking.send(player, payload);
         return true;

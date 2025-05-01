@@ -1,5 +1,7 @@
 package xyz.nifeather.morph.server;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.Util;
 import net.minecraft.server.MinecraftServer;
@@ -11,18 +13,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.nifeather.morph.network.Constants;
 import xiamomc.pluginbase.XiaMoJavaPlugin;
+import xyz.nifeather.morph.network.commands.S2C.InitializeRespondV3;
 import xyz.nifeather.morph.server.commands.CommandRegistrationContext;
 import xyz.nifeather.morph.server.commands.FabricCommandHub;
 import xyz.nifeather.morph.server.events.CommonEventProcessor;
 import xyz.nifeather.morph.server.morphs.FabricMorphManager;
 import xyz.nifeather.morph.server.network.FabricClientHandler;
 import xyz.nifeather.morph.shared.SharedValues;
-import xyz.nifeather.morph.shared.payload.V2MorphCommandPayload;
 import xyz.nifeather.morph.shared.payload.V3MorphCommandPayload;
 import xyz.nifeather.morph.shared.payload.V3MorphInitChannelPayload;
-import xyz.nifeather.morph.shared.payload.V2MorphVersionChannelPayload;
 
 import java.io.File;
+import java.util.List;
 
 public class FeatherMorphFabricMain extends XiaMoJavaPlugin
 {
@@ -130,22 +132,16 @@ public class FeatherMorphFabricMain extends XiaMoJavaPlugin
         clientHandler.onCommandPayload(morphCommandPayload, context);
     }
 
+    private final Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+
     private void onInitPayload(V3MorphInitChannelPayload packet, ServerPlayNetworking.Context context)
     {
         var player = context.player();
         LOGGER.info("On init payload! from " + player);
 
-        var payload = new V3MorphInitChannelPayload(SharedValues.newProtocolIdentify);
+        var respond = new InitializeRespondV3(List.of(SharedValues.newProtocolIdentify), Constants.PROTOCOL_VERSION);
+        var payload = new V3MorphInitChannelPayload(gson.toJson(respond));
 
-        ServerPlayNetworking.send(player, payload);
-    }
-
-    private void onApiPayload(V2MorphVersionChannelPayload v2MorphVersionChannelPayload, ServerPlayNetworking.Context context)
-    {
-        var player = context.player();
-        LOGGER.info("%s logged in with api version %s!".formatted(player.getName(), v2MorphVersionChannelPayload.getProtocolVersion()));
-
-        var payload = new V2MorphVersionChannelPayload(Constants.PROTOCOL_VERSION);
         ServerPlayNetworking.send(player, payload);
     }
 
