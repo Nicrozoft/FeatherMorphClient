@@ -18,6 +18,7 @@ import xyz.nifeather.morph.server.morphs.FabricMorphManager;
 import xyz.nifeather.morph.server.network.FabricClientHandler;
 import xyz.nifeather.morph.shared.SharedValues;
 import xyz.nifeather.morph.shared.payload.V2MorphCommandPayload;
+import xyz.nifeather.morph.shared.payload.V3MorphCommandPayload;
 import xyz.nifeather.morph.shared.payload.V3MorphInitChannelPayload;
 import xyz.nifeather.morph.shared.payload.V2MorphVersionChannelPayload;
 
@@ -67,8 +68,7 @@ public class FeatherMorphFabricMain extends XiaMoJavaPlugin
     protected void enable()
     {
         ServerPlayNetworking.registerGlobalReceiver(V3MorphInitChannelPayload.id, this::onInitPayload);
-        ServerPlayNetworking.registerGlobalReceiver(V2MorphVersionChannelPayload.id, this::onApiPayload);
-        ServerPlayNetworking.registerGlobalReceiver(V2MorphCommandPayload.id, this::onPlayCommandPayload);
+        ServerPlayNetworking.registerGlobalReceiver(V3MorphCommandPayload.id, this::onPlayCommandPayload);
 
         // Global dependencies
         dependencyManager.cache(morphManager = new FabricMorphManager());
@@ -86,8 +86,7 @@ public class FeatherMorphFabricMain extends XiaMoJavaPlugin
     protected void disable()
     {
         ServerPlayNetworking.unregisterGlobalReceiver(V3MorphInitChannelPayload.id.id());
-        ServerPlayNetworking.unregisterGlobalReceiver(V2MorphVersionChannelPayload.id.id());
-        ServerPlayNetworking.unregisterGlobalReceiver(V2MorphCommandPayload.id.id());
+        ServerPlayNetworking.unregisterGlobalReceiver(V3MorphCommandPayload.id.id());
 
         morphManager.dispose();
     }
@@ -126,7 +125,7 @@ public class FeatherMorphFabricMain extends XiaMoJavaPlugin
 
     //region Payload handle
 
-    private void onPlayCommandPayload(V2MorphCommandPayload morphCommandPayload, ServerPlayNetworking.Context context)
+    private void onPlayCommandPayload(V3MorphCommandPayload morphCommandPayload, ServerPlayNetworking.Context context)
     {
         clientHandler.onCommandPayload(morphCommandPayload, context);
     }

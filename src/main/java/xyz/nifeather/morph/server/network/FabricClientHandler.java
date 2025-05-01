@@ -25,6 +25,7 @@ import xyz.nifeather.morph.server.ServerPluginObject;
 import xyz.nifeather.morph.server.morphs.FabricDisguiseSession;
 import xyz.nifeather.morph.server.morphs.FabricMorphManager;
 import xyz.nifeather.morph.shared.payload.V2MorphCommandPayload;
+import xyz.nifeather.morph.shared.payload.V3MorphCommandPayload;
 
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
                 .registerC2S(C2SCommandNames.SetSingleOption, C2SSetSingleOptionCommand::fromArguments)
                 .registerC2S(C2SCommandNames.ToggleSelf, C2SToggleSelfCommand::fromArguments)
                 .registerC2S(C2SCommandNames.Unmorph, C2SUnmorphCommand::fromArguments)
-                .registerC2S(C2SCommandNames.Request, C2SRequestCommand::fromArguments)
+                .registerC2S(C2SCommandNames.ExchangeRequestManagement, C2SExchangeRequestManagementCommand::fromArguments)
                 .registerC2S("animation", C2SAnimationCommand::fromArguments);
     }
 
@@ -60,17 +61,11 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
         logger.info(builder);
     }
 
-    public void onCommandPayload(V2MorphCommandPayload morphCommandPayload, ServerPlayNetworking.Context context)
+    public void onCommandPayload(V3MorphCommandPayload morphCommandPayload, ServerPlayNetworking.Context context)
     {
         var player = context.player();
         var input = morphCommandPayload.content();
-/*
-        //在API检查完成之前忽略客户端的所有指令
-        if (this.getPlayerConnectionState(player).worseThan(InitializeState.API_CHECKED))
-        {
-            return;
-        }
-*/
+
         if (logInComingPackets.get())
             logPacket(false, player, morphCommandPayload.type().id().toString(), input, input.length());
 
@@ -268,7 +263,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     }
 
     @Override
-    public void onRequestCommand(C2SRequestCommand command)
+    public void onRequestCommand(C2SExchangeRequestManagementCommand command)
     {
     }
 
