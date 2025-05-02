@@ -131,7 +131,15 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
 
     public boolean sendCommand(AbstractC2SCommand<?> command)
     {
-        protocolHandler.sendCommand(command);
+        try
+        {
+            protocolHandler.sendCommand(command);
+        }
+        catch (Throwable t)
+        {
+            logger.error("Failed to send command: " + t.getMessage());
+        }
+
         return true;
     }
 
@@ -227,10 +235,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
 
             var result = protocolHandler.handleCommandInput(payload);
             if (!result.success())
-            {
-                //todo: do something
                 return;
-            }
 
             this.handleCommand(result.result());
         });

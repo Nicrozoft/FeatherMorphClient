@@ -9,7 +9,7 @@ import xyz.nifeather.morph.network.commands.S2C.InitializeRespondV3;
 
 public interface IProtocolHandler
 {
-    void sendCommand(AbstractC2SCommand<?> command);
+    void sendCommand(AbstractC2SCommand<?> command) throws Exception;
     void sendInitializeRequest(ClientInitializeRecordV3 initializeRecordV3);
     void sendVersion(int clientVersion);
 
