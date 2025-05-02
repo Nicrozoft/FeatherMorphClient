@@ -54,35 +54,48 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     {
         this.client = client;
 
+        // Misc Commands
         registries.registerS2C(S2CCommandNames.SetCurrent, S2CSetCurrentCommand::fromArguments)
-                .registerS2C(S2CCommandNames.Query, S2CQueryCommand::fromArguments)
                 .registerS2C(S2CCommandNames.ReAuth, S2CReAuthCommand::fromArguments)
                 .registerS2C(S2CCommandNames.UnAuth, S2CUnAuthCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SwapHands, S2CSwapCommand::fromArguments)
-                .registerS2C(S2CCommandNames.UpdateRequestStatus, S2CUpdateRequestStatusCommand::fromArguments)
-                .registerS2C(S2CCommandNames.AdminRevealSync, S2CSyncAdminRevealCommand::fromArguments)
+                .registerS2C(S2CCommandNames.Query, S2CQueryCommand::fromArguments);
+
+        // Exchange Request
+        registries.registerS2C(S2CCommandNames.UpdateRequestStatus, S2CUpdateRequestStatusCommand::fromArguments);
+
+        // Some Set Commands
+        registries.registerS2C(S2CCommandNames.SetAggressive, S2CSetAggressiveCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetFakeEquip, ClientSetEquipCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetDisplayingFakeEquip, S2CSetDisplayingFakeEquipCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetSkinProfile, S2CSetProfileCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetSelfViewIdentifier, S2CSetSelfViewIdentifierCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetSkillCooldown, S2CSetSkillCooldownCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetSNbt, S2CSetSNbtCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetSneaking, S2CSetSneakingCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetSelfViewing, S2CSetSelfViewingStatusCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetModifyBoundingBox, S2CSetModifyBoundingBoxCommand::fromArguments);
+
+        // Mob Reveal
+        registries.registerS2C(S2CCommandNames.SetMobReveal, S2CSetMobRevealCommand::fromArguments);
+
+        // Animations
+        registries.registerS2C(S2CCommandNames.PlayAnimation, S2CPlayAnimationCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetAnimationDisplayName, S2CSetAnimationDisplayNameCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetAvailableAnimations, S2CSetAvailableAnimationsCommand::fromArguments);
+
+        // Admin Reveal
+        registries.registerS2C(S2CCommandNames.AdminRevealSync, S2CSyncAdminRevealCommand::fromArguments)
                 .registerS2C(S2CCommandNames.AdminRevealAdd, S2CAddAdminRevealCommand::fromArguments)
                 .registerS2C(S2CCommandNames.AdminRevealClear, S2CClearAdminRevealCommand::fromArguments)
-                .registerS2C(S2CCommandNames.AdminRevealRemove, S2CRemoveAdminRevealCommand::fromArguments)
-                .registerS2C(S2CCommandNames.CRAdd, S2CCRRegisterCommand::fromArguments)
+                .registerS2C(S2CCommandNames.AdminRevealRemove, S2CRemoveAdminRevealCommand::fromArguments);
+
+        // Client Renderer
+        registries.registerS2C(S2CCommandNames.CRAdd, S2CCRRegisterCommand::fromArguments)
                 .registerS2C(S2CCommandNames.CRClear, S2CCRClearCommand::fromArguments)
                 .registerS2C(S2CCommandNames.CRSyncRender, S2CCRSyncRegisterCommand::fromArguments)
                 .registerS2C(S2CCommandNames.CRRemove, S2CCRUnregisterCommand::fromArguments)
-                .registerS2C(S2CCommandNames.CRMeta, S2CCRSetMetaCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SwapHands, S2CSwapCommand::fromArguments)
-                .registerS2C(S2CCommandNames.PlayAnimation, S2CPlayAnimationCommand::fromArguments);
-
-        registries.registerS2C(S2CCommandNames.SetSelfViewing, S2CSetSelfViewingStatusCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SetModifyBoundingBox, S2CSetModifyBoundingBoxCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SetAvailableAnimations, S2CSetAvailableAnimationsCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SetDisplayingFakeEquip, S2CSetDisplayingFakeEquipCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SetSNbt, S2CSetSNbtCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SetSkillCooldown, S2CSetSkillCooldownCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SetSelfViewIdentifier, S2CSetSelfViewIdentifierCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SetSkinProfile, S2CSetProfileCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SetAggressive, S2CSetAggressiveCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SetFakeEquip, ClientSetEquipCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SetMobReveal, S2CSetMobRevealCommand::fromArguments);
+                .registerS2C(S2CCommandNames.CRMeta, S2CCRSetMetaCommand::fromArguments);
     }
 
     @Resolved
