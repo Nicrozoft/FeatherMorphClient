@@ -35,14 +35,14 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
 
     public FabricClientHandler()
     {
-        commandRegistries.registerC2S(C2SCommandNames.Initial, C2SRequestInitialCommand::fromArguments)
+        commandRegistries.registerC2S(C2SCommandNames.RequestInitial, C2SRequestInitialCommand::fromArguments)
                 .registerC2S(C2SCommandNames.Morph, C2SMorphCommand::fromArguments)
-                .registerC2S(C2SCommandNames.Skill, C2SActivateSkillCommand::fromArguments)
+                .registerC2S(C2SCommandNames.ActivateSkill, C2SActivateSkillCommand::fromArguments)
                 .registerC2S(C2SCommandNames.SetSingleOption, C2SSetSingleOptionCommand::fromArguments)
                 .registerC2S(C2SCommandNames.ToggleSelf, C2SToggleSelfCommand::fromArguments)
                 .registerC2S(C2SCommandNames.Unmorph, C2SUnmorphCommand::fromArguments)
                 .registerC2S(C2SCommandNames.ExchangeRequestManagement, C2SExchangeRequestManagementCommand::fromArguments)
-                .registerC2S("animation", C2SAnimationCommand::fromArguments);
+                .registerC2S(C2SCommandNames.RequestAnimation, C2SRequestAnimationCommand::fromArguments);
     }
 
     private final Bindable<Boolean> logInComingPackets = new Bindable<>(true);
@@ -267,7 +267,7 @@ public class FabricClientHandler extends ServerPluginObject implements BasicClie
     }
 
     @Override
-    public void onAnimationCommand(C2SAnimationCommand command)
+    public void onAnimationCommand(C2SRequestAnimationCommand command)
     {
         ServerPlayer player = command.getOwner();
 

@@ -2,20 +2,20 @@ package xyz.nifeather.morph.client;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import xyz.nifeather.morph.client.graphics.toasts.RequestToast;
-import xyz.nifeather.morph.network.commands.S2C.S2CRequestCommand;
 import xiamomc.pluginbase.Annotations.Initializer;
 
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.ToastManager;
+import xyz.nifeather.morph.network.commands.S2C.S2CUpdateRequestStatusCommand;
 
 public class ClientRequestManager extends MorphClientObject
 {
     private final ToastManager toastManager = Minecraft.getInstance().getToastManager();
 
-    public void addRequest(S2CRequestCommand.Type type, String sourceName)
+    public void addRequest(S2CUpdateRequestStatusCommand.Type type, String sourceName)
     {
-        if (type == S2CRequestCommand.Type.Unknown) return;
+        if (type == S2CUpdateRequestStatusCommand.Type.Unknown) return;
 
         toastManager.addToast(new RequestToast(type, sourceName));
         requests.add(new Request(plugin.getCurrentTick(), type, sourceName));
@@ -45,7 +45,7 @@ public class ClientRequestManager extends MorphClientObject
         requests.removeIf(r -> currentTime - r.beginTime > 90 * 20);
     }
 
-    private record Request(long beginTime, S2CRequestCommand.Type type, String sourceName)
+    private record Request(long beginTime, S2CUpdateRequestStatusCommand.Type type, String sourceName)
     {
     }
 }

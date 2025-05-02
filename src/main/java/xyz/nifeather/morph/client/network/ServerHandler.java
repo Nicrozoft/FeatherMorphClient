@@ -54,23 +54,23 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     {
         this.client = client;
 
-        registries.registerS2C(S2CCommandNames.Current, S2CCurrentCommand::fromArguments)
+        registries.registerS2C(S2CCommandNames.SetCurrent, S2CSetCurrentCommand::fromArguments)
                 .registerS2C(S2CCommandNames.Query, S2CQueryCommand::fromArguments)
                 .registerS2C(S2CCommandNames.ReAuth, S2CReAuthCommand::fromArguments)
                 .registerS2C(S2CCommandNames.UnAuth, S2CUnAuthCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SwapHands, S2CSwapCommand::fromArguments)
-                .registerS2C(S2CCommandNames.Request, S2CRequestCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SetReveal, S2CSyncAdminRevealCommand::fromArguments)
-                .registerS2C(S2CCommandNames.AddReveal, S2CAddAdminRevealCommand::fromArguments)
-                .registerS2C(S2CCommandNames.ClearReveal, S2CClearAdminRevealCommand::fromArguments)
-                .registerS2C(S2CCommandNames.RemoveReveal, S2CRemoveAdminRevealCommand::fromArguments)
+                .registerS2C(S2CCommandNames.UpdateRequestStatus, S2CUpdateRequestStatusCommand::fromArguments)
+                .registerS2C(S2CCommandNames.AdminRevealSync, S2CSyncAdminRevealCommand::fromArguments)
+                .registerS2C(S2CCommandNames.AdminRevealAdd, S2CAddAdminRevealCommand::fromArguments)
+                .registerS2C(S2CCommandNames.AdminRevealClear, S2CClearAdminRevealCommand::fromArguments)
+                .registerS2C(S2CCommandNames.AdminRevealRemove, S2CRemoveAdminRevealCommand::fromArguments)
                 .registerS2C(S2CCommandNames.CRAdd, S2CCRRegisterCommand::fromArguments)
                 .registerS2C(S2CCommandNames.CRClear, S2CCRClearCommand::fromArguments)
                 .registerS2C(S2CCommandNames.CRSyncRender, S2CCRSyncRegisterCommand::fromArguments)
                 .registerS2C(S2CCommandNames.CRRemove, S2CCRUnregisterCommand::fromArguments)
                 .registerS2C(S2CCommandNames.CRMeta, S2CCRSetMetaCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SwapHands, S2CSwapCommand::fromArguments)
-                .registerS2C("animation", S2CAnimationCommand::fromArguments);
+                .registerS2C(S2CCommandNames.PlayAnimation, S2CPlayAnimationCommand::fromArguments);
 
         registries.registerS2C(S2CCommandNames.SetSelfViewing, S2CSetSelfViewingStatusCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetModifyBoundingBox, S2CSetModifyBoundingBoxCommand::fromArguments)
@@ -79,10 +79,10 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
                 .registerS2C(S2CCommandNames.SetSNbt, S2CSetSNbtCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetSkillCooldown, S2CSetSkillCooldownCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetSelfViewIdentifier, S2CSetSelfViewIdentifierCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SetProfile, S2CSetProfileCommand::fromArguments)
+                .registerS2C(S2CCommandNames.SetSkinProfile, S2CSetProfileCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetAggressive, S2CSetAggressiveCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetFakeEquip, ClientSetEquipCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SetRevealing, S2CSetMobRevealingCommand::fromArguments);
+                .registerS2C(S2CCommandNames.SetMobReveal, S2CSetMobRevealCommand::fromArguments);
     }
 
     @Resolved
@@ -312,27 +312,27 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     //region Impl of Serverhandler
 
     @Override
-    public void onCurrentCommand(xyz.nifeather.morph.network.commands.S2C.S2CCurrentCommand s2CCurrentCommand)
+    public void onCurrentCommand(S2CSetCurrentCommand s2CCurrentCommand)
     {
         var id = s2CCurrentCommand.getDisguiseIdentifier();
         morphManager.setCurrent(id);
     }
 
     @Override
-    public void onReAuthCommand(xyz.nifeather.morph.network.commands.S2C.S2CReAuthCommand s2CReAuthCommand)
+    public void onReAuthCommand(S2CReAuthCommand s2CReAuthCommand)
     {
         this.disconnect();
         this.connect();
     }
 
     @Override
-    public void onUnAuthCommand(xyz.nifeather.morph.network.commands.S2C.S2CUnAuthCommand s2CUnAuthCommand)
+    public void onUnAuthCommand(S2CUnAuthCommand s2CUnAuthCommand)
     {
         this.disconnect();
     }
 
     @Override
-    public void onSwapCommand(xyz.nifeather.morph.network.commands.S2C.S2CSwapCommand s2CSwapCommand)
+    public void onSwapCommand(S2CSwapCommand s2CSwapCommand)
     {
         morphManager.swapHand();
     }
@@ -340,7 +340,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     private final AtomicBoolean displaySetToast = new AtomicBoolean();
 
     @Override
-    public void onQueryCommand(xyz.nifeather.morph.network.commands.S2C.query.S2CQueryCommand s2CQueryCommand)
+    public void onQueryCommand(S2CQueryCommand s2CQueryCommand)
     {
         var diff = s2CQueryCommand.getDiff();
         var modConfig = FeatherMorphClient.getInstance().getModConfigData();
@@ -468,7 +468,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     public static boolean modifyBoundingBox = false;
 
     @Override
-    public void onSetRevealing(S2CSetMobRevealingCommand command)
+    public void onSetRevealing(S2CSetMobRevealCommand command)
     {
         morphManager.revealingValue.set(command.getValue());
     }
@@ -477,9 +477,9 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     private ClientRequestManager requestManager;
 
     @Override
-    public void onExchangeRequestReceive(S2CRequestCommand s2CRequestCommand)
+    public void onExchangeRequestReceive(S2CUpdateRequestStatusCommand s2CRequestCommand)
     {
-        if (s2CRequestCommand.type == S2CRequestCommand.Type.Unknown)
+        if (s2CRequestCommand.type == S2CUpdateRequestStatusCommand.Type.Unknown)
             logger.warn("Received an invalid exchange request");
 
         requestManager.addRequest(s2CRequestCommand.type, s2CRequestCommand.sourcePlayer);
@@ -544,7 +544,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     }
 
     @Override
-    public void onAnimationCommand(S2CAnimationCommand command)
+    public void onAnimationCommand(S2CPlayAnimationCommand command)
     {
         //logger.info("Update animation : " + command.getArgumentAt(0, "???"));
         morphManager.playEmote(command.getAnimId());

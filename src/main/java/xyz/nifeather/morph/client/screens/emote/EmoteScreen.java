@@ -2,6 +2,7 @@ package xyz.nifeather.morph.client.screens.emote;
 
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
+import xyz.nifeather.morph.network.commands.C2S.C2SRequestAnimationCommand;
 import xyz.nifeather.morph.shared.AnimationNames;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.FeatherMorphClient;
@@ -11,7 +12,6 @@ import xyz.nifeather.morph.client.graphics.DrawableText;
 import xyz.nifeather.morph.client.graphics.transforms.easings.Easing;
 import xyz.nifeather.morph.client.screens.spinner.SpinnerScreen;
 import xyz.nifeather.morph.client.screens.WaitingForServerScreen;
-import xyz.nifeather.morph.network.commands.C2S.C2SAnimationCommand;
 import xiamomc.pluginbase.Bindables.Bindable;
 
 import java.util.Objects;
@@ -122,7 +122,7 @@ public class EmoteScreen extends SpinnerScreen<SingleEmoteWidget>
             var emote = widget.getEmote();
 
             if (emote != null)
-                serverHandler.sendCommand(new C2SAnimationCommand(emote));
+                serverHandler.sendCommand(new C2SRequestAnimationCommand(emote));
 
             FeatherMorphClient.getInstance().schedule(this::tryClose);
         });

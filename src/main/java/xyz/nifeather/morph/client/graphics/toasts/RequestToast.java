@@ -2,7 +2,7 @@ package xyz.nifeather.morph.client.graphics.toasts;
 
 import xyz.nifeather.morph.client.graphics.color.MaterialColors;
 import net.minecraft.network.chat.Component;
-import xyz.nifeather.morph.network.commands.S2C.S2CRequestCommand;
+import xyz.nifeather.morph.network.commands.S2C.S2CUpdateRequestStatusCommand;
 
 public class RequestToast extends LinedToast
 {
@@ -12,7 +12,7 @@ public class RequestToast extends LinedToast
         return true;
     }
 
-    public RequestToast(S2CRequestCommand.Type type, String sourceName)
+    public RequestToast(S2CUpdateRequestStatusCommand.Type type, String sourceName)
     {
         var color = switch (type)
         {
@@ -26,14 +26,14 @@ public class RequestToast extends LinedToast
 
         Component text, desc;
 
-        if (type == S2CRequestCommand.Type.RequestSend)
+        if (type == S2CUpdateRequestStatusCommand.Type.RequestSend)
             text = Component.translatable("text.morphclient.toast.request.send");
-        else if (type == S2CRequestCommand.Type.RequestExpired || type == S2CRequestCommand.Type.RequestExpiredOwner)
+        else if (type == S2CUpdateRequestStatusCommand.Type.RequestExpired || type == S2CUpdateRequestStatusCommand.Type.RequestExpiredOwner)
             text = Component.translatable("text.morphclient.toast.request.expire");
-        else if (type == S2CRequestCommand.Type.NewRequest)
+        else if (type == S2CUpdateRequestStatusCommand.Type.NewRequest)
             text = Component.translatable("text.morphclient.toast.request.receive");
         else
-            text = Component.translatable(type == S2CRequestCommand.Type.RequestAccepted
+            text = Component.translatable(type == S2CUpdateRequestStatusCommand.Type.RequestAccepted
                     ? "text.morphclient.toast.request.accepted"
                     : "text.morphclient.toast.request.denied");
 

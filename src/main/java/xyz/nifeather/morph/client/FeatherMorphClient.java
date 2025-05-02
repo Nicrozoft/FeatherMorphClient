@@ -41,7 +41,7 @@ import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 import xyz.nifeather.morph.client.syncers.animations.AnimHandlerIndex;
 import xyz.nifeather.morph.network.Constants;
 import xyz.nifeather.morph.network.commands.C2S.*;
-import xyz.nifeather.morph.network.commands.S2C.S2CRequestCommand;
+import xyz.nifeather.morph.network.commands.S2C.S2CUpdateRequestStatusCommand;
 import xyz.nifeather.morph.shared.SharedValues;
 
 import java.io.File;
@@ -293,7 +293,7 @@ public class FeatherMorphClient extends XiaMoJavaPlugin implements ClientModInit
             if (testKeyBindLost.consumeClick())
             {
                 var toasts = client.getToastManager();
-                toasts.addToast(new RequestToast(S2CRequestCommand.Type.RequestSend, "Very_Loooong_Nammmmmme"));
+                toasts.addToast(new RequestToast(S2CUpdateRequestStatusCommand.Type.RequestSend, "Very_Loooong_Nammmmmme"));
             }
 
         }

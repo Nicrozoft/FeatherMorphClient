@@ -1,8 +1,8 @@
 package xyz.nifeather.morph.server.morphs;
 
 import org.jetbrains.annotations.NotNull;
-import xyz.nifeather.morph.network.commands.S2C.S2CAnimationCommand;
 import xiamomc.pluginbase.Annotations.Resolved;
+import xyz.nifeather.morph.network.commands.S2C.S2CPlayAnimationCommand;
 import xyz.nifeather.morph.server.ServerPluginObject;
 import xyz.nifeather.morph.server.network.FabricClientHandler;
 import xyz.nifeather.morph.server.disguise.animations.AnimationSequence;
@@ -50,7 +50,7 @@ public class FabricDisguiseSession extends ServerPluginObject
             var animSubId = anim.subId();
 
             if (anim.availableForClient())
-                clientHandler.sendCommand(player(), new S2CAnimationCommand(animSubId));
+                clientHandler.sendCommand(player(), new S2CPlayAnimationCommand(animSubId));
 
             //this.getDisguiseWrapper().playAnimation(animSubId);
 

@@ -3,8 +3,7 @@ package xyz.nifeather.morph.server.morphs;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
-import xyz.nifeather.morph.network.commands.S2C.S2CAnimationCommand;
-import xyz.nifeather.morph.network.commands.S2C.S2CCurrentCommand;
+import xyz.nifeather.morph.network.commands.S2C.S2CSetCurrentCommand;
 import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CAddAdminRevealCommand;
 import xyz.nifeather.morph.network.commands.S2C.admin.reveal.S2CRemoveAdminRevealCommand;
 import xyz.nifeather.morph.network.commands.S2C.clientrender.S2CCRRegisterCommand;
@@ -230,7 +229,7 @@ public class FabricMorphManager extends ServerPluginObject
 
         var availableAnimations = provider.getAnimationProvider().getAnimationSetFor(identifier).getAvailableAnimationsForClient();
 
-        clientHandler.sendCommand(player, new S2CCurrentCommand(identifier));
+        clientHandler.sendCommand(player, new S2CSetCurrentCommand(identifier));
         clientHandler.sendCommand(player, new S2CSetAvailableAnimationsCommand(availableAnimations));
 
         var cmd = new S2CCRRegisterCommand(player.getId(), identifier);
@@ -301,7 +300,7 @@ public class FabricMorphManager extends ServerPluginObject
         if (player.hasDisconnected())
             return;
 
-        clientHandler.sendCommand(player, new S2CCurrentCommand(null));
+        clientHandler.sendCommand(player, new S2CSetCurrentCommand(null));
         clientHandler.sendCommand(player, new S2CSetAvailableAnimationsCommand(List.of()));
 
         var cmd = new S2CCRUnregisterCommand(player.getId());
