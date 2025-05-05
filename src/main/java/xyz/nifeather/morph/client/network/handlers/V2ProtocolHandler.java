@@ -83,6 +83,8 @@ public class V2ProtocolHandler implements IProtocolHandler
         catch (Throwable t)
         {
             FeatherMorphClient.LOGGER.error("Failed to handle command from server: %s".formatted(t.getMessage()));
+            t.printStackTrace();
+
             return CommandHandleResult.fail();
         }
     }
