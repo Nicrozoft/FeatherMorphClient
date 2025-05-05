@@ -497,10 +497,10 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Override
     public void onExchangeRequestReceive(S2CUpdateRequestStatusCommand s2CRequestCommand)
     {
-        if (s2CRequestCommand.type == S2CUpdateRequestStatusCommand.Type.Unknown)
+        if (s2CRequestCommand.requestType == S2CUpdateRequestStatusCommand.Type.Unknown)
             logger.warn("Received an invalid exchange request");
 
-        requestManager.addRequest(s2CRequestCommand.type, s2CRequestCommand.sourcePlayer);
+        requestManager.addRequest(s2CRequestCommand.requestType, s2CRequestCommand.source);
     }
 
     @Override
