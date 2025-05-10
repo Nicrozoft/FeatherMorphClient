@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import xyz.nifeather.morph.client.*;
 import xyz.nifeather.morph.client.config.ModConfigData;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
+import xyz.nifeather.morph.client.entities.IMorphLocalPlayer;
 import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
 import xyz.nifeather.morph.client.network.handlers.IProtocolHandler;
 import xyz.nifeather.morph.client.network.handlers.V3ProtocolHandler;
@@ -309,7 +310,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         }
     }
 
-    public static Boolean serverSideSneaking;
+   // public static Boolean serverSideSneaking;
 
     public static void logPacket(boolean isOutGoingPacket, ResourceLocation channel, String content)
     {
@@ -459,7 +460,10 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Override
     public void onSetSneakingCommand(S2CSetSneakingCommand s2CSetSneakingCommand)
     {
-        serverSideSneaking = s2CSetSneakingCommand.sneaking;
+        var pl = (Minecraft.getInstance().player instanceof IMorphLocalPlayer player) ? player : null;
+        if (pl == null) return;
+
+        pl.morphclient$overrideSneaking(s2CSetSneakingCommand.sneaking);
     }
 
     @Override
