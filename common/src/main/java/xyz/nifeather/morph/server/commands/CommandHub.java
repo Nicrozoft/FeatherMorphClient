@@ -4,16 +4,23 @@ import xyz.nifeather.morph.server.commands.impl.MorphCommand;
 import xyz.nifeather.morph.server.commands.impl.PluginMainCommand;
 import xyz.nifeather.morph.server.commands.impl.UnMorphCommand;
 
-public class CommandHub {
-    private final IBrigadierCommand[] commands;
+import java.util.List;
 
-    public CommandHub() {
-        commands = new IBrigadierCommand[]{new MorphCommand(),
+public class CommandHub
+{
+    public CommandHub()
+    {
+        commands = List.of(
+                new MorphCommand(),
                 new UnMorphCommand(),
-                new PluginMainCommand()};
+                new PluginMainCommand()
+        );
     }
 
-    public void registerCommands(CommandRegistrationContext context) {
-        for (IBrigadierCommand command : commands) command.register(context.dispatcher());
+    private final List<IBrigadierCommand> commands;
+
+    public void registerCommands(CommandRegistrationContext context)
+    {
+        commands.forEach(ibc -> ibc.register(context.dispatcher()));
     }
 }

@@ -1,13 +1,16 @@
 package xyz.nifeather.morph;
 
 import net.neoforged.fml.common.Mod;
+import xyz.nifeather.morph.shared.SharedValues;
 
-@Mod("feathermorph_client")
-public class FeatherMorphNeoForgeInitializer {
+@Mod(SharedValues.MOD_ID)
+public class FeatherMorphNeoForgeInitializer
+{
     /**
      * Runs the mod initializer.
      */
-    public FeatherMorphNeoForgeInitializer() {
+    public FeatherMorphNeoForgeInitializer()
+    {
         new FeatherMorphCommonBootstrap();
     }
 }

@@ -15,7 +15,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xiamomc.pluginbase.Bindables.Bindable;
 import xyz.nifeather.morph.client.ClientMorphManager;
@@ -44,33 +43,10 @@ import xyz.nifeather.morph.client.screens.disguise.preview.DisguisePreviewDispla
 import java.util.List;
 import java.util.function.Function;
 
-public class DisguiseScreen extends FeatherScreen {
-    private final Bindable<String> selectedIdentifier = new Bindable<>(FeatherMorphClientBootstrap.UNMORPH_STIRNG);
-    private final Bindable<Boolean> serverReady = new Bindable<>(false);
-    private final Bindable<String> currentIdentifier = new Bindable<>(FeatherMorphClientBootstrap.UNMORPH_STIRNG);
-    private final TextFieldWidgetWrapper textBox;
-    private final ClientMorphManager manager;
-    private final ServerHandler serverHandler;
-    private final Container topTextContainer = new Container();
-    private final Container bottomTextContainer = new Container();
-    private final DisguiseList disguiseList = new DisguiseList(Minecraft.getInstance(), 200, 0, 20, 0, 22);
-    private final DrawableText titleText = new DrawableText(Component.translatable("gui.morphclient.select_disguise"));
-    private final DrawableText selectedIdentifierText = new DrawableText();
-    private final DrawableText serverAPIText = new DrawableText();
-    private final DrawableText handlerText = new DrawableText();
-    private final int fontMargin = 4;
-    private final Bindable<Integer> topHeight = new Bindable<>(0);
-    private final Bindable<Integer> bottomHeight = new Bindable<>(0);
-    private final Recorder<Float> backgroundDim = new Recorder<>(0f);
-    private final class_114514 field_1919810 = new class_114514(this);
-    @Nullable
-    private EntityDisplay playerDisplay;
-    /**
-     * 搜索前伪装列表中的所有元素
-     */
-    private List<EntityDisplayEntry> fullList;
-
-    public DisguiseScreen() {
+public class DisguiseScreen extends FeatherScreen
+{
+    public DisguiseScreen()
+    {
         super(Component.literal("选择界面"));
 
         var morphClient = FeatherMorphClientBootstrap.getInstance();
@@ -125,7 +101,8 @@ public class DisguiseScreen extends FeatherScreen {
         {
             Component display = null;
 
-            if (n != null) {
+            if (n != null)
+            {
                 var cachedEntity = EntityCache.getGlobalCache().getEntity(n, null);
 
                 if (cachedEntity != null)
@@ -152,14 +129,19 @@ public class DisguiseScreen extends FeatherScreen {
         //textBox.setX(Math.round(-textBox.getWidth()));
     }
 
-    private void refreshEntityPreview(String newId) {
+    @Nullable
+    private EntityDisplay playerDisplay;
+
+    private void refreshEntityPreview(String newId)
+    {
         String identifier = newId == null
                 ? this.currentIdentifier.get() == null
                 ? FeatherMorphClientBootstrap.UNMORPH_STIRNG
                 : this.currentIdentifier.get()
                 : newId;
 
-        if (playerDisplay != null) {
+        if (playerDisplay != null)
+        {
             this.remove(playerDisplay);
             playerDisplay.dispose();
             playerDisplay = null;
@@ -178,12 +160,35 @@ public class DisguiseScreen extends FeatherScreen {
         this.add(newDisplay);
     }
 
+    private final Bindable<String> selectedIdentifier = new Bindable<>(FeatherMorphClientBootstrap.UNMORPH_STIRNG);
+    private final Bindable<Boolean> serverReady = new Bindable<>(false);
+    private final Bindable<String> currentIdentifier = new Bindable<>(FeatherMorphClientBootstrap.UNMORPH_STIRNG);
+
+    private final TextFieldWidgetWrapper textBox;
+
+    private final ClientMorphManager manager;
+    private final ServerHandler serverHandler;
+
+    private final Container topTextContainer = new Container();
+    private final Container bottomTextContainer = new Container();
+
+    private final DisguiseList disguiseList = new DisguiseList(Minecraft.getInstance(), 200, 0, 20, 0, 22);
+    private final DrawableText titleText = new DrawableText(Component.translatable("gui.morphclient.select_disguise"));
+    private final DrawableText selectedIdentifierText = new DrawableText();
+    private final DrawableText serverAPIText = new DrawableText();
+    private final DrawableText handlerText = new DrawableText();
+
+    private final int fontMargin = 4;
+
     @Override
-    protected void onScreenExit(Screen next) {
+    protected void onScreenExit(Screen next)
+    {
         super.onScreenExit(next);
 
-        if (next == null) {
-            if (fullList != null) {
+        if (next == null)
+        {
+            if (fullList != null)
+            {
                 disguiseList.clearChildren(false);
                 disguiseList.children().addAll(fullList);
                 fullList = null;
@@ -198,17 +203,24 @@ public class DisguiseScreen extends FeatherScreen {
         }
     }
 
-    public float getBackgroundDim() {
+    private final Bindable<Integer> topHeight = new Bindable<>(0);
+    private final Bindable<Integer> bottomHeight = new Bindable<>(0);
+    private final Recorder<Float> backgroundDim = new Recorder<>(0f);
+
+    public float getBackgroundDim()
+    {
         return backgroundDim.get();
     }
 
     @Override
-    protected void onScreenEnter(Screen last) {
+    protected void onScreenEnter(Screen last)
+    {
         super.onScreenEnter(last);
 
         resizeDisguiseList();
 
-        if (last == null || last instanceof WaitingForServerScreen) {
+        if (last == null || last instanceof WaitingForServerScreen)
+        {
             disguiseList.addChild(new EntityDisplayEntry(FeatherMorphClientBootstrap.UNMORPH_STIRNG));
 
             manager.getAvailableMorphs().forEach(s -> disguiseList.addChild(new EntityDisplayEntry(s)));
@@ -258,7 +270,7 @@ public class DisguiseScreen extends FeatherScreen {
         var selfVisibleToggle = this.createToggleSelfButton();
 
         selfVisibleToggle.setX(Math.round(configMenuButton.getWidth() + 5));
-        closeButton.setX(selfVisibleToggle.getX() + (int) selfVisibleToggle.getWidth() + 5);
+        closeButton.setX(selfVisibleToggle.getX() + (int)selfVisibleToggle.getWidth() + 5);
 
         buttonContainer.addRange(closeButton, selfVisibleToggle, configMenuButton);
         buttonContainer.setAnchor(Anchor.BottomRight);
@@ -295,7 +307,8 @@ public class DisguiseScreen extends FeatherScreen {
 
         MutableComponent apiText = Component.literal("C %s :: S %s".formatted(serverHandler.getImplmentingApiVersion(), serverHandler.getServerApiVersion()));
 
-        if (!serverHandler.serverApiMatch()) {
+        if (!serverHandler.serverApiMatch())
+        {
             apiText = apiText.withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD);
             serverAPIText.setTooltip(Component.translatable("gui.morphclient.version_mismatch"));
             serverAPIText.setColor(0xffffffff);
@@ -303,21 +316,24 @@ public class DisguiseScreen extends FeatherScreen {
 
         serverAPIText.setText(apiText);
 
-        this.addRange(new IMDrawable[]{
-                disguiseList,
-                topTextContainer,
-                bottomTextContainer,
-                buttonContainer,
-                textBox,
-                topHeader,
-                bottomFooter
-        });
+        this.addRange(new IMDrawable[]
+                {
+                        disguiseList,
+                        topTextContainer,
+                        bottomTextContainer,
+                        buttonContainer,
+                        textBox,
+                        topHeader,
+                        bottomFooter
+                });
     }
 
-    private DrawableButtonWrapper createToggleSelfButton() {
+    private DrawableButtonWrapper createToggleSelfButton()
+    {
         var bindable = manager.selfVisibleEnabled;
 
-        Function<Boolean, Component> textFunction = val -> {
+        Function<Boolean, Component> textFunction = val ->
+        {
             var color = val
                     ? TextColor.fromLegacyFormat(ChatFormatting.GREEN)
                     : TextColor.fromLegacyFormat(ChatFormatting.RED);
@@ -341,7 +357,8 @@ public class DisguiseScreen extends FeatherScreen {
         return new DrawableButtonWrapper(button);
     }
 
-    private void resizeDisguiseList() {
+    private void resizeDisguiseList()
+    {
         int headerTargetHeight = font.lineHeight * 2 + fontMargin * 2;
         int footerTargetHeight = 30;
 
@@ -352,7 +369,8 @@ public class DisguiseScreen extends FeatherScreen {
     }
 
     @Override
-    protected void onScreenResize() {
+    protected void onScreenResize()
+    {
         assert this.minecraft != null;
 
         //列表
@@ -362,16 +380,19 @@ public class DisguiseScreen extends FeatherScreen {
         topTextContainer.invalidatePosition();
     }
 
-    private void scrollToCurrentOrLast(boolean scrollToLastIfNoCurrent) {
+    private void scrollToCurrentOrLast(boolean scrollToLastIfNoCurrent)
+    {
         var filter = disguiseList.children();
 
         var current = manager.currentIdentifier.get();
 
-        if (current != null) {
+        if (current != null)
+        {
             var widget = disguiseList.children().stream()
                     .filter(w -> current.equals(w.getIdentifierString())).findFirst().orElse(null);
 
-            if (widget != null) {
+            if (widget != null)
+            {
                 disguiseList.scrollTo(widget);
 
                 return;
@@ -388,20 +409,29 @@ public class DisguiseScreen extends FeatherScreen {
             disguiseList.scrollTo(last);
     }
 
-    private void onTextBoxText(String str) {
-        if (!str.startsWith("!")) {
+    private final class_114514 field_1919810 = new class_114514(this);
+
+    private void onTextBoxText(String str)
+    {
+        if (!str.startsWith("!"))
+        {
             textBox.widget.setTextColor(Colors.WHITE.getColor());
             applySearch(str);
-        } else {
+        }
+        else
+        {
             textBox.widget.setTextColor(MaterialColors.Amber500.getColor());
             field_1919810.apply(str);
         }
     }
 
     //todo: Refactor this to use another list instance.
-    private void applySearch(String str) {
-        if (str.isEmpty()) {
-            if (fullList != null) {
+    private void applySearch(String str)
+    {
+        if (str.isEmpty())
+        {
+            if (fullList != null)
+            {
                 disguiseList.clearChildren(false);
                 disguiseList.addChildrenRange(fullList);
 
@@ -428,19 +458,27 @@ public class DisguiseScreen extends FeatherScreen {
             scrollToCurrentOrLast(true);
     }
 
+    /**
+     * 搜索前伪装列表中的所有元素
+     */
+    private List<EntityDisplayEntry> fullList;
+
     @Override
-    protected void init() {
+    protected void init()
+    {
         super.init();
         this.setFocused(textBox);
     }
 
     @Override
-    public void mouseMoved(double mouseX, double mouseY) {
+    public void mouseMoved(double mouseX, double mouseY)
+    {
         super.mouseMoved(mouseX, mouseY);
     }
 
     @Override
-    public void renderBackground(@NotNull GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta)
+    {
         super.renderBackground(context, mouseX, mouseY, delta);
 
         context.blit(RenderType::guiTextured, Screen.MENU_BACKGROUND,

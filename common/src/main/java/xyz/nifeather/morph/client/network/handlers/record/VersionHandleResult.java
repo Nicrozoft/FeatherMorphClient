@@ -1,13 +1,16 @@
 package xyz.nifeather.morph.client.network.handlers.record;
 
-public record VersionHandleResult(boolean success, int result) {
+public record VersionHandleResult(boolean success, int result)
+{
     private static final VersionHandleResult resultFailed = new VersionHandleResult(false, -1);
 
-    public static VersionHandleResult fail() {
+    public static VersionHandleResult fail()
+    {
         return resultFailed;
     }
 
-    public static VersionHandleResult from(int input) {
+    public static VersionHandleResult from(int input)
+    {
         return new VersionHandleResult(true, input);
     }
 }

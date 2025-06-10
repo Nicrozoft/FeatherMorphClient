@@ -9,22 +9,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.nifeather.fmccl.network.commands.S2C.set.NetheriteS2CSetFakeEquipCommand;
 
-public class LegacyS2CClientSetEquipCommand extends NetheriteS2CSetFakeEquipCommand<ItemStack> {
+public class LegacyS2CClientSetEquipCommand extends NetheriteS2CSetFakeEquipCommand<ItemStack>
+{
     private static final Logger log = LoggerFactory.getLogger(LegacyS2CClientSetEquipCommand.class);
 
-    public LegacyS2CClientSetEquipCommand(ItemStack item, ProtocolEquipmentSlot slot) {
+    public LegacyS2CClientSetEquipCommand(ItemStack item, ProtocolEquipmentSlot slot)
+    {
         super(item, slot);
     }
 
-    public static LegacyS2CClientSetEquipCommand from(String rawArguments) {
-        log.info("~RAW IS {}", rawArguments);
+    @Override
+    public String serializeArguments()
+    {
+        return "";
+    }
+
+    public static LegacyS2CClientSetEquipCommand from(String rawArguments)
+    {
+        log.info("~RAW IS " + rawArguments);
 
         //temp to array
         var dat = rawArguments.split(" ", 2);
 
         if (dat.length != 2) return null;
 
-        log.info("~DECODING: {}", dat[1]);
+        log.info("~DECODING: " + dat[1]);
         var stack = jsonToStack(dat[1]);
         if (stack == null) return null;
 
@@ -34,7 +43,8 @@ public class LegacyS2CClientSetEquipCommand extends NetheriteS2CSetFakeEquipComm
     }
 
     @Nullable
-    private static ItemStack jsonToStack(String rawJson) {
+    private static ItemStack jsonToStack(String rawJson)
+    {
         var world = Minecraft.getInstance().level;
         if (world == null)
             throw new NullPointerException("Called jsonToStack but client world is null?!");
@@ -47,10 +57,5 @@ public class LegacyS2CClientSetEquipCommand extends NetheriteS2CSetFakeEquipComm
             return item.result().get().getFirst();
 
         return null;
-    }
-
-    @Override
-    public String serializeArguments() {
-        return "";
     }
 }

@@ -18,7 +18,8 @@ import xyz.nifeather.morph.client.graphics.PlayerRenderHelper;
 import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
 
 @Mixin(ItemInHandRenderer.class)
-public class HeldItemRendererMixin {
+public class HeldItemRendererMixin
+{
     @Unique
     private static final PlayerRenderHelper morphclient$rendererHelper = PlayerRenderHelper.instance();
     @Shadow
@@ -29,7 +30,8 @@ public class HeldItemRendererMixin {
             method = "renderPlayerArm",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;renderLeftHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/resources/ResourceLocation;Z)V")
     )
-    private void morphclient$renderArmHoldingItem_left(PlayerRenderer instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, ResourceLocation skinTexture, boolean sleeveVisible) {
+    private void morphclient$renderArmHoldingItem_left(PlayerRenderer instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, ResourceLocation skinTexture, boolean sleeveVisible)
+    {
         if (morphclient$canRender())
             morphclient$renderLeftArm(matrices, vertexConsumers, light);
         else
@@ -40,7 +42,8 @@ public class HeldItemRendererMixin {
             method = "renderPlayerArm",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;renderRightHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/resources/ResourceLocation;Z)V")
     )
-    private void morphclient$renderArmHoldingItem_right(PlayerRenderer instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, ResourceLocation skinTexture, boolean sleeveVisible) {
+    private void morphclient$renderArmHoldingItem_right(PlayerRenderer instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, ResourceLocation skinTexture, boolean sleeveVisible)
+    {
         if (morphclient$canRender())
             morphclient$renderRightArm(matrices, vertexConsumers, light);
         else
@@ -51,7 +54,8 @@ public class HeldItemRendererMixin {
             method = "renderMapHand",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;renderRightHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/resources/ResourceLocation;Z)V")
     )
-    private void morphclient$renderArmHoldingItem_right_alt(PlayerRenderer instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, ResourceLocation skinTexture, boolean sleeveVisible) {
+    private void morphclient$renderArmHoldingItem_right_alt(PlayerRenderer instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, ResourceLocation skinTexture, boolean sleeveVisible)
+    {
         if (morphclient$canRender())
             morphclient$renderRightArm(matrices, vertexConsumers, light);
         else
@@ -62,7 +66,8 @@ public class HeldItemRendererMixin {
             method = "renderMapHand",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;renderLeftHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/resources/ResourceLocation;Z)V")
     )
-    private void morphclient$renderArmHoldingItem_left_alt(PlayerRenderer instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, ResourceLocation skinTexture, boolean sleeveVisible) {
+    private void morphclient$renderArmHoldingItem_left_alt(PlayerRenderer instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, ResourceLocation skinTexture, boolean sleeveVisible)
+    {
         if (morphclient$canRender())
             morphclient$renderLeftArm(matrices, vertexConsumers, light);
         else
@@ -70,28 +75,32 @@ public class HeldItemRendererMixin {
     }
 
     @Unique
-    private void morphclient$renderLeftArm(PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
+    private void morphclient$renderLeftArm(PoseStack matrices, MultiBufferSource vertexConsumers, int light)
+    {
         morphclient$rendererHelper.renderingLeftPart = true;
 
         this.morphclient$onArmRender(matrices, vertexConsumers, light);
     }
 
     @Unique
-    private void morphclient$renderRightArm(PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
+    private void morphclient$renderRightArm(PoseStack matrices, MultiBufferSource vertexConsumers, int light)
+    {
         morphclient$rendererHelper.renderingLeftPart = false;
 
         this.morphclient$onArmRender(matrices, vertexConsumers, light);
     }
 
     @Unique
-    private boolean morphclient$canRender() {
+    private boolean morphclient$canRender()
+    {
         var clientSyncer = ClientDisguiseSyncer.getCurrentInstance();
         return clientSyncer != null && !clientSyncer.disposed() && FeatherMorphClientBootstrap.getInstance().getModConfigData().clientViewVisible();
     }
 
     @Unique
     private void morphclient$onArmRender(PoseStack matrices, MultiBufferSource vertexConsumers,
-                                         int light) {
+                                         int light)
+    {
         morphclient$rendererHelper.onArmDrawCall(
                 matrices, vertexConsumers,
                 light

@@ -6,10 +6,13 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import xyz.nifeather.morph.shared.SharedValues;
 
-@Mod(dist = Dist.CLIENT, value = "feathermorph_client")
-public class FeatherMorphNeoForgeClient {
-    public FeatherMorphNeoForgeClient(ModContainer modContainer) {
+@Mod(dist = Dist.CLIENT, value = SharedValues.MOD_ID)
+public class FeatherMorphNeoForgeClient
+{
+    public FeatherMorphNeoForgeClient(ModContainer modContainer)
+    {
         new FeatherMorphClientBootstrap(FMLPaths.CONFIGDIR.get(), (id) -> FMLLoader.getLoadingModList().getModFileById(id) != null);
 
         modContainer.registerExtensionPoint(IConfigScreenFactory.class, (game, screen) -> FeatherMorphClientBootstrap.getInstance().getFactory(screen).build());

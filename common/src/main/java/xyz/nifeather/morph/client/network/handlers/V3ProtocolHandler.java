@@ -2,6 +2,7 @@ package xyz.nifeather.morph.client.network.handlers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.network.ServerHandler;
@@ -15,37 +16,41 @@ import xyz.nifeather.morph.network.commands.S2C.S2CCommandRecord;
 import xyz.nifeather.morph.shared.SharedValues;
 import xyz.nifeather.morph.shared.payload.V3MorphCommandPayload;
 import xyz.nifeather.morph.shared.payload.V3MorphInitChannelPayload;
-import xyz.nifeather.morph.shared.platform.Services;
 
-public class V3ProtocolHandler implements IProtocolHandler {
+public class V3ProtocolHandler implements IProtocolHandler
+{
     public static final V3ProtocolHandler INSTANCE = new V3ProtocolHandler();
 
     private final Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
     @Override
-    public void sendCommand(AbstractC2SCommand<?> command) {
+    public void sendCommand(AbstractC2SCommand<?> command)
+    {
         var record = C2SCommandRecord.fromC2SCommand(command);
         var cmd = gson.toJson(record);
 
         ServerHandler.logPacket(true, SharedValues.commandChannelV3, cmd);
-        Services.PLATFORM.sendNetworkPacket(new V3MorphCommandPayload(cmd));
+        ClientPlayNetworking.send(new V3MorphCommandPayload(cmd));
     }
 
     @Override
-    public void sendInitializeRequest(ClientInitializeRecordV3 initializeRecordV3) {
+    public void sendInitializeRequest(ClientInitializeRecordV3 initializeRecordV3)
+    {
         var str = gson.toJson(initializeRecordV3);
         ServerHandler.logPacket(true, SharedValues.initializeChannelV3, str);
 
-        Services.PLATFORM.sendNetworkPacket(new V3MorphInitChannelPayload(str));
+        ClientPlayNetworking.send(new V3MorphInitChannelPayload(str));
     }
 
     @Override
-    public void sendVersion(int clientVersion) {
+    public void sendVersion(int clientVersion)
+    {
         throw new RuntimeException("V3 protocol does not have a version payload");
     }
 
     @Override
-    public InitializeRespondV3 handleInitializeRespond(CustomPacketPayload customPayload) {
+    public InitializeRespondV3 handleInitializeRespond(CustomPacketPayload customPayload)
+    {
         if (!(customPayload instanceof V3MorphInitChannelPayload(String message)))
             throw new RuntimeException("Given payload is not an instance of V3MorphInitChannelPayload");
 
@@ -53,8 +58,10 @@ public class V3ProtocolHandler implements IProtocolHandler {
     }
 
     @Override
-    public CommandHandleResult handleCommandInput(CustomPacketPayload customPayload) {
-        if (!(customPayload instanceof V3MorphCommandPayload(String content))) {
+    public CommandHandleResult handleCommandInput(CustomPacketPayload customPayload)
+    {
+        if (!(customPayload instanceof V3MorphCommandPayload(String content)))
+        {
             FeatherMorphClientBootstrap.LOGGER.error("Can't handle command input: Given payload is not an instance of V3MorphCommandPayload");
             return CommandHandleResult.fail();
         }
@@ -64,7 +71,8 @@ public class V3ProtocolHandler implements IProtocolHandler {
     }
 
     @Override
-    public VersionHandleResult handleServerVersionInput(CustomPacketPayload customPayload) {
+    public VersionHandleResult handleServerVersionInput(CustomPacketPayload customPayload)
+    {
         throw new RuntimeException("V3 protocol does not have a version payload");
     }
 }

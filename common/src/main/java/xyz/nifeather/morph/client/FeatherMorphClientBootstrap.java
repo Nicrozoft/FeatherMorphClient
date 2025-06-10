@@ -47,41 +47,77 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Function;
 
-public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin {
-    public static final String UNMORPH_STIRNG = "morph:unmorph";
-    public static final Logger LOGGER = LoggerFactory.getLogger("FeatherMorph$Client");
+public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
+{
     private static FeatherMorphClientBootstrap instance;
-    private final AnimHandlerIndex animHandlerIndex = new AnimHandlerIndex();
-    private final boolean debugToasts = false;
-    private final HudRenderHelper hudRenderHelper = new HudRenderHelper();
-    private final int keybindCount = 4;
-    private final List<KeyMapping> quickDisguiseKeys = new ObjectArrayList<>(keybindCount);
-    private final Function<String, Boolean> isModLoaded;
-    public ClientMorphManager morphManager;
-    public ServerHandler serverHandler;
-    @Nullable
-    private Runnable mainLoopRunnable;
-    private ClientSkillHandler skillHandler;
-    private DisguiseInstanceTracker disguiseTracker;
-    private ModelWorkarounds modelWorkarounds;
-    @Nullable
-    private Boolean attackPressedDown = null;
-    private KeyMapping toggleselfKeyBind;
-    private KeyMapping executeSkillKeyBind;
-    private KeyMapping unMorphKeyBind;
-    private KeyMapping morphKeyBind;
-    private KeyMapping resetCacheKeybind;
-    private KeyMapping displayOwnerBind;
-    private KeyMapping emoteKeyBind;
-    private KeyMapping testKeyBindGrant;
-    private KeyMapping testKeyBindLost;
-    @Nullable
-    private Boolean lastClientView = null;
+
+    public static FeatherMorphClientBootstrap getInstance()
+    {
+        return instance;
+    }
+
     private Path configPath;
 
-    public FeatherMorphClientBootstrap(Path configPath, Function<String, Boolean> isModLoaded) {
-        instance = this;
+    private final Function<String, Boolean> isModLoaded;
 
+    public static boolean isModLoaded(String modId) {
+        return instance.isModLoaded.apply(modId);
+    }
+
+    public static final String UNMORPH_STIRNG = "morph:unmorph";
+
+    public static final Logger LOGGER = LoggerFactory.getLogger("FeatherMorph$Client");
+
+    @Override
+    public String namespace()
+    {
+        return getClientNameSpace();
+    }
+
+    public static String getClientNameSpace()
+    {
+        return "morphclient";
+    }
+
+    @Override
+    public Logger getSLF4JLogger()
+    {
+        return LOGGER;
+    }
+
+    @Nullable
+    private Runnable mainLoopRunnable;
+
+    @Override
+    public void startMainLoop(Runnable r)
+    {
+        mainLoopRunnable = r;
+    }
+
+    @Override
+    public void runAsync(Runnable r)
+    {
+        Util.backgroundExecutor().execute(r);
+    }
+
+    @Override
+    public @NotNull File getDataFolder()
+    {
+        return new File(configPath.toFile(), "feathermorphclient-fabric");
+    }
+
+    public ClientMorphManager morphManager;
+    public ServerHandler serverHandler;
+    private ClientSkillHandler skillHandler;
+    private DisguiseInstanceTracker disguiseTracker;
+
+    private final AnimHandlerIndex animHandlerIndex = new AnimHandlerIndex();
+
+    private final boolean debugToasts = false;
+
+    public FeatherMorphClientBootstrap(Path configPath, Function<String, Boolean> isModLoaded)
+    {
+        instance = this;
         this.isModLoaded = isModLoaded;
         this.configPath = configPath;
 
@@ -110,44 +146,12 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin {
         modelWorkarounds = ModelWorkarounds.getInstance();
     }
 
-    public static boolean isModLoaded(String modId) {
-        return instance.isModLoaded.apply(modId);
-    }
+    private final HudRenderHelper hudRenderHelper = new HudRenderHelper();
 
-    public static FeatherMorphClientBootstrap getInstance() {
-        return instance;
-    }
+    private ModelWorkarounds modelWorkarounds;
 
-    public static String getClientNameSpace() {
-        return "morphclient";
-    }
-
-    @Override
-    public String namespace() {
-        return getClientNameSpace();
-    }
-
-    @Override
-    public Logger getSLF4JLogger() {
-        return LOGGER;
-    }
-
-    @Override
-    public void startMainLoop(Runnable r) {
-        mainLoopRunnable = r;
-    }
-
-    @Override
-    public void runAsync(Runnable r) {
-        Util.backgroundExecutor().execute(r);
-    }
-
-    @Override
-    public @NotNull File getDataFolder() {
-        return new File(configPath.toFile(), "feathermorphclient-fabric");
-    }
-
-    private void postWorldTick(ClientLevel clientWorld) {
+    private void postWorldTick(ClientLevel clientWorld)
+    {
         var syncersToRemove = new ObjectArrayList<DisguiseSyncer>();
 
         disguiseTracker.getAllSyncer().forEach(syncer ->
@@ -159,11 +163,30 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin {
         syncersToRemove.forEach(syncer -> disguiseTracker.removeSyncer(syncer));
     }
 
-    public KeyMapping getEmoteKeyBind() {
+    @Nullable
+    private Boolean attackPressedDown = null;
+
+    private KeyMapping toggleselfKeyBind;
+    private KeyMapping executeSkillKeyBind;
+    private KeyMapping unMorphKeyBind;
+    private KeyMapping morphKeyBind;
+    private KeyMapping resetCacheKeybind;
+    private KeyMapping displayOwnerBind;
+    private KeyMapping emoteKeyBind;
+
+    public KeyMapping getEmoteKeyBind()
+    {
         return emoteKeyBind;
     }
 
-    private void registerKeys() {
+    private KeyMapping testKeyBindGrant;
+    private KeyMapping testKeyBindLost;
+
+    private final int keybindCount = 4;
+    private final List<KeyMapping> quickDisguiseKeys = new ObjectArrayList<>(keybindCount);
+
+    private void registerKeys()
+    {
         //初始化按键
         executeSkillKeyBind = Services.PLATFORM.registerKeyBinding(new KeyMapping(
                 "key.morphclient.skill", InputConstants.Type.KEYSYM,
@@ -175,7 +198,8 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin {
                 GLFW.GLFW_KEY_DOWN, "category.morphclient.keybind"
         ));
 
-        if (debugToasts) {
+        if (debugToasts)
+        {
             testKeyBindGrant = Services.PLATFORM.registerKeyBinding(new KeyMapping(
                     "key.morphclient.testToastGrant", InputConstants.Type.KEYSYM,
                     GLFW.GLFW_KEY_Z, "category.morphclient.keybind"
@@ -186,7 +210,8 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin {
                     GLFW.GLFW_KEY_X, "category.morphclient.keybind"
             ));
 
-            for (int i = 1; i <= keybindCount; i++) {
+            for (int i = 1; i <= keybindCount; i++)
+            {
                 var key = Services.PLATFORM.registerKeyBinding(new KeyMapping(
                         "key.morphclient.quick_disguise.%s".formatted(i),
                         InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.morphclient.keybind"
@@ -221,8 +246,10 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin {
         ));
     }
 
-    private void updateKeys(Minecraft client) {
-        while (executeSkillKeyBind.consumeClick() && skillHandler.getCurrentCooldown() <= 0) {
+    private void updateKeys(Minecraft client)
+    {
+        while (executeSkillKeyBind.consumeClick() && skillHandler.getCurrentCooldown() <= 0)
+        {
             skillHandler.setSkillCooldown(skillHandler.getSkillCooldown());
             serverHandler.sendCommand(new C2SActivateSkillCommand());
         }
@@ -232,9 +259,11 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin {
 
         var attackPressed = Minecraft.getInstance().options.keyAttack.isDown();
 
-        if (attackPressed != Boolean.TRUE.equals(this.attackPressedDown)) {
+        if (attackPressed != Boolean.TRUE.equals(this.attackPressedDown))
+        {
             var clientPlayer = Minecraft.getInstance().player;
-            if (clientPlayer != null && attackPressed) {
+            if (clientPlayer != null && attackPressed)
+            {
                 var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(clientPlayer);
 
                 if (syncer != null)
@@ -244,7 +273,8 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin {
             this.attackPressedDown = attackPressed;
         }
 
-        if (displayOwnerBind.consumeClick()) {
+        if (displayOwnerBind.consumeClick())
+        {
             var doRender = !EntityRendererHelper.doRenderRealName;
             EntityRendererHelper.doRenderRealName = doRender;
 
@@ -253,8 +283,10 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin {
                 clientPlayer.displayClientMessage(Component.translatable("text.morphclient." + (doRender ? "display" : "hide") + "_real_names"), false);
         }
 
-        if (debugToasts) {
-            if (testKeyBindGrant.consumeClick()) {
+        if (debugToasts)
+        {
+            if (testKeyBindGrant.consumeClick())
+            {
                 var toasts = client.getToastManager();
                 var morphs = morphManager.getAvailableMorphs();
                 var random = RandomSource.create();
@@ -263,13 +295,16 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin {
                 toasts.addToast(new DisguiseEntryToast(id, true));
             }
 
-            if (testKeyBindLost.consumeClick()) {
+            if (testKeyBindLost.consumeClick())
+            {
                 var toasts = client.getToastManager();
                 toasts.addToast(new RequestToast(S2CUpdateRequestStatusCommand.Type.RequestSend, "Very_Loooong_Nammmmmme"));
             }
+
         }
 
-        while (toggleselfKeyBind.consumeClick()) {
+        while (toggleselfKeyBind.consumeClick())
+        {
             var config = getModConfigData();
 
             boolean val = !morphManager.selfVisibleEnabled.get();
@@ -277,17 +312,22 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin {
             updateClientView(config.allowClientView, val);
         }
 
-        while (morphKeyBind.consumeClick()) {
+        while (morphKeyBind.consumeClick())
+        {
             var player = client.player;
 
-            if (player != null && player.input != null && player.input.keyPresses.shift()) {
+            if (player != null && player.input != null && player.input.keyPresses.shift())
+            {
                 serverHandler.sendCommand(new C2SMorphCommand(null));
-            } else if (client.screen == null) {
+            }
+            else if (client.screen == null)
+            {
                 client.setScreen(new WaitingForServerScreen(new DisguiseScreen()));
             }
         }
 
-        while (resetCacheKeybind.consumeClick()) {
+        while (resetCacheKeybind.consumeClick())
+        {
             EntityCache.getGlobalCache().clearCache();
             modelWorkarounds.initWorkarounds();
         }
@@ -295,7 +335,8 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin {
         while (emoteKeyBind.consumeClick())
             Minecraft.getInstance().setScreen(new WaitingForServerScreen(new EmoteScreen()));
 
-        for (int i = 0; i < this.quickDisguiseKeys.size(); i++) {
+        for (int i = 0; i < this.quickDisguiseKeys.size(); i++)
+        {
             var key = quickDisguiseKeys.get(i);
 
             while (key.consumeClick())
@@ -303,8 +344,13 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin {
         }
     }
 
-    public void updateClientView(boolean clientViewEnabled, boolean selfViewVisible) {
-        if (lastClientView == null || clientViewEnabled != lastClientView) {
+    @Nullable
+    private Boolean lastClientView = null;
+
+    public void updateClientView(boolean clientViewEnabled, boolean selfViewVisible)
+    {
+        if (lastClientView == null || clientViewEnabled != lastClientView)
+        {
             serverHandler.sendCommand(new C2SToggleSelfCommand(clientViewEnabled ? C2SToggleSelfCommand.SelfViewMode.CLIENT_ON : C2SToggleSelfCommand.SelfViewMode.CLIENT_OFF));
             lastClientView = clientViewEnabled;
         }
@@ -314,7 +360,8 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin {
         getModConfigData().allowClientView = clientViewEnabled;
     }
 
-    public void sendMorphCommand(String id) {
+    public void sendMorphCommand(String id)
+    {
         if (id == null) id = UNMORPH_STIRNG;
 
         if (UNMORPH_STIRNG.equals(id))
@@ -325,15 +372,18 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin {
 
     //region Config
 
-    private void onConfigSave() {
+    private void onConfigSave()
+    {
         FeatherMorphCommonBootstrap.instance().configHolder.save();
     }
 
-    public ModConfigData getModConfigData() {
+    public ModConfigData getModConfigData()
+    {
         return FeatherMorphCommonBootstrap.instance().modConfigData;
     }
 
-    public ConfigBuilder getFactory(Screen parent) {
+    public ConfigBuilder getFactory(Screen parent)
+    {
         ConfigBuilder builder = ConfigBuilder.create();
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
         ConfigCategory categoryGeneral = builder.getOrCreateCategory(Component.translatable("stat.generalButton"));
@@ -423,7 +473,7 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin {
                                 .build());
 
         ConfigCategory debugCategory = builder.getOrCreateCategory(Component.translatable("category.morphclient.debug"));
-        debugCategory.setDescription(new FormattedText[]{Component.translatable("category.morphclient.debug.description")});
+        debugCategory.setDescription(new FormattedText[] {Component.translatable("category.morphclient.debug.description")});
 
         debugCategory.addEntry(
                 entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.singleplayer_debug"), SharedValues.allowSinglePlayerDebugging)
@@ -449,11 +499,14 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin {
     //endregion Config
 
     //region tick相关
-    private void tick(Minecraft client) {
+
+    private void tick(Minecraft client)
+    {
         if (mainLoopRunnable != null)
             mainLoopRunnable.run();
 
         this.updateKeys(client);
     }
+
     //endregion tick相关
 }

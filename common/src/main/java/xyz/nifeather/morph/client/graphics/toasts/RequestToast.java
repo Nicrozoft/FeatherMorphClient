@@ -4,9 +4,18 @@ import net.minecraft.network.chat.Component;
 import xyz.nifeather.morph.client.graphics.color.MaterialColors;
 import xyz.nifeather.morph.network.commands.S2C.S2CUpdateRequestStatusCommand;
 
-public class RequestToast extends LinedToast {
-    public RequestToast(S2CUpdateRequestStatusCommand.Type type, String sourceName) {
-        var color = switch (type) {
+public class RequestToast extends LinedToast
+{
+    @Override
+    protected boolean fadeInOnEnter()
+    {
+        return true;
+    }
+
+    public RequestToast(S2CUpdateRequestStatusCommand.Type type, String sourceName)
+    {
+        var color = switch (type)
+        {
             case RequestExpired, RequestExpiredOwner -> MaterialColors.Orange500;
             case RequestAccepted -> MaterialColors.Green400;
             case RequestDenied -> MaterialColors.Red400;
@@ -38,17 +47,14 @@ public class RequestToast extends LinedToast {
     }
 
     @Override
-    protected boolean fadeInOnEnter() {
-        return true;
-    }
-
-    @Override
-    protected float getTextStartX() {
+    protected float getTextStartX()
+    {
         return 8;
     }
 
     @Override
-    protected int getTextWidth() {
+    protected int getTextWidth()
+    {
         return (int) (this.width() * 0.85F);
     }
 }

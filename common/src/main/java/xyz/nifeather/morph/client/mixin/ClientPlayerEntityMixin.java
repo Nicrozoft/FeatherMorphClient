@@ -12,13 +12,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nifeather.morph.client.entities.IMorphLocalPlayer;
 
 @Mixin(LocalPlayer.class)
-public class ClientPlayerEntityMixin implements IMorphLocalPlayer {
+public class ClientPlayerEntityMixin implements IMorphLocalPlayer
+{
     @Shadow
     @Nullable
     public ClientInput input;
 
-    @Shadow
-    private boolean wasShiftKeyDown;
+    @Shadow private boolean wasShiftKeyDown;
     @Unique
     @Nullable
     private Boolean morphclient$inputLastValue;
@@ -28,11 +28,13 @@ public class ClientPlayerEntityMixin implements IMorphLocalPlayer {
     private Boolean morphclient$serverSneaking;
 
     @Inject(method = "isShiftKeyDown", at = @At("HEAD"), cancellable = true)
-    private void onSneakingCall(CallbackInfoReturnable<Boolean> cir) {
+    private void onSneakingCall(CallbackInfoReturnable<Boolean> cir)
+    {
         var serverSideSneaking = morphclient$serverSneaking;
 
         //如果input的下蹲状态发生变化，则重置服务器状态并返回input的当前状态
-        if (input != null && (morphclient$inputLastValue == null || input.keyPresses.shift() != morphclient$inputLastValue)) {
+        if (input != null && (morphclient$inputLastValue == null || input.keyPresses.shift() != morphclient$inputLastValue))
+        {
             morphclient$inputLastValue = input.keyPresses.shift();
 
             cir.setReturnValue(input.keyPresses.shift());
@@ -57,7 +59,8 @@ public class ClientPlayerEntityMixin implements IMorphLocalPlayer {
 */
 
     @Override
-    public void morphclient$overrideSneaking(boolean sneaking) {
+    public void morphclient$overrideSneaking(boolean sneaking)
+    {
         morphclient$serverSneaking = sneaking;
         this.wasShiftKeyDown = sneaking;
     }

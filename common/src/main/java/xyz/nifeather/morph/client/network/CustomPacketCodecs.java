@@ -1,11 +1,6 @@
 package xyz.nifeather.morph.client.network;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
-import io.netty.buffer.Unpooled;
-import io.netty.handler.codec.DecoderException;
-import io.netty.handler.codec.string.StringDecoder;
-import java.nio.charset.StandardCharsets;
 import net.minecraft.network.Utf8String;
 import net.minecraft.network.codec.StreamCodec;
 

@@ -20,33 +20,24 @@ import xyz.nifeather.morph.client.graphics.transforms.easings.Easing;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class LinedToast extends MorphClientObject implements Toast {
-    private static final Component defaultText = Component.empty();
-    protected final Bindable<Visibility> visibility = new Bindable<>(Visibility.HIDE);
-    private final Recorder<Integer> outlineWidth = Recorder.of(0);
-    private final AtomicBoolean layoutValid = new AtomicBoolean(false);
-    private final Font textRenderer = Minecraft.getInstance().font;
-    private final Color progressColor = ColorUtils.fromHex("666666");
-    private final Color borderColor = ColorUtils.fromHex("#444444");
-    private Component title;
-    private Component description;
-    private Component titleDisplay = defaultText;
-    private Component descDisplay = defaultText;
-    private Color lineColor = Color.ofRGB(255, 255, 255);
-    /**
-     * Range: 0 ~ 1
-     */
-    private double progress = 0d;
-
-    public LinedToast() {
+public class LinedToast extends MorphClientObject implements Toast
+{
+    public LinedToast()
+    {
     }
 
-    protected boolean fadeInOnEnter() {
+    private final Recorder<Integer> outlineWidth = Recorder.of(0);
+
+    protected final Bindable<Visibility> visibility = new Bindable<Toast.Visibility>(Visibility.HIDE);
+
+    protected boolean fadeInOnEnter()
+    {
         return false;
     }
 
     @Initializer
-    private void load() {
+    private void load()
+    {
         outlineWidth.set(this.width());
 
         this.visibility.onValueChanged((o, visible) ->
@@ -61,92 +52,129 @@ public class LinedToast extends MorphClientObject implements Toast {
         }, true);
     }
 
-    protected void invalidateLayout() {
+    private final AtomicBoolean layoutValid = new AtomicBoolean(false);
+
+    protected void invalidateLayout()
+    {
         layoutValid.set(false);
     }
 
-    protected void updateLayout() {
-        if (title != null) {
+    protected void updateLayout()
+    {
+        if (title != null)
+        {
             Component titleDisplay = Component.literal(textRenderer.substrByWidth(title, this.getTextWidth()).getString());
 
             if (!titleDisplay.getString().equalsIgnoreCase(title.getString()))
                 titleDisplay = Component.nullToEmpty(titleDisplay.getString() + "...");
 
             this.titleDisplay = titleDisplay;
-        } else
+        }
+        else
             this.titleDisplay = Component.literal("Null title");
 
-        if (description != null) {
+        if (description != null)
+        {
             Component descDisplay = Component.literal(textRenderer.substrByWidth(description, this.getTextWidth()).getString());
 
             if (!descDisplay.getString().equalsIgnoreCase(description.getString()))
                 descDisplay = Component.nullToEmpty(descDisplay.getString() + "...");
 
             this.descDisplay = descDisplay;
-        } else
+        }
+        else
             this.descDisplay = Component.literal("");
 
         layoutValid.set(true);
     }
 
-    @Nullable
-    public Component getTitle() {
-        return title;
-    }
-
-    public void setTitle(Component text) {
+    public void setTitle(Component text)
+    {
         this.title = text;
         this.invalidateLayout();
     }
 
     @Nullable
-    public Component getDescription() {
-        return description;
+    public Component getTitle()
+    {
+        return title;
     }
 
-    public void setDescription(Component text) {
+    public void setDescription(Component text)
+    {
         this.description = text;
         this.invalidateLayout();
     }
 
+    @Nullable
+    public Component getDescription()
+    {
+        return description;
+    }
+
+    private static final Component defaultText = Component.empty();
+
+    private Component title;
+    private Component description;
+    private Component titleDisplay = defaultText;
+    private Component descDisplay = defaultText;
+    private Color lineColor = Color.ofRGB(255, 255, 255);
+
     @NotNull
-    public Color getLineColor() {
+    public Color getLineColor()
+    {
         return lineColor;
     }
 
-    public void setLineColor(@Nullable Color newColor) {
+    public void setLineColor(@Nullable Color newColor)
+    {
         if (newColor == null) newColor = Color.ofRGB(255, 255, 255);
         this.lineColor = newColor;
     }
 
-    protected void postTextDrawing(GuiGraphics context, long startTime) {
+    private final Font textRenderer = Minecraft.getInstance().font;
+
+    protected void postTextDrawing(GuiGraphics context, long startTime)
+    {
     }
 
-    protected void postBackgroundDrawing(GuiGraphics context, long startTime) {
+    protected void postBackgroundDrawing(GuiGraphics context, long startTime)
+    {
     }
 
-    protected void postDraw(GuiGraphics context, long startTime) {
+    protected void postDraw(GuiGraphics context, long startTime)
+    {
     }
 
-    protected boolean drawProgress() {
+    protected boolean drawProgress()
+    {
         return FeatherMorphClientBootstrap.getInstance().getModConfigData().displayToastProgress;
     }
 
-    protected float getTextStartX() {
+    protected float getTextStartX()
+    {
         return this.width() * 0.25F - 4;
     }
 
-    protected int getTextWidth() {
+    protected int getTextWidth()
+    {
         return (int) (this.width() * 0.65F);
     }
 
     @Override
-    public Visibility getWantedVisibility() {
+    public Visibility getWantedVisibility()
+    {
         return this.visibility.get();
     }
 
+    /**
+     * Range: 0 ~ 1
+     */
+    private double progress = 0d;
+
     @Override
-    public void update(ToastManager manager, long startTime) {
+    public void update(ToastManager manager, long startTime)
+    {
         this.progress = Math.min(1, startTime / (5000.0 * manager.getNotificationDisplayTimeMultiplier()));
 
         // Update visibility
@@ -154,8 +182,12 @@ public class LinedToast extends MorphClientObject implements Toast {
         this.visibility.set(visibility);
     }
 
+    private final Color progressColor = ColorUtils.fromHex("666666");
+    private final Color borderColor = ColorUtils.fromHex("#444444");
+
     @Override
-    public void render(GuiGraphics context, Font textRenderer, long startTime) {
+    public void render(GuiGraphics context, Font textRenderer, long startTime)
+    {
         if (!layoutValid.get())
             updateLayout();
 
@@ -172,18 +204,19 @@ public class LinedToast extends MorphClientObject implements Toast {
         var matrices = context.pose();
 
         // Draw progress bar
-        if (drawProgress()) {
+        if (drawProgress())
+        {
             var progressDisplay = Math.max(0, 0.95 - progress);
 
             matrices.pushPose();
 
-            var translateX = (float) this.width() * (1 - progressDisplay);
+            var translateX = (float)this.width() * (1 - progressDisplay);
             matrices.translate(-translateX, 0, 0);
 
             context.fill(xRightPadding, yPadding,
                     this.width(),
                     this.height() - yPadding,
-                    ColorUtils.forOpacity(progressColor, (float) progressDisplay).getColor());
+                    ColorUtils.forOpacity(progressColor, (float)progressDisplay).getColor());
 
             matrices.popPose();
         }
@@ -191,7 +224,7 @@ public class LinedToast extends MorphClientObject implements Toast {
         postBackgroundDrawing(context, startTime);
 
         // Draw text
-        var textStartX = (int) getTextStartX();
+        var textStartX = (int)getTextStartX();
         var textStartY = Math.round((this.height()) / 2f) - textRenderer.lineHeight + yPadding;
 
         context.drawString(textRenderer, titleDisplay, textStartX, textStartY - 1, 0xffffffff);

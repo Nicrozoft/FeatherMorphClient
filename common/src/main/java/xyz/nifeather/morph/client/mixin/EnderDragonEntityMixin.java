@@ -19,7 +19,7 @@ import net.minecraft.world.level.Level;
 public class EnderDragonEntityMixin
 {
     @Unique
-    private static final Random random = new Random();
+    private static final Random featherMorphClient$random = new Random();
 
     @Unique
     private EnderDragon morphClient$entityInstance;
@@ -47,6 +47,6 @@ public class EnderDragonEntityMixin
         var playerLoc = Minecraft.getInstance().player.position();
         morphClient$entityInstance.level().playLocalSound(playerLoc.x, playerLoc.y, playerLoc.z,
                 SoundEvents.ENDER_DRAGON_FLAP, morphClient$entityInstance.getSoundSource(),
-                5.0F, 0.8F + random.nextFloat() * 0.3F, false);
+                5.0F, 0.8F + featherMorphClient$random.nextFloat() * 0.3F, false);
     }
 }

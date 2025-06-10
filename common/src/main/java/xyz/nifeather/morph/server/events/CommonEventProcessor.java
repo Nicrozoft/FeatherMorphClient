@@ -11,25 +11,30 @@ import xyz.nifeather.morph.server.misc.DisguiseTypes;
 import xyz.nifeather.morph.server.morphs.MorphManager;
 import xyz.nifeather.morph.shared.platform.Services;
 
-public class CommonEventProcessor extends ServerPluginObject {
+public class CommonEventProcessor extends ServerPluginObject
+{
+    public void initListener()
+    {
+        Services.PLATFORM.registerAfterKilledOtherEntityEvent(this::onEntityKilledEntityEvent);
+    }
+
     @Resolved(shouldSolveImmediately = true)
     private MorphManager morphManager;
 
-    public void initListener() {
-        Services.PLATFORM.registerAfterKilledOtherEntityEvent(this::onEntityKilledEntityEvent);
-        //ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register(this::onEntityKilledEntityEvent);
-    }
-
-    private void onEntityKilledEntityEvent(ServerLevel world, Entity damager, LivingEntity killed) {
+    private void onEntityKilledEntityEvent(ServerLevel world, Entity damager, LivingEntity killed)
+    {
         if (!(damager instanceof ServerPlayer player))
             return;
 
         if (damager.equals(killed))
             return;
 
-        if (killed instanceof ServerPlayer targetedPlayer) {
+        if (killed instanceof ServerPlayer targetedPlayer)
+        {
             morphManager.grantDisguiseToPlayer(player, DisguiseTypes.PLAYER.toId(targetedPlayer.getScoreboardName()));
-        } else {
+        }
+        else
+        {
             var type = killed.getType();
 
             if (type != EntityType.CREAKING)

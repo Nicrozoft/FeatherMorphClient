@@ -26,44 +26,49 @@ import xyz.nifeather.morph.shared.payload.V3MorphInitChannelPayload;
 import java.io.File;
 import java.util.List;
 
-public class FeatherMorphMain extends XiaMoJavaPlugin {
-    private static final Logger LOGGER = LoggerFactory.getLogger("FeatherMorph$FabricServer");
-    private final Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-    public ClientHandler clientHandler;
-    public MorphManager morphManager;
-    @Nullable
-    private Runnable mainLoop;
-    @Nullable
-    private File dataFolder;
-    private CommandHub commandHub;
-
-    public static String pluginNamespace() {
+public class FeatherMorphMain extends XiaMoJavaPlugin
+{
+    public static String pluginNamespace()
+    {
         return "feathermorph_fabric_main";
     }
 
     @Override
-    public String namespace() {
+    public String namespace()
+    {
         return pluginNamespace();
     }
 
+    private static final Logger LOGGER = LoggerFactory.getLogger("FeatherMorph$Server");
+
     @Override
-    protected Logger getSLF4JLogger() {
+    protected Logger getSLF4JLogger()
+    {
         return LOGGER;
     }
 
+    @Nullable
+    private Runnable mainLoop;
+
     @Override
-    public void startMainLoop(Runnable r) {
+    public void startMainLoop(Runnable r)
+    {
         logger.info("START MAIN LOOP!");
         this.mainLoop = r;
     }
 
     @Override
-    public void runAsync(Runnable r) {
+    public void runAsync(Runnable r)
+    {
         Util.backgroundExecutor().execute(r);
     }
 
+    public ClientHandler clientHandler;
+    public MorphManager morphManager;
+
     @Override
-    protected void enable() {
+    protected void enable()
+    {
         ServerPlayNetworking.registerGlobalReceiver(V3MorphInitChannelPayload.id, this::onInitPayload);
         ServerPlayNetworking.registerGlobalReceiver(V3MorphCommandPayload.id, this::onPlayCommandPayload);
 
@@ -79,19 +84,23 @@ public class FeatherMorphMain extends XiaMoJavaPlugin {
         commandHub = new CommandHub();
     }
 
-    //region Command register
-
     @Override
-    protected void disable() {
+    protected void disable()
+    {
         ServerPlayNetworking.unregisterGlobalReceiver(V3MorphInitChannelPayload.id.id());
         ServerPlayNetworking.unregisterGlobalReceiver(V3MorphCommandPayload.id.id());
 
         morphManager.dispose();
     }
 
+    @Nullable
+    private File dataFolder;
+
     @Override
-    public @NotNull File getDataFolder() {
-        if (dataFolder == null) {
+    public @NotNull File getDataFolder()
+    {
+        if (dataFolder == null)
+        {
             ServerLevel serverWorld = MorphServerLoader.mcserver.overworld();
 
             var dataFile = new File(serverWorld.getServer().getWorldPath(LevelResource.ROOT).toFile(), "data");
@@ -101,23 +110,32 @@ public class FeatherMorphMain extends XiaMoJavaPlugin {
         return dataFolder;
     }
 
+    //region Command register
 
-    //endregion Command register
+    private CommandHub commandHub;
 
-    //region Payload handle
-
-    public void onCommandRegister(CommandRegistrationContext context) {
+    public void onCommandRegister(CommandRegistrationContext context)
+    {
         if (commandHub != null)
             commandHub.registerCommands(context);
         else
             LOGGER.warn("NULL commandHub?! This shouldn't happen!");
     }
 
-    private void onPlayCommandPayload(V3MorphCommandPayload morphCommandPayload, ServerPlayNetworking.Context context) {
+
+    //endregion Command register
+
+    //region Payload handle
+
+    private void onPlayCommandPayload(V3MorphCommandPayload morphCommandPayload, ServerPlayNetworking.Context context)
+    {
         clientHandler.onCommandPayload(morphCommandPayload, context);
     }
 
-    private void onInitPayload(V3MorphInitChannelPayload packet, ServerPlayNetworking.Context context) {
+    private final Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+
+    private void onInitPayload(V3MorphInitChannelPayload packet, ServerPlayNetworking.Context context)
+    {
         var player = context.player();
         LOGGER.info("On init payload! from " + player);
 
@@ -129,8 +147,10 @@ public class FeatherMorphMain extends XiaMoJavaPlugin {
 
     //endregion Payload handle
 
-    public void tick(MinecraftServer tickingServer) {
-        if (mainLoop != null) {
+    public void tick(MinecraftServer tickingServer)
+    {
+        if (mainLoop != null)
+        {
             mainLoop.run();
 
             //for (ServerPlayerEntity serverPlayerEntity : tickingServer.getPlayerManager().getPlayerList())

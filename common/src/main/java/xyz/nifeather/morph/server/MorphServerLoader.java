@@ -14,7 +14,8 @@ import xyz.nifeather.morph.server.commands.CommandRegistrationContext;
 import xyz.nifeather.morph.shared.SharedValues;
 import xyz.nifeather.morph.shared.platform.Services;
 
-public class MorphServerLoader {
+public class MorphServerLoader
+{
     public static final Logger LOGGER = LoggerFactory.getLogger("FeatherMorph$MorphServerLoader");
     @Nullable
     public static MinecraftServer mcserver;
@@ -23,7 +24,8 @@ public class MorphServerLoader {
     @Nullable
     private FeatherMorphMain main;
 
-    public void onModLoad() {
+    public void onModLoad()
+    {
         Services.PLATFORM.registerServerStoppingEvent(this::onServerStop);
         Services.PLATFORM.registerWorldLoadEvent(this::onServerStart);
         Services.PLATFORM.registerCommandRegistrationEvent(this::onCommandRegister);
@@ -32,19 +34,22 @@ public class MorphServerLoader {
 
     public void onCommandRegister(CommandDispatcher<CommandSourceStack> dispatcher,
                                   CommandBuildContext registryAccess,
-                                  Commands.CommandSelection environment) {
+                                  Commands.CommandSelection environment)
+    {
         LOGGER.info("Caching CommandRegistrationContext as we register commands later.");
 
         this.registrationContext = new CommandRegistrationContext(dispatcher, registryAccess, environment);
     }
 
-    private void onServerStart(MinecraftServer startingServer, ServerLevel world) {
+    private void onServerStart(MinecraftServer startingServer, ServerLevel world)
+    {
         if (mcserver == startingServer)
             return;
 
         mcserver = startingServer;
 
-        if (!SharedValues.allowSinglePlayerDebugging) {
+        if (!SharedValues.allowSinglePlayerDebugging)
+        {
             LOGGER.error("SinglePlayer debug is disabled.");
             return;
         }
@@ -59,12 +64,14 @@ public class MorphServerLoader {
         this.main = newInstance;
     }
 
-    private void onServerTick(MinecraftServer minecraftServer) {
+    private void onServerTick(MinecraftServer minecraftServer)
+    {
         if (main != null)
             main.tick(minecraftServer);
     }
 
-    private void onServerStop(MinecraftServer mcServer) {
+    private void onServerStop(MinecraftServer mcServer)
+    {
         if (main != null)
             main.disablePlugin();
 

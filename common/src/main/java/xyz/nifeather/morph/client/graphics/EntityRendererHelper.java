@@ -19,23 +19,30 @@ import xyz.nifeather.morph.client.graphics.color.MaterialColors;
 
 import java.util.Map;
 
-public class EntityRendererHelper {
-    public static EntityRendererHelper instance;
-    public static boolean doRenderRealName = false;
-    public final int textColorTransparent = ColorUtils.forOpacity(MaterialColors.Orange500, 0).getColor();
-    private final int textColor = MaterialColors.Orange500.getColor();
-    public EntityRendererHelper() {
+public class EntityRendererHelper
+{
+    public EntityRendererHelper()
+    {
         instance = this;
     }
 
+    public static EntityRendererHelper instance;
+
+    public static boolean doRenderRealName = false;
+
+    private final int textColor = MaterialColors.Orange500.getColor();
+    public final int textColorTransparent = ColorUtils.forOpacity(MaterialColors.Orange500, 0).getColor();
+
     @Nullable
-    public final Map.Entry<Integer, String> getRevealNameEntry(Integer id) {
+    public final Map.Entry<Integer, String> getRevealNameEntry(Integer id)
+    {
         return DisguiseInstanceTracker.getInstance().playerMap.entrySet().stream()
                 .filter(set -> id.equals(set.getKey()))
                 .findFirst().orElse(null);
     }
 
-    public final void setupEntityState(Entity renderingEntity, IDisguiseRenderState renderState) {
+    public final void setupEntityState(Entity renderingEntity, IDisguiseRenderState renderState)
+    {
         // Reset render state
         renderState.morphclient$setClientPlayer(false);
         renderState.morphclient$setRevealName(null);
@@ -48,21 +55,26 @@ public class EntityRendererHelper {
         Entity masterEntity = null;
 
         // client renderer
-        if (renderingEntity instanceof IMorphClientEntity iMorphEntity) {
+        if (renderingEntity instanceof IMorphClientEntity iMorphEntity)
+        {
             // 如果被我们的Syncer标记为了伪装实体，那么从syncer读取主实体位置
-            if (iMorphEntity.featherMorph$isDisguiseEntity()) {
+            if (iMorphEntity.featherMorph$isDisguiseEntity())
+            {
                 var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(iMorphEntity.featherMorph$getMasterEntityId());
 
-                if (syncer != null) {
+                if (syncer != null)
+                {
                     masterEntity = syncer.getBindingPlayer();
                     id = syncer.getBindingPlayer().getId();
 
                     renderState.morphclient$setDisguiseSyncer(syncer);
                     renderState.morphclient$setMasterPosition(masterEntity.position());
 
-                    syncer.onEntityRenderStateSetup((EntityRenderState) renderState, renderState);
+                    syncer.onEntityRenderStateSetup((EntityRenderState)renderState, renderState);
                 }
-            } else {
+            }
+            else
+            {
                 // 否则，该实体的位置就是主实体的位置
                 renderState.morphclient$setMasterPosition(renderingEntity.position());
             }
@@ -83,7 +95,8 @@ public class EntityRendererHelper {
 
     public final void renderRevealNameIfPossible(EntityRenderDispatcher dispatcher,
                                                  EntityRenderState state, Font textRenderer,
-                                                 PoseStack matrices, MultiBufferSource vertexConsumers) {
+                                                 PoseStack matrices, MultiBufferSource vertexConsumers)
+    {
         if (!doRenderRealName) return;
 
         if (!(state instanceof IDisguiseRenderState asDisguiseRenderState))
@@ -106,7 +119,8 @@ public class EntityRendererHelper {
                                  Font textRenderer,
                                  EntityRenderState renderState, EntityRenderDispatcher dispatcher,
                                  String textToRender,
-                                 @Nullable Vec3 anchorPosition) {
+                                 @Nullable Vec3 anchorPosition)
+    {
         matrices.pushPose();
 
         Vec3 labelRelativePosition = renderState.nameTagAttachment;
@@ -121,15 +135,16 @@ public class EntityRendererHelper {
         matrices.mulPose(dispatcher.cameraOrientation());
         matrices.scale(0.025F, -0.025F, 0.025F);
 
-        if (FeatherMorphClientBootstrap.getInstance().getModConfigData().scaleNameTag && anchorPosition != null) {
+        if (FeatherMorphClientBootstrap.getInstance().getModConfigData().scaleNameTag && anchorPosition != null)
+        {
             var labelWorldPosition = anchorPosition.add(labelRelativePosition);
             var distance = dispatcher.camera.getPosition().distanceTo(labelWorldPosition);
-            var scale = Math.max(1, (float) distance / 7.5f);
+            var scale = Math.max(1, (float)distance / 7.5f);
             matrices.scale(scale, scale, scale);
         }
 
         float clientBackgroundOpacity = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
-        int finalColor = (int) (clientBackgroundOpacity * 255.0f) << 24;
+        int finalColor = (int)(clientBackgroundOpacity * 255.0f) << 24;
 
         var positionMatrix = matrices.last().pose();
         var x = textRenderer.width(textToRender) / -2f;

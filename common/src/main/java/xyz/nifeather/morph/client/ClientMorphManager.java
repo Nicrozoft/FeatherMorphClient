@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -26,7 +27,6 @@ import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 import xyz.nifeather.morph.client.syncers.OtherClientDisguiseSyncer;
 import xyz.nifeather.morph.client.syncers.animations.AnimHandlerIndex;
 import xyz.nifeather.morph.shared.AnimationNames;
-import xyz.nifeather.morph.shared.platform.Services;
 
 import java.util.List;
 import java.util.Map;
@@ -34,61 +34,64 @@ import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
-public class ClientMorphManager extends MorphClientObject {
-    public final Bindable<String> selectedIdentifier = new Bindable<>(null);
-    public final Bindable<String> currentIdentifier = new Bindable<>(null);
-    public final Bindable<Boolean> equipOverriden = new Bindable<>(false);
-
-    //region Common
-    public final Bindable<CompoundTag> currentNbtCompound = new Bindable<>(null);
-    public final Bindable<Float> revealingValue = new Bindable<>(0f);
-    public final Bindable<Boolean> selfVisibleEnabled = new Bindable<>(false);
+public class ClientMorphManager extends MorphClientObject
+{
     private final SortedSet<String> availableMorphs = new ObjectAVLTreeSet<>();
-    private final List<String> emotes = new ObjectArrayList<>();
-    private final AtomicBoolean syncerRefreshScheduled = new AtomicBoolean(false);
 
-    //endregion
-    private final List<Function<List<String>, Boolean>> onGrantConsumers = new ObjectArrayList<>();
-    private final List<Function<List<String>, Boolean>> onRevokeConsumers = new ObjectArrayList<>();
-
-    private final Map<EquipmentSlot, ItemStack> equipmentSlotItemStackMap = new Object2ObjectOpenHashMap<>();
-    private final ItemStack air = ItemStack.EMPTY;
-    private final Map<Integer, String> quickDisguiseMap = new Object2ObjectArrayMap<>();
-    @Nullable
-    public String lastEmote;
-    @Nullable
-    public String emoteDisplayName;
-    @Resolved
-    private DisguiseInstanceTracker instanceTracker;
-    @Nullable
-    private DisguiseSyncer localPlayerSyncer;
-    private ClientLevel world;
-    private ClientLevel prevWorld;
-    @Nullable
-    private Player lastClientPlayer;
-    @Resolved
-    private AnimHandlerIndex animIndex;
-    @Nullable
-    private GameProfile serverSkin;
-
-    public List<String> getAvailableMorphs() {
+    public List<String> getAvailableMorphs()
+    {
         return availableMorphs.stream().toList();
     }
 
-    //region Add/Remove/Set disguises
-
-    public void clearAvailableDisguises() {
+    public void clearAvailableDisguises()
+    {
         var disguises = new ObjectArrayList<>(availableMorphs);
         availableMorphs.clear();
 
         invokeRevoke(disguises);
     }
 
-    public void setEmoteDisplay(String id) {
+    //region Common
+
+    public final Bindable<String> selectedIdentifier = new Bindable<>(null);
+
+    public final Bindable<String> currentIdentifier = new Bindable<>(null);
+
+    public final Bindable<Boolean> equipOverriden = new Bindable<>(false);
+
+    public final Bindable<CompoundTag> currentNbtCompound = new Bindable<>(null);
+
+    public final Bindable<Float> revealingValue = new Bindable<>(0f);
+
+    @Resolved
+    private DisguiseInstanceTracker instanceTracker;
+
+    //endregion
+
+    private final List<String> emotes = new ObjectArrayList<>();
+
+    public void setEmotes(List<String> emotes)
+    {
+        if (emotes.size() > 4)
+            logger.warn("Server send a emote that has more than 4 elements!");
+
+        this.emotes.clear();
+        this.emotes.addAll(emotes);
+    }
+
+    @Nullable
+    public String lastEmote;
+
+    @Nullable
+    public String emoteDisplayName;
+
+    public void setEmoteDisplay(String id)
+    {
         this.emoteDisplayName = id;
     }
 
-    public void playEmote(String emote) {
+    public void playEmote(String emote)
+    {
         if (!emote.equals(AnimationNames.RESET) && !emote.equals(AnimationNames.TRY_RESET))
             this.lastEmote = emote;
         else
@@ -98,21 +101,19 @@ public class ClientMorphManager extends MorphClientObject {
             localPlayerSyncer.playAnimation(emote);
     }
 
-    public List<String> getEmotes() {
+    public List<String> getEmotes()
+    {
         return new ObjectArrayList<>(emotes);
     }
 
-    public void setEmotes(List<String> emotes) {
-        if (emotes.size() > 4)
-            logger.warn("Server send a emote that has more than 4 elements!");
-
-        this.emotes.clear();
-        this.emotes.addAll(emotes);
-    }
+    @Nullable
+    private DisguiseSyncer localPlayerSyncer;
 
     @Initializer
-    private void load() {
-        Services.PLATFORM.registerClientDisconnectEvent(() -> {
+    private void load()
+    {
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
+        {
             if (RenderSystem.isOnRenderThread())
                 onDisconnect();
             else
@@ -122,14 +123,19 @@ public class ClientMorphManager extends MorphClientObject {
         this.addSchedule(this::update);
     }
 
-    private void onDisconnect() {
+    private void onDisconnect()
+    {
         world = null;
         prevWorld = null;
 
         reset();
     }
 
-    private void update() {
+    private ClientLevel world;
+    private ClientLevel prevWorld;
+
+    private void update()
+    {
         this.addSchedule(this::update);
 
         world = Minecraft.getInstance().level;
@@ -143,7 +149,8 @@ public class ClientMorphManager extends MorphClientObject {
             prevWorld = world;
 
         var currentClientPlayer = Minecraft.getInstance().player;
-        if (currentClientPlayer != null && lastClientPlayer != currentClientPlayer && !syncerRefreshScheduled.get()) {
+        if (currentClientPlayer != null && lastClientPlayer != currentClientPlayer && !syncerRefreshScheduled.get())
+        {
             if (localPlayerSyncer != null && localPlayerSyncer.disposed())
                 localPlayerSyncer = null;
 
@@ -153,10 +160,17 @@ public class ClientMorphManager extends MorphClientObject {
         lastClientPlayer = currentClientPlayer;
     }
 
-    private void refreshLocalSyncer(String n) {
+    @Nullable
+    private Player lastClientPlayer;
+
+    private final AtomicBoolean syncerRefreshScheduled = new AtomicBoolean(false);
+
+    private void refreshLocalSyncer(String n)
+    {
         syncerRefreshScheduled.set(false);
 
-        if (localPlayerSyncer != null) {
+        if (localPlayerSyncer != null)
+        {
             logger.info("Removing previous syncer " + localPlayerSyncer);
             instanceTracker.removeSyncer(localPlayerSyncer);
             localPlayerSyncer.dispose();
@@ -176,15 +190,24 @@ public class ClientMorphManager extends MorphClientObject {
             localPlayerSyncer.updateSkin(serverSkin);
     }
 
-    public void onMorphGrant(Function<List<String>, Boolean> consumer) {
+    //region Add/Remove/Set disguises
+
+    public final Bindable<Boolean> selfVisibleEnabled = new Bindable<>(false);
+
+    private final List<Function<List<String>, Boolean>> onGrantConsumers = new ObjectArrayList<>();
+    public void onMorphGrant(Function<List<String>, Boolean> consumer)
+    {
         onGrantConsumers.add(consumer);
     }
 
-    public void onMorphRevoke(Function<List<String>, Boolean> consumer) {
+    private final List<Function<List<String>, Boolean>> onRevokeConsumers = new ObjectArrayList<>();
+    public void onMorphRevoke(Function<List<String>, Boolean> consumer)
+    {
         onRevokeConsumers.add(consumer);
     }
 
-    private void invokeRevoke(List<String> diff) {
+    private void invokeRevoke(List<String> diff)
+    {
         var tobeRemoved = new ObjectArrayList<Function<List<String>, Boolean>>();
 
         onRevokeConsumers.forEach(f ->
@@ -195,7 +218,8 @@ public class ClientMorphManager extends MorphClientObject {
         onRevokeConsumers.removeAll(tobeRemoved);
     }
 
-    private void invokeGrant(List<String> diff) {
+    private void invokeGrant(List<String> diff)
+    {
         var tobeRemoved = new ObjectArrayList<Function<List<String>, Boolean>>();
 
         onGrantConsumers.forEach(f ->
@@ -206,7 +230,8 @@ public class ClientMorphManager extends MorphClientObject {
         onGrantConsumers.removeAll(tobeRemoved);
     }
 
-    public void setDisguises(List<String> identifiers, boolean displayToasts) {
+    public void setDisguises(List<String> identifiers, boolean displayToasts)
+    {
         invokeRevoke(availableMorphs.stream().toList());
 
         availableMorphs.clear();
@@ -215,12 +240,12 @@ public class ClientMorphManager extends MorphClientObject {
 
         DisguiseEntryToast.invalidateAll();
 
-        if (displayToasts) {
+        if (displayToasts)
             Minecraft.getInstance().getToastManager().addToast(new NewDisguiseSetToast(availableMorphs.size() <= 0));
-        }
     }
 
-    public void addDisguises(List<String> identifiers, boolean displayToasts) {
+    public void addDisguises(List<String> identifiers, boolean displayToasts)
+    {
         identifiers = new ObjectArrayList<>(identifiers);
 
         identifiers.removeIf(availableMorphs::contains);
@@ -229,60 +254,71 @@ public class ClientMorphManager extends MorphClientObject {
         invokeGrant(identifiers);
     }
 
-    //endregion Add/Remove/Set disguises
-
-    //region Items
-
-    public void addDisguise(String identifier, boolean displayToasts) {
+    public void addDisguise(String identifier, boolean displayToasts)
+    {
         addDisguisePrivate(identifier, displayToasts);
     }
 
-    public void removeDisguises(List<String> identifiers, boolean displayToasts) {
+    public void removeDisguises(List<String> identifiers, boolean displayToasts)
+    {
         identifiers.forEach(i -> removeDisguisePrivate(i, displayToasts));
 
         invokeRevoke(identifiers);
     }
 
-    public void removeDisguise(String identifier, boolean displayToasts) {
+    public void removeDisguise(String identifier, boolean displayToasts)
+    {
         removeDisguisePrivate(identifier, displayToasts);
     }
 
-    private void addDisguisePrivate(String identifier, boolean displayToasts) {
+    private void addDisguisePrivate(String identifier, boolean displayToasts)
+    {
         if (identifier.isEmpty()) return;
 
         availableMorphs.add(identifier);
 
-        if (displayToasts) {
+        if (displayToasts)
             Minecraft.getInstance().getToastManager().addToast(new DisguiseEntryToast(identifier, true));
-        }
     }
 
-    private void removeDisguisePrivate(String identifier, boolean displayToasts) {
+    private void removeDisguisePrivate(String identifier, boolean displayToasts)
+    {
         availableMorphs.remove(identifier);
 
-        if (displayToasts) {
+        if (displayToasts)
             Minecraft.getInstance().getToastManager().addToast(new DisguiseEntryToast(identifier, false));
-        }
     }
 
-    //endregion Items
+    //endregion Add/Remove/Set disguises
 
-    public ItemStack getOverridedItemStackOn(EquipmentSlot slot) {
+    //region Items
+
+    private final Map<EquipmentSlot, ItemStack> equipmentSlotItemStackMap = new Object2ObjectOpenHashMap<>();
+
+    public ItemStack getOverridedItemStackOn(EquipmentSlot slot)
+    {
         return equipmentSlotItemStackMap.getOrDefault(slot, air);
     }
 
-    public void swapHand() {
+    public void swapHand()
+    {
         var mainHand = equipmentSlotItemStackMap.getOrDefault(EquipmentSlot.MAINHAND, air);
         var offHand = equipmentSlotItemStackMap.getOrDefault(EquipmentSlot.OFFHAND, air);
         equipmentSlotItemStackMap.put(EquipmentSlot.MAINHAND, offHand);
         equipmentSlotItemStackMap.put(EquipmentSlot.OFFHAND, mainHand);
     }
 
-    public void setEquip(EquipmentSlot slot, ItemStack item) {
+    public void setEquip(EquipmentSlot slot, ItemStack item)
+    {
         equipmentSlotItemStackMap.put(slot, item);
     }
 
-    public void reset() {
+    private final ItemStack air = ItemStack.EMPTY;
+
+    //endregion Items
+
+    public void reset()
+    {
         this.clearAvailableDisguises();
 
         this.setEmotes(List.of());
@@ -304,7 +340,8 @@ public class ClientMorphManager extends MorphClientObject {
         lastClientPlayer = null;
     }
 
-    public void setCurrent(String val) {
+    public void setCurrent(String val)
+    {
         if (localPlayerSyncer != null)
             localPlayerSyncer.dispose();
 
@@ -327,7 +364,11 @@ public class ClientMorphManager extends MorphClientObject {
         currentNbtCompound.set(null);
     }
 
-    public DisguiseSyncer createSyncerFor(AbstractClientPlayer player, String disguiseId, int networkId) {
+    @Resolved
+    private AnimHandlerIndex animIndex;
+
+    public DisguiseSyncer createSyncerFor(AbstractClientPlayer player, String disguiseId, int networkId)
+    {
         var clientPlayer = Minecraft.getInstance().player;
         if (clientPlayer == null)
             throw new NullDependencyException("Required non-null client player to get DisguiseSyncer");
@@ -344,31 +385,44 @@ public class ClientMorphManager extends MorphClientObject {
         return syncer;
     }
 
-    public void updateSkin(GameProfile profile) {
+    @Nullable
+    private GameProfile serverSkin;
+
+    public void updateSkin(GameProfile profile)
+    {
         serverSkin = profile;
 
-        if (localPlayerSyncer != null) {
+        if (localPlayerSyncer != null)
+        {
             localPlayerSyncer.updateSkin(profile);
-        } else {
+        }
+        else
+        {
             logger.warn("Calling UpdateSkin while localPlayerSyncer is null!");
             Thread.dumpStack();
         }
     }
 
-    public void setupQuickDisguise(Map<Integer, String> newMap) {
+    private final Map<Integer, String> quickDisguiseMap = new Object2ObjectArrayMap<>();
+
+    public void setupQuickDisguise(Map<Integer, String> newMap)
+    {
         this.clearQuickDisguise();
         this.quickDisguiseMap.putAll(newMap);
     }
 
-    public void setupQuickDisguise(int index, String disguiseID) {
+    public void setupQuickDisguise(int index, String disguiseID)
+    {
         quickDisguiseMap.put(index, disguiseID);
     }
 
-    public void clearQuickDisguise() {
+    public void clearQuickDisguise()
+    {
         quickDisguiseMap.clear();
     }
 
-    private void testClientDisguise(int index) {
+    private void testClientDisguise(int index)
+    {
         String[] disguises = new String[]
                 {
                         "player:Faruzan_",
@@ -388,8 +442,10 @@ public class ClientMorphManager extends MorphClientObject {
         this.setCurrent(disguises[index]);
     }
 
-    public void onQuickDisguise(int index) {
-        if (1 + 1 == 2) {
+    public void onQuickDisguise(int index)
+    {
+        if (1+1==2)
+        {
             testClientDisguise(index);
             return;
         }

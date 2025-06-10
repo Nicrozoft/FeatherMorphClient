@@ -46,39 +46,43 @@ import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 import java.util.List;
 import java.util.Map;
 
-public class PlayerRenderHelper extends MorphClientObject {
+public class PlayerRenderHelper extends MorphClientObject
+{
     private static PlayerRenderHelper instance;
-    private final Map<EntityType<?>, ModelInfo> typeModelPartMap = new Object2ObjectOpenHashMap<>();
-    private final RenderType dragonLayer = RenderType.entityCutoutNoCull(ResourceLocation.parse("textures/entity/enderdragon/dragon.png"));
-    @ApiStatus.Internal
-    public boolean skipRender = false;
-    public boolean renderingLeftPart;
-    @Resolved
-    private DisguiseInstanceTracker instanceTracker;
-    private boolean allowRender = true;
 
-    public PlayerRenderHelper() {
-    }
-
-    public static PlayerRenderHelper instance() {
+    public static PlayerRenderHelper instance()
+    {
         if (instance == null) instance = new PlayerRenderHelper();
 
         return instance;
     }
 
-    @Initializer
-    private void load(ClientMorphManager morphManager) {
-        morphManager.currentIdentifier.onValueChanged((o, n) -> this.allowRender = true);
+    public PlayerRenderHelper()
+    {
     }
 
-    public boolean shouldHideLabel(@Nullable AbstractClientPlayer player) {
+    @Initializer
+    private void load(ClientMorphManager morphManager)
+    {
+        morphManager.currentIdentifier.onValueChanged((o, n) ->
+        {
+            this.allowRender = true;
+        });
+    }
+
+    @Resolved
+    private DisguiseInstanceTracker instanceTracker;
+
+    public boolean shouldHideLabel(@Nullable AbstractClientPlayer player)
+    {
         if (player == null) return false;
 
         var localSyncer = ClientDisguiseSyncer.getCurrentInstance();
         return localSyncer != null && player == localSyncer.getDisguiseInstance();
     }
 
-    private void onRenderException(Exception exception) {
+    private void onRenderException(Exception exception)
+    {
         allowRender = false;
         exception.printStackTrace();
 
@@ -88,10 +92,14 @@ public class PlayerRenderHelper extends MorphClientObject {
 
         var entity = syncer.getDisguiseInstance();
 
-        if (entity != null) {
-            try {
+        if (entity != null)
+        {
+            try
+            {
                 entity.remove(Entity.RemovalReason.DISCARDED);
-            } catch (Exception ee) {
+            }
+            catch (Exception ee)
+            {
                 LoggerFactory.getLogger("MorphClient").error("无法移除实体：" + ee.getMessage());
                 ee.printStackTrace();
             }
@@ -104,19 +112,23 @@ public class PlayerRenderHelper extends MorphClientObject {
         clientPlayer.displayClientMessage(Component.translatable("text.morphclient.error.render_disguise2"), false);
     }
 
-    private Camera camera() {
+    @ApiStatus.Internal
+    public boolean skipRender = false;
+
+    private Camera camera()
+    {
         return Minecraft.getInstance().gameRenderer.getMainCamera();
     }
 
     /**
      * 在玩家位置渲染通向 {@link ClientDisguiseSyncer#getBeamTarget()} 的光柱
-     *
-     * @param tickCounter            tickCounter
-     * @param matrixStack            {@link PoseStack}
+     * @param tickCounter tickCounter
+     * @param matrixStack {@link PoseStack}
      * @param vertexConsumerProvider {@link MultiBufferSource}
-     * @param light                  光照等级
+     * @param light 光照等级
      */
-    public void renderCrystalBeam(DeltaTracker tickCounter, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int light) {
+    public void renderCrystalBeam(DeltaTracker tickCounter, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int light)
+    {
         DisguiseSyncer abstractSyncer = instanceTracker.getSyncerFor(Minecraft.getInstance().player);
 
         if (!(abstractSyncer instanceof ClientDisguiseSyncer syncer)) return;
@@ -147,9 +159,9 @@ public class PlayerRenderHelper extends MorphClientObject {
         var yOffset = 1f;
 
         //相对位置，光柱在这里结束
-        var relativeX = (float) (connectedCrystal.getX() - lerpPlayerX);
-        var relativeY = (float) (connectedCrystal.getY() - lerpPlayerY) + yOffset;
-        var relativeZ = (float) (connectedCrystal.getZ() - lerpPlayerZ);
+        var relativeX = (float)(connectedCrystal.getX() - lerpPlayerX);
+        var relativeY = (float)(connectedCrystal.getY() - lerpPlayerY) + yOffset;
+        var relativeZ = (float)(connectedCrystal.getZ() - lerpPlayerZ);
 
         //对matrixStack进行位移，将其中心设定在玩家处
         //光柱在这里开始
@@ -165,7 +177,8 @@ public class PlayerRenderHelper extends MorphClientObject {
         matrixStack.popPose();
     }
 
-    private float getCrystalYOffsetCopy(Entity entity, float tickDelta) {
+    private float getCrystalYOffsetCopy(Entity entity, float tickDelta)
+    {
         var age = entity instanceof EndCrystal endCrystalEntity ? endCrystalEntity.time : 0;
 
         float f = age + tickDelta;
@@ -174,7 +187,23 @@ public class PlayerRenderHelper extends MorphClientObject {
         return g - 1.4f;
     }
 
-    public ModelInfo tryGetModel(EntityType<?> type, @Nullable EntityModel<?> sourceModel) {
+    private boolean allowRender = true;
+
+    public boolean renderingLeftPart;
+
+    private final Map<EntityType<?>, ModelInfo> typeModelPartMap = new Object2ObjectOpenHashMap<>();
+
+    public record ModelInfo(@Nullable ModelPart left, @Nullable ModelPart right, Vec3 offset, Vec3 scale)
+    {
+        @Nullable
+        public ModelPart getPart(boolean isLeftArm)
+        {
+            return isLeftArm ? left : right;
+        }
+    }
+
+    public ModelInfo tryGetModel(EntityType<?> type, @Nullable EntityModel<?> sourceModel)
+    {
         if (sourceModel == null) return new ModelInfo(null, null, Vec3dUtils.of(0), Vec3dUtils.of(1));
 
         var map = typeModelPartMap.getOrDefault(type, null);
@@ -197,7 +226,8 @@ public class PlayerRenderHelper extends MorphClientObject {
         Vec3 offset = Vec3dUtils.of(0);
         Vec3 scale = Vec3dUtils.ONE();
 
-        if (model != null) {
+        if (model != null)
+        {
             var leftPartNames = List.of(
                     PartNames.LEFT_ARM,
                     PartNames.LEFT_LEG,
@@ -220,10 +250,13 @@ public class PlayerRenderHelper extends MorphClientObject {
                     "part9"
             );
 
-            if (sourceModel instanceof HumanoidModel<?> bipedEntityModel) {
+            if (sourceModel instanceof HumanoidModel<?> bipedEntityModel)
+            {
                 leftPart = bipedEntityModel.leftArm;
                 rightPart = bipedEntityModel.rightArm;
-            } else {
+            }
+            else
+            {
                 leftPart = this.tryGetChild(model, leftPartNames);
                 rightPart = this.tryGetChild(model, rightPartNames);
 
@@ -240,15 +273,18 @@ public class PlayerRenderHelper extends MorphClientObject {
         return map;
     }
 
-    private ModelPart tryGetChild(ModelPart modelPart, String childName) {
+    private ModelPart tryGetChild(ModelPart modelPart, String childName)
+    {
         //From SinglePartEntityModel#getChild(String name)
         return modelPart.getAllParts().filter(part -> part.hasChild(childName)).findFirst().map(part -> part.getChild(childName)).orElse(null);
     }
 
-    private ModelPart tryGetChild(ModelPart modelPart, List<String> childNames) {
+    private ModelPart tryGetChild(ModelPart modelPart, List<String> childNames)
+    {
         ModelPart part = null;
 
-        for (var s : childNames) {
+        for (var s : childNames)
+        {
             part = tryGetChild(modelPart, s);
 
             if (part != null) break;
@@ -257,15 +293,19 @@ public class PlayerRenderHelper extends MorphClientObject {
         return part;
     }
 
+    private final RenderType dragonLayer = RenderType.entityCutoutNoCull(ResourceLocation.parse("textures/entity/enderdragon/dragon.png"));
+
     /**
      * @return Whether rendered disguise instance
      */
     @SuppressWarnings("rawtypes")
-    public boolean onArmDrawCall(PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
+    public boolean onArmDrawCall(PoseStack matrices, MultiBufferSource vertexConsumers, int light)
+    {
         //logger.info("On Arms!");
         if (!allowRender) return false;
 
-        try {
+        try
+        {
             var syncer = ClientDisguiseSyncer.getCurrentInstance();
 
             if (syncer == null || syncer.disposed()) return false;
@@ -280,15 +320,18 @@ public class PlayerRenderHelper extends MorphClientObject {
             RenderType layer = null;
             EntityModel model = null;
 
-            if (disguiseRenderer instanceof EnderDragonRenderer enderDragonEntityRenderer) {
+            if (disguiseRenderer instanceof EnderDragonRenderer enderDragonEntityRenderer)
+            {
                 model = ((DragonEntityRendererAccessor) enderDragonEntityRenderer).getModel();
                 layer = dragonLayer;
             }
 
-            if (disguiseRenderer instanceof LivingEntityRenderer livingEntityRenderer) {
+            if (disguiseRenderer instanceof LivingEntityRenderer livingEntityRenderer)
+            {
                 model = livingEntityRenderer.getModel();
 
-                if (disguiseEntity instanceof MorphLocalPlayer localPlayer) {
+                if (disguiseEntity instanceof MorphLocalPlayer localPlayer)
+                {
                     var renderer = (PlayerRenderer) livingEntityRenderer;
 
                     if (renderingLeftPart)
@@ -310,14 +353,15 @@ public class PlayerRenderHelper extends MorphClientObject {
             modelInfo = tryGetModel(disguiseEntity.getType(), model);
             targetArm = modelInfo.getPart(renderingLeftPart);
 
-            if (targetArm != null) {
+            if (targetArm != null)
+            {
                 layer = layer == null ? RenderType.solid() : layer;
 
                 targetArm.visible = true;
                 //targetArm.resetTransform();
 
                 var scale = modelInfo.scale;
-                matrices.scale((float) scale.x(), (float) scale.y(), (float) scale.z());
+                matrices.scale((float)scale.x(), (float)scale.y(), (float)scale.z());
 
                 var offset = modelInfo.offset;
                 matrices.translate(offset.x(), offset.y(), offset.z());
@@ -331,17 +375,12 @@ public class PlayerRenderHelper extends MorphClientObject {
 
                 return true;
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             onRenderException(e);
         }
 
         return false;
-    }
-
-    public record ModelInfo(@Nullable ModelPart left, @Nullable ModelPart right, Vec3 offset, Vec3 scale) {
-        @Nullable
-        public ModelPart getPart(boolean isLeftArm) {
-            return isLeftArm ? left : right;
-        }
     }
 }

@@ -2,7 +2,8 @@ package xyz.nifeather.morph.client.graphics;
 
 import static xyz.nifeather.morph.client.graphics.PosMask.*;
 
-public enum Anchor {
+public enum Anchor
+{
     TopLeft(x1 | y1),
     TopCentre(x2 | y1),
     TopRight(x3 | y1),
@@ -17,15 +18,18 @@ public enum Anchor {
 
     public final int posMask;
 
-    Anchor(int posMask) {
+    Anchor(int posMask)
+    {
         this.posMask = posMask;
     }
 
-    public boolean xCentre() {
+    public boolean xCentre()
+    {
         return (this.posMask & x2) == x2;
     }
 
-    public boolean yCentre() {
+    public boolean yCentre()
+    {
         return (this.posMask & y2) == y2;
     }
 }

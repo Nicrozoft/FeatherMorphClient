@@ -3,11 +3,13 @@ package xyz.nifeather.morph.client.graphics;
 import net.minecraft.client.gui.GuiGraphics;
 import xyz.nifeather.morph.client.graphics.color.Colors;
 
-public class Box extends MDrawable {
+public class Box extends MDrawable
+{
     public int color = Colors.WHITE.getColor();
 
     @Override
-    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
+    {
         super.onRender(context, mouseX, mouseY, delta);
 
         context.fill(0, 0,

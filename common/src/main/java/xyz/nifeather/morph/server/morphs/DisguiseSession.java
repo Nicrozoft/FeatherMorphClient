@@ -13,18 +13,34 @@ import xyz.nifeather.morph.server.network.ClientHandler;
 
 import java.util.List;
 
-public class DisguiseSession extends ServerPluginObject {
+public class DisguiseSession extends ServerPluginObject
+{
     private final ServerPlayer bindingPlayer;
+
+    public ServerPlayer player()
+    {
+        return bindingPlayer;
+    }
+
     private final String disguiseIdentifier;
+
+    public String disguiseIdentifier()
+    {
+        return disguiseIdentifier;
+    }
+
     @NotNull
     private final AbstractDisguiseProvider disguiseProvider;
-    private final AnimationSequence animationSequence = new AnimationSequence();
-    @Resolved(shouldSolveImmediately = true)
-    private ClientHandler clientHandler;
+
+    public AbstractDisguiseProvider disguiseProvider()
+    {
+        return disguiseProvider;
+    }
 
     public DisguiseSession(ServerPlayer bindingPlayer,
-                           String disguiseIdentifier,
-                           @NotNull AbstractDisguiseProvider disguiseProvider) {
+                                 String disguiseIdentifier,
+                                 @NotNull AbstractDisguiseProvider disguiseProvider)
+    {
         this.disguiseIdentifier = disguiseIdentifier;
         this.bindingPlayer = bindingPlayer;
         this.disguiseProvider = disguiseProvider;
@@ -43,20 +59,14 @@ public class DisguiseSession extends ServerPluginObject {
         });
     }
 
-    public ServerPlayer player() {
-        return bindingPlayer;
-    }
+    @Resolved(shouldSolveImmediately = true)
+    private ClientHandler clientHandler;
 
-    public String disguiseIdentifier() {
-        return disguiseIdentifier;
-    }
-
-    public AbstractDisguiseProvider disguiseProvider() {
-        return disguiseProvider;
-    }
+    private final AnimationSequence animationSequence = new AnimationSequence();
 
     public boolean tryScheduleSequence(@NotNull String sequenceIdentifier,
-                                       List<SingleAnimation> sequence) {
+                                       List<SingleAnimation> sequence)
+    {
         this.animationSequence.scheduleNext(sequenceIdentifier, sequence);
 
         var player = player();
@@ -69,7 +79,8 @@ public class DisguiseSession extends ServerPluginObject {
         return true;
     }
 
-    public void update() {
+    public void update()
+    {
         animationSequence.update();
     }
 }

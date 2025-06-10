@@ -9,10 +9,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
 import xyz.nifeather.morph.client.utilties.EntityCacheUtils;
 
-@Mixin(value = ClientLevel.class)
-public class ClientWorldMixin {
+@Mixin(ClientLevel.class)
+public class ClientWorldMixin
+{
     @Inject(method = "addEntity", at = @At("HEAD"))
-    private void fm$onAddEntity(Entity entity, CallbackInfo ci) {
+    private void fm$onAddEntity(Entity entity, CallbackInfo ci)
+    {
         EntityCacheUtils.onEntityAdd(entity);
 
         var fm$instanceTracker = DisguiseInstanceTracker.getInstance();

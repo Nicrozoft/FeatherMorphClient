@@ -38,14 +38,12 @@ import xyz.nifeather.morph.shared.payload.V3MorphCommandPayload;
 import java.util.List;
 import java.util.Map;
 
-public class ClientHandler extends ServerPluginObject implements BasicClientHandler<ServerPlayer> {
+public class ClientHandler extends ServerPluginObject implements BasicClientHandler<ServerPlayer>
+{
     private final CommandRegistriesNew commandRegistries = new CommandRegistriesNew();
-    private final Bindable<Boolean> logInComingPackets = new Bindable<>(true);
-    private final Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-    @Resolved(shouldSolveImmediately = true)
-    private MorphManager morphManager;
 
-    public ClientHandler() {
+    public ClientHandler()
+    {
         commandRegistries.registerC2S(C2SCommandNames.RequestInitial, C2SRequestInitialCommand::fromArguments)
                 .registerC2S(C2SCommandNames.Morph, C2SMorphCommand::fromArguments)
                 .registerC2S(C2SCommandNames.ActivateSkill, C2SActivateSkillCommand::fromArguments)
@@ -56,7 +54,10 @@ public class ClientHandler extends ServerPluginObject implements BasicClientHand
                 .registerC2S(C2SCommandNames.RequestAnimation, C2SRequestAnimationCommand::fromArguments);
     }
 
-    private void logPacket(boolean isOutGoingPacket, ServerPlayer player, String channel, String data, int size) {
+    private final Bindable<Boolean> logInComingPackets = new Bindable<>(true);
+
+    private void logPacket(boolean isOutGoingPacket, ServerPlayer player, String channel, String data, int size)
+    {
         var arrow = isOutGoingPacket ? " -> " : " <- ";
 
         String builder = channel + arrow
@@ -68,19 +69,23 @@ public class ClientHandler extends ServerPluginObject implements BasicClientHand
         logger.info(builder);
     }
 
-    public void onCommandPayload(V3MorphCommandPayload morphCommandPayload, ServerPlayNetworking.Context context) {
+    public void onCommandPayload(V3MorphCommandPayload morphCommandPayload, ServerPlayNetworking.Context context)
+    {
         var player = context.player();
         var input = morphCommandPayload.content();
 
         if (logInComingPackets.get())
             logPacket(false, player, morphCommandPayload.type().id().toString(), input, input.length());
 
-        try {
+        try
+        {
             var record = gson.fromJson(input, C2SCommandRecord.class);
             var command = commandRegistries.createC2SCommand(record.commandName(), record.arguments());
             command.setOwner(player);
             command.onCommand(this);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             logger.error("Failed to handle client command '%s': %s".formatted(input, t.getMessage()));
             logger.error("Disconnecting player " + player.getScoreboardName());
             disconnect(player);
@@ -88,11 +93,15 @@ public class ClientHandler extends ServerPluginObject implements BasicClientHand
     }
 
     // todo: Implement this
-    public boolean clientConnected(ServerPlayer player) {
+    public boolean clientConnected(ServerPlayer player)
+    {
         return true;
     }
 
-    private boolean sendCommand(ServerPlayer player, AbstractS2CCommand<?> command, boolean forceSend) {
+    private final Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+
+    private boolean sendCommand(ServerPlayer player, AbstractS2CCommand<?> command, boolean forceSend)
+    {
         var record = S2CCommandRecord.fromS2CCommand(command);
         var cmd = gson.toJson(record);
 
@@ -105,7 +114,8 @@ public class ClientHandler extends ServerPluginObject implements BasicClientHand
     }
 
     @Override
-    public boolean sendCommand(ServerPlayer player, AbstractS2CCommand<?> basicS2CCommand) {
+    public boolean sendCommand(ServerPlayer player, AbstractS2CCommand<?> basicS2CCommand)
+    {
         return this.sendCommand(player, basicS2CCommand, false);
     }
 
@@ -116,7 +126,8 @@ public class ClientHandler extends ServerPluginObject implements BasicClientHand
      * @return 此玩家的客户端版本
      */
     @Override
-    public int getPlayerVersion(ServerPlayer ServerPlayerEntity) {
+    public int getPlayerVersion(ServerPlayer ServerPlayerEntity)
+    {
         return 0;
     }
 
@@ -127,7 +138,8 @@ public class ClientHandler extends ServerPluginObject implements BasicClientHand
      * @apiNote 此列表可能包含已连接但未初始化的玩家
      */
     @Override
-    public List<ServerPlayer> getConnectedPlayers() {
+    public List<ServerPlayer> getConnectedPlayers()
+    {
         return List.of();
     }
 
@@ -138,7 +150,8 @@ public class ClientHandler extends ServerPluginObject implements BasicClientHand
      * @return 此玩家的连接状态
      */
     @Override
-    public InitializeState getInitializeState(ServerPlayer ServerPlayerEntity) {
+    public InitializeState getInitializeState(ServerPlayer ServerPlayerEntity)
+    {
         return null;
     }
 
@@ -149,7 +162,8 @@ public class ClientHandler extends ServerPluginObject implements BasicClientHand
      * @return 此玩家是否已经初始化
      */
     @Override
-    public boolean isPlayerInitialized(ServerPlayer ServerPlayerEntity) {
+    public boolean isPlayerInitialized(ServerPlayer ServerPlayerEntity)
+    {
         return false;
     }
 
@@ -160,7 +174,8 @@ public class ClientHandler extends ServerPluginObject implements BasicClientHand
      * @return 此玩家的连接状态
      */
     @Override
-    public boolean isPlayerConnected(ServerPlayer ServerPlayerEntity) {
+    public boolean isPlayerConnected(ServerPlayer ServerPlayerEntity)
+    {
         return false;
     }
 
@@ -170,7 +185,8 @@ public class ClientHandler extends ServerPluginObject implements BasicClientHand
      * @param ServerPlayerEntity 目标玩家
      */
     @Override
-    public void disconnect(ServerPlayer ServerPlayerEntity) {
+    public void disconnect(ServerPlayer ServerPlayerEntity)
+    {
     }
 
     /**
@@ -179,13 +195,18 @@ public class ClientHandler extends ServerPluginObject implements BasicClientHand
      * @param ServerPlayerEntity 目标玩家
      */
     @Override
-    public @Nullable PlayerOptions<ServerPlayer> getPlayerOption(ServerPlayer ServerPlayerEntity) {
+    public @Nullable PlayerOptions<ServerPlayer> getPlayerOption(ServerPlayer ServerPlayerEntity)
+    {
         logger.warn("getPlayerOption is not implemented yet.");
         return null;
     }
 
+    @Resolved(shouldSolveImmediately = true)
+    private MorphManager morphManager;
+
     @Override
-    public void onInitialCommand(C2SRequestInitialCommand command) {
+    public void onInitialCommand(C2SRequestInitialCommand command)
+    {
         ServerPlayer player = command.getOwner();
 
         var unlocked = morphManager.getUnlockedDisguiseIds(player);
@@ -210,7 +231,8 @@ public class ClientHandler extends ServerPluginObject implements BasicClientHand
     }
 
     @Override
-    public void onMorphCommand(C2SMorphCommand command) {
+    public void onMorphCommand(C2SMorphCommand command)
+    {
         ServerPlayer player = command.getOwner();
         String disguiseId = command.identifier();
 
@@ -218,41 +240,49 @@ public class ClientHandler extends ServerPluginObject implements BasicClientHand
     }
 
     @Override
-    public void onOptionCommand(C2SSetSingleOptionCommand command) {
+    public void onOptionCommand(C2SSetSingleOptionCommand command)
+    {
     }
 
     @Override
-    public void onSkillCommand(C2SActivateSkillCommand command) {
+    public void onSkillCommand(C2SActivateSkillCommand command)
+    {
     }
 
     @Override
-    public void onToggleSelfCommand(C2SToggleSelfCommand command) {
+    public void onToggleSelfCommand(C2SToggleSelfCommand command)
+    {
         ServerPlayer player = command.getOwner();
         var val = command.getSelfViewMode();
 
-        switch (val) {
+        switch (val)
+        {
             case ON, CLIENT_ON -> sendCommand(player, new S2CSetSelfViewingStatusCommand(true));
             default -> sendCommand(player, new S2CSetSelfViewingStatusCommand(false));
         }
     }
 
     @Override
-    public void onUnmorphCommand(C2SUnmorphCommand command) {
+    public void onUnmorphCommand(C2SUnmorphCommand command)
+    {
         ServerPlayer player = command.getOwner();
 
         morphManager.unMorph(player);
     }
 
     @Override
-    public void onRequestCommand(C2SExchangeRequestManagementCommand command) {
+    public void onRequestCommand(C2SExchangeRequestManagementCommand command)
+    {
     }
 
     @Override
-    public void onAnimationCommand(C2SRequestAnimationCommand command) {
+    public void onAnimationCommand(C2SRequestAnimationCommand command)
+    {
         ServerPlayer player = command.getOwner();
 
         var session = morphManager.getSessionFor(player);
-        if (session == null) {
+        if (session == null)
+        {
             player.sendSystemMessage(Component.literal("Session is NULL, you are not disguised!"));
             return;
         }
@@ -268,11 +298,12 @@ public class ClientHandler extends ServerPluginObject implements BasicClientHand
     /**
      * 向某个玩家的客户端发送差异信息
      *
-     * @param addits  添加
+     * @param addits 添加
      * @param removal 删除
-     * @param player  目标玩家
+     * @param player 目标玩家
      */
-    public void sendDiff(@Nullable List<String> addits, @Nullable List<String> removal, ServerPlayer player) {
+    public void sendDiff(@Nullable List<String> addits, @Nullable List<String> removal, ServerPlayer player)
+    {
         if (addits != null)
             this.sendCommand(player, new S2CQueryCommand(QueryType.ADD, addits));
 

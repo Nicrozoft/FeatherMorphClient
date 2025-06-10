@@ -6,7 +6,8 @@ import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.graphics.transforms.easings.Easing;
 
 @Config(name = "morphclient")
-public class ModConfigData implements ConfigData {
+public class ModConfigData implements ConfigData
+{
     public boolean alwaysShowPreviewInInventory = false;
 
     public boolean allowClientView = true;
@@ -33,7 +34,8 @@ public class ModConfigData implements ConfigData {
 
     public boolean disguiseListSmoothScroll = true;
 
-    public boolean clientViewVisible() {
+    public boolean clientViewVisible()
+    {
         return FeatherMorphClientBootstrap.getInstance().morphManager.selfVisibleEnabled.get() && allowClientView;
     }
 }

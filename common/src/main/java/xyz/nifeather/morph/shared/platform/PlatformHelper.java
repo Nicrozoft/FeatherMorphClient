@@ -26,13 +26,9 @@ import net.minecraft.world.entity.LivingEntity;
  * @author 404
  * @reason FabricAPI compatibility approach
  */
-public interface PlatformHelper {
+public interface PlatformHelper
+{
     boolean fabric();
-
-    // Client events
-    void registerClientJoinEvent(Runnable callback);
-
-    void registerClientDisconnectEvent(Runnable callback);
 
     void registerClientTickEndEvent(EndTick callback);
 
@@ -50,20 +46,20 @@ public interface PlatformHelper {
 
     void registerCommandRegistrationEvent(CommandRegistrationCallback callback);
 
-    void sendNetworkPacket(CustomPacketPayload payload);
-
     <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> void registerArgumentType(
             ResourceLocation id, Class<? extends A> clazz, ArgumentTypeInfo<A, T> serializer);
 
     KeyMapping registerKeyBinding(KeyMapping binding);
 
     @FunctionalInterface
-    interface HudRenderCallback {
+    interface HudRenderCallback
+    {
         void onRender(GuiGraphics context, DeltaTracker renderTickCounter);
     }
 
     @FunctionalInterface
-    interface WorldLoad {
+    interface WorldLoad
+    {
         void onWorldLoad(MinecraftServer server, ServerLevel world);
     }
 
@@ -73,22 +69,26 @@ public interface PlatformHelper {
     }
 
     @FunctionalInterface
-    interface EndWorldTick {
+    interface EndWorldTick
+    {
         void onEndTick(ClientLevel world);
     }
 
     @FunctionalInterface
-    interface ServerStopping {
+    interface ServerStopping
+    {
         void onServerStopping(MinecraftServer server);
     }
 
     @FunctionalInterface
-    interface ServerStartTick {
+    interface ServerStartTick
+    {
         void onStartTick(MinecraftServer server);
     }
 
     @FunctionalInterface
-    interface AfterKilledOtherEntity {
+    interface AfterKilledOtherEntity
+    {
         /**
          * Called after an entity has killed another entity.
          *
@@ -100,7 +100,8 @@ public interface PlatformHelper {
     }
 
     @FunctionalInterface
-    interface CommandRegistrationCallback {
+    interface CommandRegistrationCallback
+    {
         /**
          * Called when the server is registering commands.
          *

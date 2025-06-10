@@ -7,20 +7,24 @@ import xyz.nifeather.morph.server.MorphServerLoader;
 import xyz.nifeather.morph.server.misc.DisguiseMeta;
 import xyz.nifeather.morph.server.morphs.MorphManager;
 
-public class DisguiseUtils {
+public class DisguiseUtils
+{
     @Nullable
-    public static DisguiseMeta getDisguiseMeta(String identifier) {
+    public static DisguiseMeta getDisguiseMeta(String identifier)
+    {
         var logger = MorphServerLoader.LOGGER;
         var dependencies = DependencyManager.getInstance(FeatherMorphMain.pluginNamespace());
 
-        if (dependencies == null) {
+        if (dependencies == null)
+        {
             logger.warn("Calling DisguiseUtils#getDisguiseMeta while the server is not fully started?!");
             Thread.dumpStack();
             return null;
         }
 
         var morphManager = dependencies.get(MorphManager.class, false);
-        if (morphManager == null) {
+        if (morphManager == null)
+        {
             logger.warn("Calling DisguiseUtils#getDisguiseMeta while the server is not fully started?!");
             Thread.dumpStack();
             return null;

@@ -15,8 +15,10 @@ public record ClientInitializeRecord(
         int apiVersion,
 
         boolean handleSuccess
-) {
-    public static ClientInitializeRecord fail() {
+)
+{
+    public static ClientInitializeRecord fail()
+    {
         return new ClientInitializeRecord(List.of(), -1, false);
     }
 }

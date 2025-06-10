@@ -7,48 +7,62 @@ import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class EntityCacheUtils {
-    private static final Map<Object, Consumer<Entity>> onRemove = new Object2ObjectOpenHashMap<>();
-    private static final Map<Object, Consumer<Entity>> onAdd = new Object2ObjectOpenHashMap<>();
-
-    public static void postEntityRemove(Entity entity) {
+public class EntityCacheUtils
+{
+    public static void postEntityRemove(Entity entity)
+    {
         onRemove.forEach((obj, consumer) ->
         {
-            try {
+            try
+            {
                 consumer.accept(entity);
-            } catch (Throwable t) {
+            }
+            catch (Throwable t)
+            {
                 FeatherMorphClientBootstrap.LOGGER.error("Error occurred while processing postEntityRemove hook '%s': %s".formatted(consumer, t));
                 t.printStackTrace();
             }
         });
     }
 
-    public static void addOnEntityRemoveHook(Object obj, Consumer<Entity> consumer) {
+    public static void addOnEntityRemoveHook(Object obj, Consumer<Entity> consumer)
+    {
         onRemove.put(obj, consumer);
     }
 
-    public static void removeOnEntityRemoveHook(Object object) {
+    public static void removeOnEntityRemoveHook(Object object)
+    {
         onRemove.remove(object);
     }
 
-    public static void onEntityAdd(Entity entity) {
+    private static final Map<Object, Consumer<Entity>> onRemove = new Object2ObjectOpenHashMap<>();
+
+    public static void onEntityAdd(Entity entity)
+    {
         onAdd.forEach((obj, consumer) ->
         {
-            try {
+            try
+            {
                 consumer.accept(entity);
-            } catch (Throwable t) {
+            }
+            catch (Throwable t)
+            {
                 FeatherMorphClientBootstrap.LOGGER.error("Error occurred while processing onEntityAdd hook '%s': %s".formatted(consumer, t));
                 t.printStackTrace();
             }
         });
     }
 
-    public static void addOnEntityAddHook(Object obj, Consumer<Entity> consumer) {
+    public static void addOnEntityAddHook(Object obj, Consumer<Entity> consumer)
+    {
         onRemove.put(obj, consumer);
     }
 
-    public static void removeOnEntityAddHook(Object object) {
+    public static void removeOnEntityAddHook(Object object)
+    {
         onRemove.remove(object);
     }
+
+    private static final Map<Object, Consumer<Entity>> onAdd = new Object2ObjectOpenHashMap<>();
 
 }

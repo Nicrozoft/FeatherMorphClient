@@ -9,25 +9,30 @@ import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.MorphClientObject;
 import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
 
-public class InventoryRenderHelper extends MorphClientObject {
+public class InventoryRenderHelper extends MorphClientObject
+{
     private static InventoryRenderHelper instance;
-    public boolean allowRender = true;
 
-    public static InventoryRenderHelper getInstance() {
+    public static InventoryRenderHelper getInstance()
+    {
         if (instance == null) instance = new InventoryRenderHelper();
 
         return instance;
     }
 
     @Initializer
-    private void load(ClientMorphManager morphManager) {
+    private void load(ClientMorphManager morphManager)
+    {
         morphManager.currentIdentifier.onValueChanged((o, n) ->
         {
             this.allowRender = true;
         });
     }
 
-    public void onRenderCall(GuiGraphics context, int x1, int y1, int x2, int y2, int size, float f, float mouseX, float mouseY) {
+    public boolean allowRender = true;
+
+    public void onRenderCall(GuiGraphics context, int x1, int y1, int x2, int y2, int size, float f, float mouseX, float mouseY)
+    {
         if (!allowRender) return;
         var modConfig = FeatherMorphClientBootstrap.getInstance().getModConfigData();
 
@@ -37,14 +42,20 @@ public class InventoryRenderHelper extends MorphClientObject {
 
         PlayerRenderHelper.instance().skipRender = true;
 
-        if (entity != null && (modConfig.clientViewVisible() || modConfig.alwaysShowPreviewInInventory)) {
-            try {
+        if (entity != null && (modConfig.clientViewVisible() || modConfig.alwaysShowPreviewInInventory))
+        {
+            try
+            {
                 InventoryScreen.renderEntityInInventoryFollowsMouse(context, x1, y1, x2, y2, size, f, mouseX, mouseY, entity);
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 e.printStackTrace();
                 allowRender = false;
             }
-        } else {
+        }
+        else
+        {
             var clientPlayer = Minecraft.getInstance().player;
 
             if (clientPlayer != null)

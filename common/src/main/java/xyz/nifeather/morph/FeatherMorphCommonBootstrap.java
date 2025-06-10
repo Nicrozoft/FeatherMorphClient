@@ -19,13 +19,15 @@ import xyz.nifeather.morph.shared.payload.V3MorphCommandPayload;
 import xyz.nifeather.morph.shared.payload.V3MorphInitChannelPayload;
 import xyz.nifeather.morph.shared.platform.Services;
 
-public class FeatherMorphCommonBootstrap {
+public class FeatherMorphCommonBootstrap
+{
     private static FeatherMorphCommonBootstrap INSTANCE;
     private final MorphServerLoader morphServerLoader = new MorphServerLoader();
     public ModConfigData modConfigData;
     public ConfigHolder<ModConfigData> configHolder;
 
-    public FeatherMorphCommonBootstrap() {
+    public FeatherMorphCommonBootstrap()
+    {
         INSTANCE = this;
 
         // 初始化配置
@@ -50,7 +52,8 @@ public class FeatherMorphCommonBootstrap {
 
         PayloadTypeRegistry.playS2C().register(V1V2MorphInitChannelPayload.id, V1V2MorphInitChannelPayload.CODEC);
 
-        if (SharedValues.allowSinglePlayerDebugging) {
+        if (SharedValues.allowSinglePlayerDebugging)
+        {
             // 初始化FeatherMorph服务加载器
             morphServerLoader.onModLoad();
 
@@ -64,7 +67,8 @@ public class FeatherMorphCommonBootstrap {
         }
     }
 
-    public static FeatherMorphCommonBootstrap instance() {
+    public static FeatherMorphCommonBootstrap instance()
+    {
         return INSTANCE;
     }
 }

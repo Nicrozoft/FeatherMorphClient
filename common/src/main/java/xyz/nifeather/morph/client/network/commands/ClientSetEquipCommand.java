@@ -11,12 +11,15 @@ import xyz.nifeather.morph.network.utils.Asserts;
 import java.util.Map;
 import java.util.Objects;
 
-public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack> {
-    public ClientSetEquipCommand(ItemStack item, ProtocolEquipmentSlot slot) {
+public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack>
+{
+    public ClientSetEquipCommand(ItemStack item, ProtocolEquipmentSlot slot)
+    {
         super(item, slot);
     }
 
-    public static ClientSetEquipCommand fromArguments(Map<String, String> arguments) throws RuntimeException {
+    public static ClientSetEquipCommand fromArguments(Map<String, String> arguments) throws RuntimeException
+    {
         var slot = ProtocolEquipmentSlot.valueOf(Asserts.getStringOrThrow(arguments, "slot").toUpperCase());
         var stack = jsonToStack(Asserts.getStringOrThrow(arguments, "item"));
 
@@ -25,8 +28,24 @@ public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack> {
         return new ClientSetEquipCommand(stack, slot);
     }
 
+    @Override
+    public Map<String, String> generateArgumentMap()
+    {
+        var registry = Minecraft.getInstance().level.registryAccess();
+        var json = ItemStack.CODEC.encodeStart(registry.createSerializationContext(JsonOps.INSTANCE), getItemStack()).result();
+
+        if (json.isEmpty())
+            throw new RuntimeException("Failed to encode item!");
+
+        return Map.of(
+                "slot", getSlot().toString(),
+                "item", gson().toJson(json.get())
+        );
+    }
+
     @Nullable
-    private static ItemStack jsonToStack(String rawJson) {
+    private static ItemStack jsonToStack(String rawJson)
+    {
         var world = Minecraft.getInstance().level;
         if (world == null)
             throw new NullPointerException("Called jsonToStack but client world is null?!");
@@ -39,19 +58,5 @@ public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack> {
             return item.result().get().getFirst();
 
         return null;
-    }
-
-    @Override
-    public Map<String, String> generateArgumentMap() {
-        var registry = Minecraft.getInstance().level.registryAccess();
-        var json = ItemStack.CODEC.encodeStart(registry.createSerializationContext(JsonOps.INSTANCE), getItemStack()).result();
-
-        if (json.isEmpty())
-            throw new RuntimeException("Failed to encode item!");
-
-        return Map.of(
-                "slot", getSlot().toString(),
-                "item", gson().toJson(json.get())
-        );
     }
 }

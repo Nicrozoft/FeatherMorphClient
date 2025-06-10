@@ -2,11 +2,13 @@
   "required": true,
   "minVersion": "0.8",
   "package": "xyz.nifeather.morph.client.mixin",
+  "refmap": "feathermorph_client.refmap.json",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "AllayMixin",
     "DataTrackerMixin",
     "EnderDragonEntityMixin",
+    "EntityMixin",
     "FoxMixin",
     "LivingEntityMixin",
     "accessors.PlayerAccessor",

@@ -1,5 +1,6 @@
 package xyz.nifeather.morph.client.network.handlers;
 
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import xyz.nifeather.fmccl.converter.C2SCommandConverter;
 import xyz.nifeather.fmccl.converter.S2CCommandConverter;
@@ -18,11 +19,11 @@ import xyz.nifeather.morph.shared.SharedValues;
 import xyz.nifeather.morph.shared.payload.V1MorphCommandPayload;
 import xyz.nifeather.morph.shared.payload.V1MorphVersionChannelPayload;
 import xyz.nifeather.morph.shared.payload.V1V2MorphInitChannelPayload;
-import xyz.nifeather.morph.shared.platform.Services;
 
 import java.util.Arrays;
 
-public class V1ProtocolHandler implements IProtocolHandler {
+public class V1ProtocolHandler implements IProtocolHandler
+{
     public static final V1ProtocolHandler INSTANCE = new V1ProtocolHandler();
 
     private final C2SCommandConverter c2sConverter = new C2SCommandConverter();
@@ -30,28 +31,32 @@ public class V1ProtocolHandler implements IProtocolHandler {
     private final S2CCommandProcessor legacyS2CProcessor = new ClientS2CCommandProcessor();
 
     @Override
-    public void sendCommand(AbstractC2SCommand<?> command) {
+    public void sendCommand(AbstractC2SCommand<?> command)
+    {
         var netherite = c2sConverter.toNetheriteCommand(command);
         var cmd = netherite.buildCommand();
 
         ServerHandler.logPacket(true, SharedValues.commandChannelV1, cmd);
-        Services.PLATFORM.sendNetworkPacket(new V1MorphCommandPayload(cmd));
+        ClientPlayNetworking.send(new V1MorphCommandPayload(cmd));
     }
 
     @Override
-    public void sendInitializeRequest(ClientInitializeRecordV3 initializeRecordV3) {
+    public void sendInitializeRequest(ClientInitializeRecordV3 initializeRecordV3)
+    {
         ServerHandler.logPacket(true, SharedValues.initializeChannelV1V2, "<???>");
-        Services.PLATFORM.sendNetworkPacket(new V1V2MorphInitChannelPayload(SharedValues.newProtocolIdentify));
+        ClientPlayNetworking.send(new V1V2MorphInitChannelPayload(SharedValues.newProtocolIdentify));
     }
 
     @Override
-    public void sendVersion(int clientVersion) {
+    public void sendVersion(int clientVersion)
+    {
         ServerHandler.logPacket(true, SharedValues.versionChannelV1, "<???> " + clientVersion);
-        Services.PLATFORM.sendNetworkPacket(new V1MorphVersionChannelPayload(clientVersion));
+        ClientPlayNetworking.send(new V1MorphVersionChannelPayload(clientVersion));
     }
 
     @Override
-    public InitializeRespondV3 handleInitializeRespond(CustomPacketPayload customPayload) {
+    public InitializeRespondV3 handleInitializeRespond(CustomPacketPayload customPayload)
+    {
         if (!(customPayload instanceof V1V2MorphInitChannelPayload(String message)))
             throw new RuntimeException("Given payload is not an instance of V1V2MorphInitChannelPayload");
 
@@ -59,8 +64,10 @@ public class V1ProtocolHandler implements IProtocolHandler {
     }
 
     @Override
-    public CommandHandleResult handleCommandInput(CustomPacketPayload customPayload) {
-        try {
+    public CommandHandleResult handleCommandInput(CustomPacketPayload customPayload)
+    {
+        try
+        {
             if (!(customPayload instanceof V1MorphCommandPayload(String message)))
                 throw new RuntimeException("Given payload is not an instance of V1MorphCommandPayload");
 
@@ -68,7 +75,9 @@ public class V1ProtocolHandler implements IProtocolHandler {
             var modern = s2cConverter.fromNetheriteCommand(legacyCommand);
 
             return CommandHandleResult.from(S2CCommandRecord.fromS2CCommand(modern));
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             FeatherMorphClientBootstrap.LOGGER.error("Failed to handle command from server: %s".formatted(t.getMessage()));
             t.printStackTrace();
 
@@ -77,7 +86,8 @@ public class V1ProtocolHandler implements IProtocolHandler {
     }
 
     @Override
-    public VersionHandleResult handleServerVersionInput(CustomPacketPayload customPayload) {
+    public VersionHandleResult handleServerVersionInput(CustomPacketPayload customPayload)
+    {
         if (!(customPayload instanceof V1MorphCommandPayload(String protocolVersion)))
             throw new RuntimeException("Given payload is not an instance of V2MorphVersionChannelPayload");
 

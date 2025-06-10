@@ -16,25 +16,33 @@ import xyz.nifeather.morph.client.graphics.transforms.Recorder;
 import xyz.nifeather.morph.client.graphics.transforms.Transformer;
 import xyz.nifeather.morph.client.graphics.transforms.easings.Easing;
 
-public class HudRenderHelper extends MorphClientObject {
+public class HudRenderHelper extends MorphClientObject
+{
+    @Resolved
+    private ClientMorphManager manager;
+
     private final Bindable<Float> revValueNext = new Bindable<>(0f);
     private final Recorder<Float> revDisplayRecorder = new Recorder<>(0f);
     private final Recorder<Float> progressHeightRecorder = new Recorder<>(0f);
     private final Recorder<Float> barHeightRecorder = new Recorder<>(0f);
+
     private final Recorder<Color> colorRecord = new Recorder<>(Color.ofOpaque(0));
     private final Bindable<Color> colorNext = new Bindable<>(Color.ofOpaque(0));
+
     private final Recorder<Float> drawAlpha = new Recorder<>(0f);
+
     private final Bindable<Color> preferredBgColor = new Bindable<>(Color.ofOpaque(0));
     private final Recorder<Color> bgColorRecord = new Recorder<>(Color.ofOpaque(0));
+
     private final Bindable<Boolean> visible = new Bindable<>(false);
-    @Resolved
-    private ClientMorphManager manager;
 
     @Initializer
-    private void load() {
+    private void load()
+    {
         revValueNext.bindTo(manager.revealingValue);
 
-        colorNext.onValueChanged((o, n) -> {
+        colorNext.onValueChanged((o, n) ->
+        {
             if (o == null) o = MaterialColors.Indigo500;
 
             if (!n.equals(o))
@@ -42,9 +50,12 @@ public class HudRenderHelper extends MorphClientObject {
         }, true);
 
         revValueNext.onValueChanged((o, n) ->
-                Transformer.transform(revDisplayRecorder, n, visible.get() ? 2000 : 0, Easing.OutQuint), true);
+        {
+            Transformer.transform(revDisplayRecorder, n, visible.get() ? 2000 : 0, Easing.OutQuint);
+        }, true);
 
-        preferredBgColor.onValueChanged((o, n) -> {
+        preferredBgColor.onValueChanged((o, n) ->
+        {
             if (o == null) o = MaterialColors.Indigo500;
 
             if (!n.equals(o))
@@ -65,7 +76,8 @@ public class HudRenderHelper extends MorphClientObject {
         this.addSchedule(this::update);
     }
 
-    private void update() {
+    private void update()
+    {
         this.addSchedule(this::update);
 
         //if (plugin.getCurrentTick() % 40 == 0)
@@ -83,21 +95,26 @@ public class HudRenderHelper extends MorphClientObject {
         visible.set(rev > 0.1f);
     }
 
-    public void onRender(GuiGraphics context, DeltaTracker renderTickCounter) {
+    public void onRender(GuiGraphics context, DeltaTracker renderTickCounter)
+    {
         if (manager == null || drawAlpha.get() == 0f || Minecraft.getInstance().options.hideGui) return;
 
         var matrices = context.pose();
 
-        try {
+        try
+        {
             matrices.pushPose();
 
             renderBar(context, renderTickCounter);
-        } finally {
+        }
+        finally
+        {
             matrices.popPose();
         }
     }
 
-    public void renderBar(GuiGraphics context, DeltaTracker renderTickCounter) {
+    public void renderBar(GuiGraphics context, DeltaTracker renderTickCounter)
+    {
         // 10 * 0.8
         var width = 8;
 
@@ -136,7 +153,8 @@ public class HudRenderHelper extends MorphClientObject {
         RenderSystem.setShaderColor(shaderColor[0], shaderColor[1], shaderColor[2], shaderColor[3]);
     }
 
-    public void renderProgress(GuiGraphics context, DeltaTracker renderTickCounter) {
+    public void renderProgress(GuiGraphics context, DeltaTracker renderTickCounter)
+    {
         var width = context.guiWidth();
 
         var height = 2;

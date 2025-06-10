@@ -1,5 +1,6 @@
 package xyz.nifeather.morph.client.network.handlers;
 
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import xyz.nifeather.fmccl.converter.C2SCommandConverter;
 import xyz.nifeather.fmccl.converter.S2CCommandConverter;
@@ -18,7 +19,6 @@ import xyz.nifeather.morph.shared.SharedValues;
 import xyz.nifeather.morph.shared.payload.V1V2MorphInitChannelPayload;
 import xyz.nifeather.morph.shared.payload.V2MorphCommandPayload;
 import xyz.nifeather.morph.shared.payload.V2MorphVersionChannelPayload;
-import xyz.nifeather.morph.shared.platform.Services;
 
 import java.util.Arrays;
 import java.util.List;
@@ -38,21 +38,21 @@ public class V2ProtocolHandler implements IProtocolHandler
         var cmd = netherite.buildCommand();
 
         ServerHandler.logPacket(true, SharedValues.commandChannelV1, cmd);
-        Services.PLATFORM.sendNetworkPacket(new V2MorphCommandPayload(cmd));
+        ClientPlayNetworking.send(new V2MorphCommandPayload(cmd));
     }
 
     @Override
     public void sendInitializeRequest(ClientInitializeRecordV3 initializeRecordV3)
     {
         ServerHandler.logPacket(true, SharedValues.initializeChannelV1V2, "<???>");
-        Services.PLATFORM.sendNetworkPacket(new V1V2MorphInitChannelPayload(SharedValues.newProtocolIdentify));
+        ClientPlayNetworking.send(new V1V2MorphInitChannelPayload(SharedValues.newProtocolIdentify));
     }
 
     @Override
     public void sendVersion(int clientVersion)
     {
         ServerHandler.logPacket(true, SharedValues.versionChannelV1, "<???> " + clientVersion);
-        Services.PLATFORM.sendNetworkPacket(new V2MorphVersionChannelPayload(clientVersion));
+        ClientPlayNetworking.send(new V2MorphVersionChannelPayload(clientVersion));
     }
 
     @Override

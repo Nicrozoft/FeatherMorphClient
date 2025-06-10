@@ -4,7 +4,8 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
-public interface IDisguiseRenderState {
+public interface IDisguiseRenderState
+{
     @Nullable
     String morphclient$getRevealName();
 
@@ -12,15 +13,12 @@ public interface IDisguiseRenderState {
 
     @Nullable
     Vec3 morphclient$masterPosition();
-
     void morphclient$setMasterPosition(@Nullable Vec3 pos);
 
     @Nullable
     DisguiseSyncer morphclient$getDisguiseSyncer();
-
     void morphclient$setDisguiseSyncer(@Nullable DisguiseSyncer syncer);
 
     boolean morphclient$isClientPlayer();
-
     void morphclient$setClientPlayer(boolean isClientPlayer);
 }

@@ -19,24 +19,37 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class EntityDisplay extends MDrawable {
+public class EntityDisplay extends MDrawable
+{
     private final String rawIdentifier;
 
     private final boolean isPlayerItSelf;
 
     private final boolean displayLoadingIfInvalid;
-    private final AtomicInteger initialEntitySize = new AtomicInteger(1);
-    private final AtomicBoolean loadingEntity = new AtomicBoolean(false);
-    private final LoadingSpinner loadingSpinner = new LoadingSpinner();
-    public Runnable postEntitySetup;
-    @Nullable
-    private LivingEntity displayingEntity;
-    private AtomicBoolean isLiving = new AtomicBoolean(true);
-    private Component displayName;
-    private int entityYOffset;
-    private boolean allowRender;
 
-    public EntityDisplay(@NotNull String rawIdentifier, boolean displayLoadingIfNotValid, InitialSetupMethod initialSetupMethod) {
+    /**
+     * 此实体显示初始化的方式
+     */
+    public enum InitialSetupMethod
+    {
+        /**
+         * 无初始化方式，实体会在第一次渲染时异步设置
+         */
+        NONE,
+
+        /**
+         * 异步设置实体
+         */
+        ASYNC,
+
+        /**
+         * 立即设置实体
+         */
+        SYNC
+    }
+
+    public EntityDisplay(@NotNull String rawIdentifier, boolean displayLoadingIfNotValid, InitialSetupMethod initialSetupMethod)
+    {
         this.rawIdentifier = rawIdentifier;
         this.isPlayerItSelf = rawIdentifier.equals(FeatherMorphClientBootstrap.UNMORPH_STIRNG);
 
@@ -50,49 +63,69 @@ public class EntityDisplay extends MDrawable {
         loadingSpinner.setRelativeSizeAxes(Axes.Both);
         loadingSpinner.setSize(new UVPair(1, 1));
 
-        switch (initialSetupMethod) {
+        switch (initialSetupMethod)
+        {
             case ASYNC -> CompletableFuture.runAsync(this::setupEntity);
             case SYNC -> this.setupEntity();
             case NONE -> { /* 交给load方法 */ }
         }
     }
 
-    public EntityDisplay(String id) {
+    public EntityDisplay(String id)
+    {
         this(id, false, InitialSetupMethod.NONE);
     }
 
     @Override
-    public void invalidatePosition() {
+    public void invalidatePosition()
+    {
         super.invalidatePosition();
         loadingSpinner.invalidatePosition();
     }
 
     @Nullable
-    public LivingEntity getDisplayingEntity() {
+    private LivingEntity displayingEntity;
+
+    @Nullable
+    public LivingEntity getDisplayingEntity()
+    {
         return displayingEntity;
     }
 
-    public boolean isLiving() {
+    private AtomicBoolean isLiving = new AtomicBoolean(true);
+
+    public boolean isLiving()
+    {
         return isLiving.get();
     }
 
-    public Component getDisplayName() {
+    private Component displayName;
+
+    public Component getDisplayName()
+    {
         return displayName;
     }
 
-    private int getEntityYOffset(LivingEntity entity) {
+    private final AtomicInteger initialEntitySize = new AtomicInteger(1);
+    private int entityYOffset;
+
+    private int getEntityYOffset(LivingEntity entity)
+    {
         var type = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
 
-        return switch (type.toString()) {
+        return switch (type.toString())
+        {
             case "minecraft:ender_dragon" -> -1;
             default -> 0;
         };
     }
 
-    protected int getInitialEntitySize(LivingEntity entity) {
+    protected int getInitialEntitySize(LivingEntity entity)
+    {
         var type = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
 
-        return switch (type.toString()) {
+        return switch (type.toString())
+        {
             case "minecraft:ender_dragon" -> 3;
             case "minecraft:squid", "minecraft:glow_squid" -> 10;
             case "minecraft:horse", "minecraft:player" -> 8;
@@ -100,32 +133,39 @@ public class EntityDisplay extends MDrawable {
         };
     }
 
-    public void resetEntity() {
+    public void resetEntity()
+    {
         this.displayingEntity = null;
     }
 
-    public void doSetupImmedately() {
+    public void doSetupImmedately()
+    {
         setupEntity();
     }
 
-    private void setupEntity() {
-        try {
+    private void setupEntity()
+    {
+        try
+        {
             loadingEntity.set(true);
 
             var entityCache = EntityCache.getGlobalCache();
             var living = entityCache.getEntity(rawIdentifier, null);
             isLiving.set(entityCache.isLiving(rawIdentifier));
 
-            if (living == null) {
+            if (living == null)
+            {
                 LivingEntity entity = null;
 
-                if (isPlayerItSelf) {
+                if (isPlayerItSelf)
+                {
                     entity = Minecraft.getInstance().player;
                     isLiving.set(true);
                 }
 
                 //没有和此ID匹配的实体
-                if (entity == null) {
+                if (entity == null)
+                {
                     Runnable complete = () ->
                     {
                         this.displayName = Component.literal(rawIdentifier);
@@ -168,17 +208,29 @@ public class EntityDisplay extends MDrawable {
                 onComplete.run();
             else
                 this.addSchedule(onComplete);
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             logger.error(e.getMessage());
             e.printStackTrace();
         }
     }
 
-    private void renderLoading(GuiGraphics context) {
+    private final AtomicBoolean loadingEntity = new AtomicBoolean(false);
+
+    public Runnable postEntitySetup;
+
+    private boolean allowRender;
+
+    private final LoadingSpinner loadingSpinner = new LoadingSpinner();
+
+    private void renderLoading(GuiGraphics context)
+    {
         loadingSpinner.render(context, 0, 0, 0);
     }
 
-    protected float getRenderScale() {
+    protected float getRenderScale()
+    {
         float scaledMaxEntityBorder = Math.max(displayingEntity.getBbWidth(), displayingEntity.getBbHeight()) * initialEntitySize.get();
 
         var scale = Math.round((Math.min(this.getRenderHeight(), this.getRenderWidth()) * 0.8f) / scaledMaxEntityBorder);
@@ -188,8 +240,10 @@ public class EntityDisplay extends MDrawable {
     }
 
     @Override
-    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        if (displayingEntity == null && isLiving()) {
+    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
+    {
+        if (displayingEntity == null && isLiving())
+        {
             if (!loadingEntity.get())
                 CompletableFuture.runAsync(this::setupEntity);
 
@@ -197,15 +251,18 @@ public class EntityDisplay extends MDrawable {
             return;
         }
 
-        if (!allowRender || !isLiving()) {
+        if (!allowRender || !isLiving())
+        {
             if (displayLoadingIfInvalid)
                 renderLoading(context);
 
             return;
         }
 
-        try {
-            if (displayingEntity.isRemoved()) {
+        try
+        {
+            if (displayingEntity.isRemoved())
+            {
                 resetEntity();
                 return;
             }
@@ -226,34 +283,16 @@ public class EntityDisplay extends MDrawable {
                     0, 0, renderWidth, renderHeight,
                     scale * initialEntitySize.get(),
                     0.0625f + entityYOffset,
-                    (float) mouseX - getScreenSpaceX(), (float) mouseY - getScreenSpaceY(),
+                    (float)mouseX - getScreenSpaceX(), (float)mouseY - getScreenSpaceY(),
                     displayingEntity);
 
             PlayerRenderHelper.instance().skipRender = false;
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             allowRender = false;
             LoggerFactory.getLogger("morph").error(t.getMessage());
             t.printStackTrace();
         }
-    }
-
-    /**
-     * 此实体显示初始化的方式
-     */
-    public enum InitialSetupMethod {
-        /**
-         * 无初始化方式，实体会在第一次渲染时异步设置
-         */
-        NONE,
-
-        /**
-         * 异步设置实体
-         */
-        ASYNC,
-
-        /**
-         * 立即设置实体
-         */
-        SYNC
     }
 }

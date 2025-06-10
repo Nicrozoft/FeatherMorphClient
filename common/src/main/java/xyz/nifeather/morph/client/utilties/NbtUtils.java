@@ -6,10 +6,12 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 
-public class NbtUtils {
+public class NbtUtils
+{
     private static final Logger logger = FeatherMorphClientBootstrap.LOGGER;
 
-    public static CompoundTag parseOrThrow(@Nullable String snbt) throws Throwable {
+    public static CompoundTag parseOrThrow(@Nullable String snbt) throws Throwable
+    {
         //MinecraftClient.getInstance().world.getRegistryManager()
 
         //var ops = MinecraftClient.getInstance().world.getRegistryManager().getOps(NbtOps.INSTANCE);
@@ -21,13 +23,17 @@ public class NbtUtils {
     }
 
     @Nullable
-    public static CompoundTag parseSNbt(@Nullable String snbt) {
+    public static CompoundTag parseSNbt(@Nullable String snbt)
+    {
         if (snbt == null || snbt.isEmpty())
             return null;
 
-        try {
+        try
+        {
             return parseOrThrow(snbt.replace("\\u003d", "="));
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             logger.warn("Unable to parse SNBT (%s): %s".formatted(t.getMessage(), snbt));
             t.printStackTrace();
         }

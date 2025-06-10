@@ -17,20 +17,18 @@ import xyz.nifeather.morph.client.graphics.transforms.Transformer;
 import xyz.nifeather.morph.client.graphics.transforms.easings.Easing;
 import xyz.nifeather.morph.client.screens.disguise.DisguiseScreen;
 
-public class WaitingForServerScreen extends FeatherScreen {
+public class WaitingForServerScreen extends FeatherScreen
+{
     @Nullable
     private final FeatherScreen nextScreen;
-    private final DrawableText notReadyText = new DrawableText(Component.translatable("gui.morphclient.waiting_for_server"));
-    private final MButtonWidget closeButton;
-    private final Bindable<Float> backgroundDim = new Bindable<>(0f);
-    private final Bindable<Boolean> serverReady = new Bindable<>();
-    private final LoadingSpinner loadingSpinner = new LoadingSpinner();
 
-    public WaitingForServerScreen(@NotNull FeatherScreen next) {
+    public WaitingForServerScreen(@NotNull FeatherScreen next)
+    {
         this(Component.empty(), next);
     }
 
-    protected WaitingForServerScreen(Component title, @NotNull FeatherScreen next) {
+    protected WaitingForServerScreen(Component title, @NotNull FeatherScreen next)
+    {
         super(title);
 
         this.nextScreen = next;
@@ -40,20 +38,34 @@ public class WaitingForServerScreen extends FeatherScreen {
         });
     }
 
-    public float getCurrentDim() {
+    private final DrawableText notReadyText = new DrawableText(Component.translatable("gui.morphclient.waiting_for_server"));
+    private final MButtonWidget closeButton;
+
+    private final Bindable<Float> backgroundDim = new Bindable<>(0f);
+
+    public float getCurrentDim()
+    {
         return backgroundDim.get();
     }
 
+    private final Bindable<Boolean> serverReady = new Bindable<>();
+
+    private final LoadingSpinner loadingSpinner = new LoadingSpinner();
+
     @Override
-    protected void onScreenEnter(Screen last) {
+    protected void onScreenEnter(Screen last)
+    {
         super.onScreenEnter(last);
 
         var morphClient = FeatherMorphClientBootstrap.getInstance();
         this.serverReady.bindTo(morphClient.serverHandler.serverReady);
 
-        if (serverReady.get()) {
+        if (serverReady.get())
+        {
             this.push(nextScreen);
-        } else {
+        }
+        else
+        {
             serverReady.onValueChanged((o, n) ->
             {
                 FeatherMorphClientBootstrap.getInstance().schedule(() ->
@@ -82,21 +94,24 @@ public class WaitingForServerScreen extends FeatherScreen {
     }
 
     @Override
-    protected void onScreenResize() {
+    protected void onScreenResize()
+    {
         loadingSpinner.invalidatePosition();
         notReadyText.invalidatePosition();
         super.onScreenResize();
     }
 
     @Override
-    protected void onScreenExit(@Nullable Screen nextScreen) {
+    protected void onScreenExit(@Nullable Screen nextScreen)
+    {
         serverReady.dispose();
 
         super.onScreenExit(nextScreen);
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta)
+    {
         var color = Color.ofRGBA(0, 0, 0, backgroundDim.get());
         context.fillGradient(0, 0, this.width, this.height, color.getColor(), color.getColor());
 
@@ -110,14 +125,17 @@ public class WaitingForServerScreen extends FeatherScreen {
     }
 
     @Override
-    public void renderTransparentBackground(GuiGraphics context) {
+    public void renderTransparentBackground(GuiGraphics context)
+    {
     }
 
     @Override
-    protected void renderMenuBackground(GuiGraphics context) {
+    protected void renderMenuBackground(GuiGraphics context)
+    {
     }
 
     @Override
-    protected void renderMenuBackground(GuiGraphics context, int x, int y, int width, int height) {
+    protected void renderMenuBackground(GuiGraphics context, int x, int y, int width, int height)
+    {
     }
 }

@@ -29,8 +29,6 @@ import net.minecraft.network.chat.Component;
 
 public abstract class FeatherScreen extends Screen implements IMDrawable
 {
-    private static final Logger log = LoggerFactory.getLogger(FeatherScreen.class);
-
     protected FeatherScreen(Component title) {
         super(title);
     }

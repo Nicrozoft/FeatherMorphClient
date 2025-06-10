@@ -24,10 +24,9 @@ import xyz.nifeather.morph.client.graphics.EntityRendererHelper;
 import xyz.nifeather.morph.client.graphics.PlayerRenderHelper;
 
 @Mixin(EntityRenderDispatcher.class)
-public abstract class EntityRenderDispatcherMixin {
-    @Shadow
-    @Final
-    private Font font;
+public abstract class EntityRenderDispatcherMixin
+{
+    @Shadow @Final private Font font;
 
     @ModifyVariable(
             method = "render(Lnet/minecraft/world/entity/Entity;DDDFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
@@ -39,7 +38,8 @@ public abstract class EntityRenderDispatcherMixin {
             index = 11,
             argsOnly = true
     )
-    private int morphclient$overrideLight(int value, @Local(argsOnly = true) Entity entity) {
+    private int morphclient$overrideLight(int value, @Local(argsOnly = true) Entity entity)
+    {
         if (!(entity instanceof IMorphClientEntity iMorphClientEntity))
             return value;
 
@@ -51,7 +51,8 @@ public abstract class EntityRenderDispatcherMixin {
         if (type == EntityType.ALLAY
                 || type == EntityType.BLAZE
                 || type == EntityType.MAGMA_CUBE
-                || type == EntityType.VEX) {
+                || type == EntityType.VEX)
+        {
             return LightTexture.FULL_BRIGHT;
         }
 
@@ -64,7 +65,8 @@ public abstract class EntityRenderDispatcherMixin {
             index = 1,
             argsOnly = true,
             order = 1100)
-    public Entity morphclient$modifyEntityToRender(Entity source) {
+    public Entity morphclient$modifyEntityToRender(Entity source)
+    {
         if (PlayerRenderHelper.instance().skipRender)
             return source;
 
@@ -89,8 +91,10 @@ public abstract class EntityRenderDispatcherMixin {
                     value = "HEAD"
             )
     )
-    public <S extends EntityRenderState> void onRenderBegin(S state, double x, double y, double z, PoseStack matrices, MultiBufferSource vertexConsumers, int light, EntityRenderer<?, S> renderer, CallbackInfo ci) {
-        if (state instanceof IDisguiseRenderState asDisguiseRenderState) {
+    public <S extends EntityRenderState>  void onRenderBegin(S state, double x, double y, double z, PoseStack matrices, MultiBufferSource vertexConsumers, int light, EntityRenderer<?, S> renderer, CallbackInfo ci)
+    {
+        if (state instanceof IDisguiseRenderState asDisguiseRenderState)
+        {
             var syncer = asDisguiseRenderState.morphclient$getDisguiseSyncer();
 
             if (syncer != null)
@@ -104,8 +108,10 @@ public abstract class EntityRenderDispatcherMixin {
                     value = "TAIL"
             )
     )
-    public <S extends EntityRenderState> void onRenderEnd(S state, double x, double y, double z, PoseStack matrices, MultiBufferSource vertexConsumers, int light, EntityRenderer<?, S> renderer, CallbackInfo ci) {
-        if (state instanceof IDisguiseRenderState asDisguiseRenderState) {
+    public <S extends EntityRenderState>  void onRenderEnd(S state, double x, double y, double z, PoseStack matrices, MultiBufferSource vertexConsumers, int light, EntityRenderer<?, S> renderer, CallbackInfo ci)
+    {
+        if (state instanceof IDisguiseRenderState asDisguiseRenderState)
+        {
             var syncer = asDisguiseRenderState.morphclient$getDisguiseSyncer();
 
             if (syncer != null)
@@ -125,7 +131,8 @@ public abstract class EntityRenderDispatcherMixin {
                                                                               PoseStack matrices, MultiBufferSource vertexConsumerProvider,
                                                                               int light,
                                                                               EntityRenderer<?, S> entityRenderer,
-                                                                              CallbackInfo ci) {
-        EntityRendererHelper.instance.renderRevealNameIfPossible((EntityRenderDispatcher) (Object) this, entityRenderState, font, matrices, vertexConsumerProvider);
+                                                                              CallbackInfo ci)
+    {
+        EntityRendererHelper.instance.renderRevealNameIfPossible((EntityRenderDispatcher)(Object) this, entityRenderState, font, matrices, vertexConsumerProvider);
     }
 }

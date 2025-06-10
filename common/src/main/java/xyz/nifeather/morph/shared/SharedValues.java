@@ -4,12 +4,16 @@ import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SharedValues {
-    public static final Logger LOGGER = LoggerFactory.getLogger("FeatherMorph");
-    public static final String MOD_ID = "feathermorph_client";
-    public static final String newProtocolIdentify = "1_21_3_packetbuf";
-    private static final String morphNameSpace = "morphplugin";
+public class SharedValues
+{
     public static boolean allowSinglePlayerDebugging = false;
+    public static final Logger LOGGER = LoggerFactory.getLogger("FeatherMorph");
+
+    private static final String morphNameSpace = "morphplugin";
+    public static final String MOD_ID = "feathermorph_client";
+
+    public static final String newProtocolIdentify = "1_21_3_packetbuf";
+
     public static ResourceLocation initializeChannelV3 = ResourceLocation.fromNamespaceAndPath(morphNameSpace, "init_v3");
     public static ResourceLocation commandChannelV3 = ResourceLocation.fromNamespaceAndPath(morphNameSpace, "commands_v3");
 

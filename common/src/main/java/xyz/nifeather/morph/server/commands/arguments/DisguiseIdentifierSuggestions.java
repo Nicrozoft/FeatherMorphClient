@@ -13,12 +13,14 @@ import xyz.nifeather.morph.server.morphs.MorphManager;
 
 import java.util.concurrent.CompletableFuture;
 
-public class DisguiseIdentifierSuggestions {
+public class DisguiseIdentifierSuggestions
+{
     // Only available in fabric
     // For plugin platform we need to use `allAvailable` instead.
     public static CompletableFuture<Suggestions> forInputPlayer(final CommandContext<CommandSourceStack> context,
                                                                 final SuggestionsBuilder builder,
-                                                                String playerArgumentName) throws CommandSyntaxException {
+                                                                String playerArgumentName) throws CommandSyntaxException
+    {
         var dependencies = DependencyManager.getInstance(FeatherMorphMain.pluginNamespace());
         if (dependencies == null)
             return builder.buildFuture();
@@ -35,7 +37,8 @@ public class DisguiseIdentifierSuggestions {
 
         return CompletableFuture.supplyAsync(() ->
         {
-            for (String identifier : availableDisguises) {
+            for (String identifier : availableDisguises)
+            {
                 if (!identifier.contains(input))
                     continue;
 
@@ -46,7 +49,8 @@ public class DisguiseIdentifierSuggestions {
         });
     }
 
-    public static <S> CompletableFuture<Suggestions> forPlayer(final CommandContext<S> context, final SuggestionsBuilder builder) {
+    public static <S> CompletableFuture<Suggestions> forPlayer(final CommandContext<S> context, final SuggestionsBuilder builder)
+    {
         var dependencies = DependencyManager.getInstance(FeatherMorphMain.pluginNamespace());
         if (dependencies == null)
             return builder.buildFuture();
@@ -71,7 +75,8 @@ public class DisguiseIdentifierSuggestions {
 
         return CompletableFuture.supplyAsync(() ->
         {
-            for (String identifier : availableDisguises) {
+            for (String identifier : availableDisguises)
+            {
                 if (!identifier.contains(input))
                     continue;
 
@@ -82,7 +87,8 @@ public class DisguiseIdentifierSuggestions {
         });
     }
 
-    public static <S> CompletableFuture<Suggestions> allAvailable(final CommandContext<S> context, final SuggestionsBuilder builder) {
+    public static <S> CompletableFuture<Suggestions> allAvailable(final CommandContext<S> context, final SuggestionsBuilder builder)
+    {
         var dependencies = DependencyManager.getInstance(FeatherMorphMain.pluginNamespace());
         if (dependencies == null)
             return builder.buildFuture();
@@ -95,7 +101,8 @@ public class DisguiseIdentifierSuggestions {
         {
             var input = builder.getRemainingLowerCase();
 
-            for (var p : morphManager.listProviders()) {
+            for (var p : morphManager.listProviders())
+            {
                 if (p.namespace().equals("fallback")) continue;
 
                 var providerNamespace = p.namespace();

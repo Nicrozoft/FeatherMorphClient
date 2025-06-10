@@ -11,21 +11,24 @@ import xyz.nifeather.morph.client.graphics.color.ColorUtils;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class NewDisguiseSetToast extends LinedToast {
-    private static final ResourceLocation TEX = ResourceLocation.fromNamespaceAndPath(ResourceLocation.DEFAULT_NAMESPACE, "textures/gui/sprites/icon/info.png");
-    private final AtomicBoolean allGone = new AtomicBoolean(false);
-
-    public NewDisguiseSetToast(boolean allGone) {
+public class NewDisguiseSetToast extends LinedToast
+{
+    public NewDisguiseSetToast(boolean allGone)
+    {
         this.allGone.set(allGone);
     }
 
     @Override
-    protected boolean fadeInOnEnter() {
+    protected boolean fadeInOnEnter()
+    {
         return true;
     }
 
+    private final AtomicBoolean allGone = new AtomicBoolean(false);
+
     @Initializer
-    private void load() {
+    private void load()
+    {
         var transId = "text.morphclient.toast.new_disguises";
         setTitle(Component.translatable(transId));
         setDescription(Component.translatable(transId + (allGone.get() ? ".all_gone" : ".desc"), Component.keybind("key.morphclient.morph").withStyle(ChatFormatting.ITALIC)));
@@ -33,7 +36,8 @@ public class NewDisguiseSetToast extends LinedToast {
     }
 
     @Override
-    public int width() {
+    public int width()
+    {
         var textRenderer = Minecraft.getInstance().font;
 
         var desc = getDescription();
@@ -46,8 +50,11 @@ public class NewDisguiseSetToast extends LinedToast {
         return Math.max(super.width(), max1);
     }
 
+    private static final ResourceLocation TEX = ResourceLocation.fromNamespaceAndPath(ResourceLocation.DEFAULT_NAMESPACE, "textures/gui/sprites/icon/info.png");
+
     @Override
-    protected void postBackgroundDrawing(GuiGraphics context, long startTime) {
+    protected void postBackgroundDrawing(GuiGraphics context, long startTime)
+    {
         super.postBackgroundDrawing(context, startTime);
 
         //RenderSystem.enableBlend();

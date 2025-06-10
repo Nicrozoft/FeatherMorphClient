@@ -17,7 +17,6 @@ import xyz.nifeather.morph.network.commands.S2C.clientrender.S2CRenderMeta;
 
 public class ConvertedMeta
 {
-    private static final Logger log = LoggerFactory.getLogger(ConvertedMeta.class);
     @Nullable
     public CompoundTag nbt;
 

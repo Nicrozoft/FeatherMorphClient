@@ -35,18 +35,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MorphManager extends ServerPluginObject {
-    private final Map<ServerPlayer, DisguiseSession> disguiseSessionMap = new ConcurrentHashMap<>();
-    private final Map<String, AbstractDisguiseProvider> disguiseProviders = new ConcurrentHashMap<>();
-    private final FallbackDisguiseProvider fallbackProvider;
-    private final Map<String, DisguiseMeta> disguiseMetaCache = new ConcurrentHashMap<>();
-    private final PlayerDataStoreNew dataStore = new PlayerDataStoreNew();
-    @Resolved
-    private ClientHandler clientHandler;
-
-    //region Disguise provider
-
-    public MorphManager() {
+public class MorphManager extends ServerPluginObject
+{
+    public MorphManager()
+    {
         fallbackProvider = new FallbackDisguiseProvider();
 
         registerDisguiseProvider(new VanillaDisguiseProvider());
@@ -56,31 +48,43 @@ public class MorphManager extends ServerPluginObject {
         this.addSchedule(this::update);
     }
 
-    public boolean playerDisguised(ServerPlayer player) {
+    private final Map<ServerPlayer, DisguiseSession> disguiseSessionMap = new ConcurrentHashMap<>();
+
+    public boolean playerDisguised(ServerPlayer player)
+    {
         return disguiseSessionMap.containsKey(player);
     }
 
     @Nullable
-    public DisguiseSession getSessionFor(ServerPlayer player) {
+    public DisguiseSession getSessionFor(ServerPlayer player)
+    {
         return disguiseSessionMap.getOrDefault(player, null);
     }
 
-    public List<DisguiseSession> listAllSession() {
+    public List<DisguiseSession> listAllSession()
+    {
         return new ObjectArrayList<>(disguiseSessionMap.values());
     }
 
-    public void registerDisguiseProvider(AbstractDisguiseProvider provider) throws AlreadyRegisteredException {
+    @Resolved
+    private ClientHandler clientHandler;
+
+    //region Disguise provider
+
+    private final Map<String, AbstractDisguiseProvider> disguiseProviders = new ConcurrentHashMap<>();
+
+    public void registerDisguiseProvider(AbstractDisguiseProvider provider) throws AlreadyRegisteredException
+    {
         if (disguiseProviders.containsKey(provider.namespace()))
             throw new AlreadyRegisteredException("Already have a provider with the namespace '%s'".formatted(provider.namespace()));
 
         disguiseProviders.put(provider.namespace(), provider);
     }
 
-    //endregion Disguise provider
+    private final FallbackDisguiseProvider fallbackProvider;
 
-    //region DisguiseMeta
-
-    public AbstractDisguiseProvider getProvider(String id) {
+    public AbstractDisguiseProvider getProvider(String id)
+    {
         if (id == null)
             return fallbackProvider;
 
@@ -90,15 +94,19 @@ public class MorphManager extends ServerPluginObject {
         return disguiseProviders.values().stream().filter(p -> p.namespace().equals(splitedId[0])).findFirst().orElse(fallbackProvider);
     }
 
-    public List<AbstractDisguiseProvider> listProviders() {
+    public List<AbstractDisguiseProvider> listProviders()
+    {
         return new ObjectArrayList<>(disguiseProviders.values());
     }
 
-    //endregion DisguiseMeta
+    //endregion Disguise provider
 
-    //region Data Access
+    //region DisguiseMeta
 
-    public DisguiseMeta getDisguiseMetaFrom(String identifier) {
+    private final Map<String, DisguiseMeta> disguiseMetaCache = new ConcurrentHashMap<>();
+
+    public DisguiseMeta getDisguiseMetaFrom(String identifier)
+    {
         var cached = disguiseMetaCache.getOrDefault(identifier, null);
         if (cached != null)
             return cached;
@@ -112,13 +120,21 @@ public class MorphManager extends ServerPluginObject {
         return newInstance;
     }
 
-    public List<String> getUnlockedDisguiseIds(Player player) {
+    //endregion DisguiseMeta
+
+    //region Data Access
+
+    private final PlayerDataStoreNew dataStore = new PlayerDataStoreNew();
+
+    public List<String> getUnlockedDisguiseIds(Player player)
+    {
         var meta = dataStore.getPlayerMeta(player.getUUID());
 
         return meta.getUnlockedDisguiseIdentifiers();
     }
 
-    public boolean grantDisguiseToPlayer(ServerPlayer player, String disguiseIdentifier) {
+    public boolean grantDisguiseToPlayer(ServerPlayer player, String disguiseIdentifier)
+    {
         var success = dataStore.grantMorphToPlayer(player, disguiseIdentifier);
 
         if (!success)
@@ -151,10 +167,12 @@ public class MorphManager extends ServerPluginObject {
         return success;
     }
 
-    public boolean revokeDisguiseFromPlayer(ServerPlayer player, String disguiseIdentifier) {
+    public boolean revokeDisguiseFromPlayer(ServerPlayer player, String disguiseIdentifier)
+    {
         var success = dataStore.revokeMorphFromPlayer(player, disguiseIdentifier);
 
-        if (success) {
+        if (success)
+        {
             clientHandler.sendDiff(null, List.of(disguiseIdentifier), player);
             //multiInstanceService.notifyDisguiseMetaChange(player.getUniqueId(), Operation.REMOVE, disguiseIdentifier);
 
@@ -173,29 +191,34 @@ public class MorphManager extends ServerPluginObject {
 
     //endregion Data Access
 
-    public boolean morph(ServerPlayer player, String identifier) {
+    public boolean morph(ServerPlayer player, String identifier)
+    {
         return morph(player, identifier, false);
     }
 
     public boolean morph(ServerPlayer player,
                          String identifier,
-                         boolean bypassAvailableCheck) {
+                         boolean bypassAvailableCheck)
+    {
         var idSplit = identifier.split(":", 2);
         var idNamespace = idSplit.length == 2 ? idSplit[0] : "minecraft";
         var provider = disguiseProviders.get(idNamespace);
 
-        if (provider == null) {
+        if (provider == null)
+        {
             player.displayClientMessage(Component.translatableWithFallback("morph.error.invalid_namespace", "Error: Invalid namespace \"%s\"", idNamespace), false);
             return false;
         }
 
-        if (!provider.isValid(identifier)) {
+        if (!provider.isValid(identifier))
+        {
             player.displayClientMessage(Component.translatableWithFallback("morph.error.invalid_id", "Error: Identifier \"%s\" not valid for \"%s\"", identifier, idNamespace), false);
             return false;
         }
 
         var available = getUnlockedDisguiseIds(player);
-        if (!bypassAvailableCheck && !available.contains(identifier)) {
+        if (!bypassAvailableCheck && !available.contains(identifier))
+        {
             player.displayClientMessage(Component.translatableWithFallback("morph.error.not_unlocked", "Error: That disguise is not unlocked yet"), false);
             return false;
         }
@@ -215,7 +238,8 @@ public class MorphManager extends ServerPluginObject {
         revealMap.put(player.getId(), player.getName().getString());
 
         var cmdReveal = new S2CAddAdminRevealCommand(revealMap);
-        for (ServerPlayer serverPlayerEntity : MorphServerLoader.mcserver.getPlayerList().getPlayers()) {
+        for (ServerPlayer serverPlayerEntity : MorphServerLoader.mcserver.getPlayerList().getPlayers())
+        {
             clientHandler.sendCommand(serverPlayerEntity, cmd);
             clientHandler.sendCommand(serverPlayerEntity, cmdReveal);
         }
@@ -235,7 +259,8 @@ public class MorphManager extends ServerPluginObject {
         return true;
     }
 
-    public void spawnParticle(ServerPlayer player) {
+    public void spawnParticle(ServerPlayer player)
+    {
         if (player.gameMode.getGameModeForPlayer() == GameType.SPECTATOR) return;
 
         double collX, collY, collZ;
@@ -250,7 +275,7 @@ public class MorphManager extends ServerPluginObject {
         //缩放为碰撞箱体积的1/15，最小为1
         var particleScale = Math.max(1, (collX * collY * collZ) / 15);
 
-        ((ServerLevel) player.level()).sendParticles(ParticleTypes.CLOUD,
+        ((ServerLevel)player.level()).sendParticles(ParticleTypes.CLOUD,
                 false,
                 false,
                 location.x, location.y, location.z,
@@ -265,7 +290,8 @@ public class MorphManager extends ServerPluginObject {
         //        particleScale >= 10 ? 0.2 : 0.05); //速度
     }
 
-    public void unMorph(ServerPlayer player) {
+    public void unMorph(ServerPlayer player)
+    {
         if (!playerDisguised(player))
             return;
 
@@ -279,7 +305,8 @@ public class MorphManager extends ServerPluginObject {
 
         var cmd = new S2CCRUnregisterCommand(player.getId());
         var cmdReveal = new S2CRemoveAdminRevealCommand(player.getId());
-        for (ServerPlayer serverPlayerEntity : MorphServerLoader.mcserver.getPlayerList().getPlayers()) {
+        for (ServerPlayer serverPlayerEntity : MorphServerLoader.mcserver.getPlayerList().getPlayers())
+        {
             clientHandler.sendCommand(serverPlayerEntity, cmd);
             clientHandler.sendCommand(serverPlayerEntity, cmdReveal);
         }
@@ -289,7 +316,8 @@ public class MorphManager extends ServerPluginObject {
         player.sendSystemMessage(Component.literal("Undisguised"));
     }
 
-    public void update() {
+    public void update()
+    {
         this.addSchedule(this::update);
 
         disguiseSessionMap.forEach((player, session) ->
@@ -301,7 +329,8 @@ public class MorphManager extends ServerPluginObject {
         });
     }
 
-    public void dispose() {
-        logger.info("Disposing MorphManager");
+    public void dispose()
+    {
+        logger.info("Disposing FabricMorphManager");
     }
 }
