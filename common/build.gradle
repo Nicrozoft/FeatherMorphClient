@@ -1,0 +1,50 @@
+plugins {
+    id 'multiloader-common'
+    id 'net.neoforged.moddev'
+}
+
+neoForge {
+    neoFormVersion = neo_form_version
+    // Automatically enable AccessTransformers if the file exists
+    def at = file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
+    }
+    parchment {
+        minecraftVersion = parchment_minecraft
+        mappingsVersion = parchment_version
+    }
+}
+
+def protocolVersion = protocols_use_local_build == "true" ? protocols_local_version : protocols_version
+
+dependencies {
+    compileOnly("org.spongepowered:mixin:0.8.7")
+    compileOnly("org.ow2.asm:asm-tree:9.6")
+    // fabric and neoforge both bundle mixinextras, so it is safe to use it in common
+    compileOnly("io.github.llamalad7:mixinextras-common:0.3.5")
+    annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.5")
+
+    implementation(files("../libs/fabric-api-base-0.4.42+d1308ded49.jar"))
+    implementation(files("../libs/fabric-networking-api-v1-4.3.2+1acbdc4249.jar"))
+    implementation("me.shedaniel.cloth:cloth-config-neoforge:${clothconfig_version}")
+
+    implementation("com.github.NiFeather:feathermorph-protocols:${protocolVersion}")
+    implementation("com.github.NiFeather:feathermorph-command-compat-layer:${compat_layer_version}")
+}
+
+configurations {
+    commonJava {
+        canBeResolved = false
+        canBeConsumed = true
+    }
+    commonResources {
+        canBeResolved = false
+        canBeConsumed = true
+    }
+}
+
+artifacts {
+    commonJava sourceSets.main.java.sourceDirectories.singleFile
+    commonResources sourceSets.main.resources.sourceDirectories.singleFile
+}
