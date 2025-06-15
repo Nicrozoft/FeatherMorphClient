@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.equipment.trim.ArmorTrim;
 import org.apache.commons.lang3.NotImplementedException;
 import xiamomc.pluginbase.Exceptions.NullDependencyException;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
@@ -53,22 +54,16 @@ public class FrogS2CSetEquipmentCommand extends AbstractS2CCommand<ItemStack>
         //);
     }
 
-    public static ClientSetEquipCommand fromArguments(Map<String, String> arguments) throws RuntimeException
+    private static ItemStack decodeItemType(String input)
     {
-        var slot = S2CSetFakeEquipCommand.ProtocolEquipmentSlot.valueOf(Asserts.getStringOrThrow(arguments, "slot").toUpperCase());
-
-        var typeString = Asserts.getStringOrThrow(arguments, "type");
-        var nameString = Asserts.getStringOrThrow(arguments, "name");
-        var enchMapString = Asserts.getStringOrThrow(arguments, "enchantments");
-
         var client = Minecraft.getInstance();
         var itemRegistry = client.level.registryAccess()
                 .lookup(Registries.ITEM)
                 .orElseThrow();
 
-        var itemType = ResourceLocation.tryParse(typeString);
+        var itemType = ResourceLocation.tryParse(input);
         if (itemType == null)
-            throw new NullDependencyException("No item match for server input '%s'!".formatted(typeString));
+            throw new NullDependencyException("No item match for server input '%s'!".formatted(input));
 
         var item = itemRegistry.getOptional(itemType)
                 .orElseThrow(() -> new NullDependencyException("No item available for server input '%s'!".formatted(itemType)));
@@ -76,10 +71,14 @@ public class FrogS2CSetEquipmentCommand extends AbstractS2CCommand<ItemStack>
         var stack = new ItemStack(item);
         stack.setCount(1);
 
-        var name = Component.Serializer.fromJson(nameString, client.level.registryAccess());
-        stack.set(DataComponents.ITEM_NAME, name);
+        return stack;
+    }
 
-        Map<?, ?> enchMap = gson().fromJson(enchMapString, Map.class);
+    private static void decodeEnchantments(ItemStack stack, String input)
+    {
+        var client = Minecraft.getInstance();
+
+        Map<?, ?> enchMap = gson().fromJson(input, Map.class);
         var enchantmentRegistry = client.level.registryAccess()
                 .lookup(Registries.ENCHANTMENT)
                 .orElseThrow();
@@ -108,6 +107,71 @@ public class FrogS2CSetEquipmentCommand extends AbstractS2CCommand<ItemStack>
             Holder<Enchantment> enchantment = Holder.direct(enchOptional.get());
             stack.enchant(enchantment, lvl);
         });
+    }
+
+    private static void decodeArmorTrim(ItemStack stack, String input)
+    {
+        var client = Minecraft.getInstance();
+
+        Map<?, ?> trimMap = gson().fromJson(input, Map.class);
+        if (!trimMap.containsKey("material") || !trimMap.containsKey("pattern"))
+            throw new NullDependencyException("Not enough arguments! Missing 'material' or 'pattern' field in 'armor_trim' section.");
+
+        String materialString = trimMap.get("material").toString();
+        String patternString = trimMap.get("pattern").toString();
+
+        var trimMaterialRegistry = client.level.registryAccess()
+                .lookup(Registries.TRIM_MATERIAL)
+                .orElseThrow();
+
+        ResourceLocation materialRl = ResourceLocation.tryParse(materialString);
+        if (materialRl == null)
+            throw new RuntimeException("No trim material found for input '%s'".formatted(materialString));
+
+        var material = trimMaterialRegistry.getOptional(materialRl)
+                .orElseThrow(() -> new NullDependencyException("No trim available for input '%s'!".formatted(materialString)));
+        var materialHolder = Holder.direct(material);
+
+        var patternMaterialRegistry = client.level.registryAccess()
+                .lookup(Registries.TRIM_PATTERN)
+                .orElseThrow();
+
+        ResourceLocation patternRl = ResourceLocation.tryParse(patternString);
+        if (patternRl == null)
+            throw new RuntimeException("No trim material found for input '%s'".formatted(materialString));
+
+        var pattern = patternMaterialRegistry.getOptional(patternRl)
+                .orElseThrow(() -> new NullDependencyException("No pattern available for input '%s'!".formatted(patternString)));
+        var patternHolder = Holder.direct(pattern);
+
+        stack.set(DataComponents.TRIM, new ArmorTrim(materialHolder, patternHolder));
+    }
+
+    public static ClientSetEquipCommand fromArguments(Map<String, String> arguments) throws RuntimeException
+    {
+        var slot = S2CSetFakeEquipCommand.ProtocolEquipmentSlot.valueOf(Asserts.getStringOrThrow(arguments, "slot").toUpperCase());
+
+        var client = Minecraft.getInstance();
+        var stack = decodeItemType(Asserts.getStringOrThrow(arguments, "type"));
+
+        try
+        {
+            int count = Integer.parseInt(Asserts.getStringOrThrow(arguments, "count"));
+            stack.setCount(count);
+        }
+        catch (Throwable t)
+        {
+            FeatherMorphClientBootstrap.LOGGER.error("Can't decode item count: " + t.getMessage());
+        }
+
+        var nameString = Asserts.getStringOrThrow(arguments, "name");
+        var name = Component.Serializer.fromJson(nameString, client.level.registryAccess());
+        stack.set(DataComponents.ITEM_NAME, name);
+
+        decodeEnchantments(stack, Asserts.getStringOrThrow(arguments, "enchantments"));
+
+        if (arguments.containsKey("armor_trim"))
+            decodeArmorTrim(stack, arguments.get("armor_trim"));
 
         return new ClientSetEquipCommand(stack, slot);
     }
