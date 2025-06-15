@@ -19,6 +19,7 @@ import xyz.nifeather.morph.client.config.ModConfigData;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.entities.IMorphLocalPlayer;
 import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
+import xyz.nifeather.morph.client.network.commands.FrogS2CSetEquipmentCommand;
 import xyz.nifeather.morph.client.network.handlers.IProtocolHandler;
 import xyz.nifeather.morph.client.network.handlers.V3ProtocolHandler;
 import xyz.nifeather.morph.client.utilties.NbtUtils;
@@ -76,6 +77,9 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
                 .registerS2C(S2CCommandNames.SetSneaking, S2CSetSneakingCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetSelfViewing, S2CSetSelfViewingStatusCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetModifyBoundingBox, S2CSetModifyBoundingBoxCommand::fromArguments);
+
+        // Frog protocol: New set fake equip command
+        registries.registerS2C("v2_set_fake_equip", FrogS2CSetEquipmentCommand::fromArguments);
 
         // Mob Reveal
         registries.registerS2C(S2CCommandNames.SetMobReveal, S2CSetMobRevealCommand::fromArguments);
@@ -159,7 +163,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
 
     private void tryProtocols()
     {
-        var initRecord = new ClientInitializeRecordV3(List.of(SharedValues.newProtocolIdentify), getImplmentingApiVersion(), false);
+        var initRecord = new ClientInitializeRecordV3(List.of(SharedValues.newProtocolIdentify, "frog_alt_equipment_command"), getImplmentingApiVersion(), false);
         V3ProtocolHandler.INSTANCE.sendInitializeRequest(initRecord);
 
         this.addSchedule(() ->
