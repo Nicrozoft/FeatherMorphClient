@@ -1,6 +1,7 @@
 package xyz.nifeather.morph.client.network.commands;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.DataFixerUpper;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
@@ -56,13 +57,6 @@ public class FrogS2CSetEquipmentCommand extends AbstractS2CCommand<ItemStack>
     public Map<String, String> generateArgumentMap()
     {
         throw new NotImplementedException("Not implemented on mod side yet.");
-
-        //return Map.of(
-        //        "slot", this.slot.toString(),
-        //        "type", this.item.getType().key().asString(),
-        //        "name", ItemUtils.getItemJsonName(this.item),
-        //        "enchantments", gson().toJson(item.getEnchantments().keySet().stream().toList())
-        //);
     }
 
     public static ClientSetEquipCommand fromArguments(Map<String, String> arguments) throws RuntimeException
@@ -117,6 +111,9 @@ public class FrogS2CSetEquipmentCommand extends AbstractS2CCommand<ItemStack>
 
         if (arguments.containsKey("custom_model_data"))
             decodeCustomModelData(stack, arguments.get("custom_model_data"));
+
+        if (arguments.containsKey("base_color"))
+            decodeBaseColor(stack, arguments.get("base_color"));
 
         return new ClientSetEquipCommand(stack, slot);
     }
@@ -306,5 +303,12 @@ public class FrogS2CSetEquipmentCommand extends AbstractS2CCommand<ItemStack>
         }
 
         stack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(floats, flags, strings, colors));
+    }
+
+    private static void decodeBaseColor(ItemStack stack, String input)
+    {
+        DyeColor color = DyeColor.valueOf(input.toUpperCase());
+
+        stack.set(DataComponents.BASE_COLOR, color);
     }
 }
