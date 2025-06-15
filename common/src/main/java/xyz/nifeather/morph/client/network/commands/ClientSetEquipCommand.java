@@ -1,10 +1,18 @@
 package xyz.nifeather.morph.client.network.commands;
 
 import com.google.gson.JsonParser;
+import com.mojang.datafixers.DSL;
+import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import xyz.nifeather.morph.client.utilties.NbtUtils;
 import xyz.nifeather.morph.network.commands.S2C.set.S2CSetFakeEquipCommand;
 import xyz.nifeather.morph.network.utils.Asserts;
 
@@ -21,7 +29,13 @@ public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack>
     public static ClientSetEquipCommand fromArguments(Map<String, String> arguments) throws RuntimeException
     {
         var slot = ProtocolEquipmentSlot.valueOf(Asserts.getStringOrThrow(arguments, "slot").toUpperCase());
-        var stack = jsonToStack(Asserts.getStringOrThrow(arguments, "item"));
+
+        int dataVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+
+        if (arguments.containsKey("data_version"))
+            dataVersion = Integer.parseInt(arguments.get("data_version"));
+
+        var stack = jsonToStack(Asserts.getStringOrThrow(arguments, "item"), dataVersion);
 
         Objects.requireNonNull(stack, "No item stack for input NBT '%s'".formatted(Asserts.getStringOrThrow(arguments, "item")));
 
@@ -39,12 +53,14 @@ public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack>
 
         return Map.of(
                 "slot", getSlot().toString(),
-                "item", gson().toJson(json.get())
+                "item", gson().toJson(json.get()),
+                "data_version", "" + SharedConstants.getCurrentVersion().getDataVersion().getVersion()
         );
     }
 
+
     @Nullable
-    private static ItemStack jsonToStack(String rawJson)
+    private static ItemStack jsonToStack(String rawJson, int sourceDataVersion)
     {
         var world = Minecraft.getInstance().level;
         if (world == null)
@@ -52,7 +68,18 @@ public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack>
 
         var registry = Minecraft.getInstance().level.registryAccess();
 
-        var item = ItemStack.CODEC.decode(registry.createSerializationContext(JsonOps.INSTANCE), JsonParser.parseString(rawJson));
+        CompoundTag tag = NbtUtils.parseSNbt(rawJson);
+
+        var ops = registry.createSerializationContext(NbtOps.INSTANCE);
+        int currentDataVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+
+        if (sourceDataVersion >= currentDataVersion)
+            sourceDataVersion = currentDataVersion;
+
+        var fixer = Minecraft.getInstance().getFixerUpper()
+                .update(References.ITEM_STACK, new Dynamic<>(ops, tag), sourceDataVersion, currentDataVersion);
+
+        var item = ItemStack.CODEC.decode(fixer);
 
         if (item.result().isPresent())
             return item.result().get().getFirst();
