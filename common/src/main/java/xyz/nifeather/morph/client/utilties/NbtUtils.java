@@ -1,5 +1,6 @@
 package xyz.nifeather.morph.client.utilties;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import org.jetbrains.annotations.Nullable;
@@ -10,7 +11,7 @@ public class NbtUtils
 {
     private static final Logger logger = FeatherMorphClientBootstrap.LOGGER;
 
-    public static CompoundTag parseOrThrow(@Nullable String snbt) throws Throwable
+    public static CompoundTag parseOrThrow(@Nullable String snbt) throws RuntimeException, CommandSyntaxException
     {
         //MinecraftClient.getInstance().world.getRegistryManager()
 
