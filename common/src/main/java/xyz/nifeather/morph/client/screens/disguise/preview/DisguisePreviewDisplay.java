@@ -21,7 +21,12 @@ public class DisguisePreviewDisplay extends EntityDisplay
     @Override
     protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
     {
-        super.onRender(context, mouseX, mouseY, delta);
+        var yStart = (int)getScreenSpaceY();
+
+        var yCentre = yStart + renderHeight / 2;
+        var mX = getScreenSpaceX() + renderWidth * 0.3f;
+
+        super.onRender(context, (int)mX, yCentre, delta);
     }
 
     @Override

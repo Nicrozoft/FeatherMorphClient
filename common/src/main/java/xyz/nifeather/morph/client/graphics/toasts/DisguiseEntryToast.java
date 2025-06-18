@@ -106,8 +106,8 @@ public class DisguiseEntryToast extends LinedToast
         matrices.translate(0, 0.5f, matrices);
         //var pos = matrices.last().pose().getTranslation(new Vector3f(0, 0, 0));
 
-        //todo: IMplement this
-        Vector2f pos = new Vector2f(0, 0);
+        //m20: x; m21: y
+        Vector2f pos = new Vector2f(matrices.m20(), matrices.m21());
 
         int mX = (int)pos.x() - 30;
         int mY = (int)pos.y() + (this.height() / 2);

@@ -265,18 +265,9 @@ public class DisplayWidget extends MorphClientObject implements NarratableEntry,
 
             var x = screenSpaceX + width - 24 - 15;
             var y = screenSpaceY + 1;
-            int mX, mY;
 
-            if (actState == ActivationState.CURRENT)
-            {
-                mX = mouseX;
-                mY = mouseY;
-            }
-            else
-            {
-                mX = Math.round(this.screenSpaceX + this.width * 0.75f);
-                mY = this.screenSpaceY + this.height / 2;
-            }
+            int mX = Math.round(this.screenSpaceX + this.width * 0.75f);
+            int mY = this.screenSpaceY + this.height / 2;
 
             displayContainer.setX(x);
             displayContainer.setY(y);

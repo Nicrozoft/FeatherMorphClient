@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import xyz.nifeather.morph.client.EntityCache;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
+import xyz.nifeather.morph.client.graphics.color.MaterialColors;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -292,7 +293,7 @@ public class EntityDisplay extends MDrawable
                     xStart, yStart, xEnd, yEnd,
                     scale * initialEntitySize.get(),
                     0.0625f + entityYOffset,
-                    (float)xStart - renderWidth * 1.5f, (float)yStart,
+                    (float)mouseX, mouseY,
                     displayingEntity);
 
             context.pose().translate(xStart, yStart);
