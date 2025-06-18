@@ -26,10 +26,10 @@ neoForge {
         implementation(jarJar("com.github.NiFeather:feathermorph-command-compat-layer:${compat_layer_version}"))
         additionalRuntimeClasspath("com.github.NiFeather:feathermorph-command-compat-layer:${compat_layer_version}")
     }
-    parchment {
-        minecraftVersion = parchment_minecraft
-        mappingsVersion = parchment_version
-    }
+    //parchment {
+    //    minecraftVersion = parchment_minecraft
+    //    mappingsVersion = parchment_version
+    //}
     runs {
         configureEach {
             systemProperty('neoforge.enabledGameTestNamespaces', mod_id)
