@@ -29,6 +29,8 @@
     ]
   },
   "mixins": [
+    "${mod_id}_guifix.mixins.json",
+    "${mod_id}_pipfix.mixins.json",
     "${mod_id}.mixins.json",
     "${mod_id}.fabric.mixins.json"
   ],

@@ -30,7 +30,7 @@ public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack>
     {
         var slot = ProtocolEquipmentSlot.valueOf(Asserts.getStringOrThrow(arguments, "slot").toUpperCase());
 
-        int dataVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+        int dataVersion = SharedConstants.getCurrentVersion().dataVersion().version();
 
         if (arguments.containsKey("data_version"))
             dataVersion = Integer.parseInt(arguments.get("data_version"));
@@ -54,7 +54,7 @@ public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack>
         return Map.of(
                 "slot", getSlot().toString(),
                 "item", gson().toJson(json.get()),
-                "data_version", "" + SharedConstants.getCurrentVersion().getDataVersion().getVersion()
+                "data_version", "" + SharedConstants.getCurrentVersion().dataVersion().version()
         );
     }
 
@@ -71,7 +71,7 @@ public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack>
         CompoundTag tag = NbtUtils.parseSNbt(rawJson);
 
         var ops = registry.createSerializationContext(NbtOps.INSTANCE);
-        int currentDataVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+        int currentDataVersion = SharedConstants.getCurrentVersion().dataVersion().version();
 
         if (sourceDataVersion >= currentDataVersion)
             sourceDataVersion = currentDataVersion;

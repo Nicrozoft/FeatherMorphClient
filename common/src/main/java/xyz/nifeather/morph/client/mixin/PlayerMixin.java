@@ -25,7 +25,7 @@ public abstract class PlayerMixin
     private Player featherMorph$playerInstance;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void featherMorph$onInit(Level world, BlockPos pos, float yaw, GameProfile gameProfile, CallbackInfo ci)
+    private void featherMorph$onInit(Level p_250508_, GameProfile p_252153_, CallbackInfo ci)
     {
         featherMorph$playerInstance = (Player) (Object) this;
     }

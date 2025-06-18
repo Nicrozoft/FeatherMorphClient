@@ -90,9 +90,6 @@ public class EmoteScreen extends SpinnerScreen<SingleEmoteWidget>
         this.add(titleText);
         this.add(currentAnimText);
 
-        this.alpha.set(0f);
-        this.fadeIn(500, Easing.OutQuint);
-
         var serverHandler = FeatherMorphClientBootstrap.getInstance().serverHandler;
         this.serverReady.bindTo(serverHandler.serverReady);
 
@@ -106,13 +103,6 @@ public class EmoteScreen extends SpinnerScreen<SingleEmoteWidget>
         }, true);
 
         updateEmoteText(morphManager.emoteDisplayName);
-    }
-
-    @Override
-    protected void onScreenEnter(@Nullable Screen lastScreen)
-    {
-        this.push(new TestScreen());
-        super.onScreenEnter(lastScreen);
     }
 
     private final ServerHandler serverHandler;

@@ -236,7 +236,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
         if (entity == null) return;
 
-        try (ProblemReporter.ScopedCollector scopedCollector = new ProblemReporter.ScopedCollector(entity.problemPath(), FeatherMorphClient.LOGGER))
+        try (ProblemReporter.ScopedCollector scopedCollector = new ProblemReporter.ScopedCollector(entity.problemPath(), FeatherMorphClientBootstrap.LOGGER))
         {
             entity.load(TagValueInput.create(scopedCollector, entity.registryAccess(), nbtCompound));
         }

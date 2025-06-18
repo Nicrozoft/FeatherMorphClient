@@ -35,11 +35,11 @@ public abstract class PictureInPictureRendererMixin<T extends PictureInPictureRe
     @Shadow @Final private CachedOrthoProjectionMatrixBuffer projectionMatrixBuffer;
 
     @WrapMethod(method = "prepareTexturesAndProjection")
-    public void fmc$prepareTexture(int width, int height, Operation<Void> original)
+    public void fmc$prepareTexture(boolean what, int width, int height, Operation<Void> original)
     {
         if (!PipFixValues.applyPictureInPictureWorkaround)
         {
-            original.call(width, height);
+            original.call(what, width, height);
             return;
         }
 

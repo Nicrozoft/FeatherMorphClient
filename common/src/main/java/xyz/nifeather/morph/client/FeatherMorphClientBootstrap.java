@@ -50,6 +50,7 @@ import java.util.function.Function;
 
 public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
 {
+    @Nullable
     private static FeatherMorphClientBootstrap instance;
 
     public static FeatherMorphClientBootstrap getInstance()
@@ -62,7 +63,7 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
     private final Function<String, Boolean> isModLoaded;
 
     public static boolean isModLoaded(String modId) {
-        return instance.isModLoaded.apply(modId);
+        return instance != null && instance.isModLoaded.apply(modId);
     }
 
     public static final String UNMORPH_STIRNG = "morph:unmorph";

@@ -18,7 +18,8 @@ public class ClientPlayerEntityMixin implements IMorphLocalPlayer
     @Nullable
     public ClientInput input;
 
-    @Shadow private boolean wasShiftKeyDown;
+    //@Shadow private boolean wasShiftKeyDown;
+
     @Unique
     @Nullable
     private Boolean morphclient$inputLastValue;
@@ -62,6 +63,6 @@ public class ClientPlayerEntityMixin implements IMorphLocalPlayer
     public void morphclient$overrideSneaking(boolean sneaking)
     {
         morphclient$serverSneaking = sneaking;
-        this.wasShiftKeyDown = sneaking;
+        //this.wasShiftKeyDown = sneaking;
     }
 }

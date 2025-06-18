@@ -125,16 +125,7 @@ public class HudRenderHelper extends MorphClientObject
         var windowHeight = context.guiHeight();
         var matrices = context.pose();
 
-        var shaderColor = RenderSystem.getShaderColor();
-        shaderColor = new float[]
-                {
-                        shaderColor[0],
-                        shaderColor[1],
-                        shaderColor[2],
-                        shaderColor[3]
-                };
-
-        RenderSystem.setShaderColor(1, 1, 1, drawAlpha.get());
+        var renderColor = ColorUtils.forOpacity(bgColorRecord.get(), drawAlpha.get());
 
         // 先位移到屏幕外面
         // 然后再位移到屏幕里面

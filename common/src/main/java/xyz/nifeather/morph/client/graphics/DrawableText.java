@@ -6,11 +6,15 @@ import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.graphics.color.ColorUtils;
 import xyz.nifeather.morph.client.graphics.color.Colors;
 import xyz.nifeather.morph.client.graphics.color.MaterialColors;
+
+import java.util.List;
 
 public class DrawableText extends MDrawable
 {
@@ -104,8 +108,8 @@ public class DrawableText extends MDrawable
     {
         context.drawString(renderer, text, 0, 0, color, drawShadow);
 
-        if (hovered() && tooltip != null)
-            context.renderTooltip(Minecraft.getInstance().font, getTooltip(), 0, 0);
+        if (hovered() && getTooltip() != null)
+            context.setTooltipForNextFrame(Minecraft.getInstance().font, getTooltip(), 0, 0);
     }
 
     @Override

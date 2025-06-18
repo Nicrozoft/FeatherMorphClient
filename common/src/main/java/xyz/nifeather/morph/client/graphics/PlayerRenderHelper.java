@@ -276,7 +276,7 @@ public class PlayerRenderHelper extends MorphClientObject
     private ModelPart tryGetChild(ModelPart modelPart, String childName)
     {
         //From SinglePartEntityModel#getChild(String name)
-        return modelPart.getAllParts().filter(part -> part.hasChild(childName)).findFirst().map(part -> part.getChild(childName)).orElse(null);
+        return modelPart.getAllParts().stream().filter(part -> part.hasChild(childName)).findFirst().map(part -> part.getChild(childName)).orElse(null);
     }
 
     private ModelPart tryGetChild(ModelPart modelPart, List<String> childNames)
