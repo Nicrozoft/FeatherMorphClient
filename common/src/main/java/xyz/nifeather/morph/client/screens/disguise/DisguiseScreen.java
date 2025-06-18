@@ -10,7 +10,6 @@ import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.geom.builders.UVPair;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
@@ -481,12 +480,12 @@ public class DisguiseScreen extends FeatherScreen
     {
         super.renderBackground(context, mouseX, mouseY, delta);
 
-        context.blit(RenderType::guiTextured, Screen.MENU_BACKGROUND,
+        context.blit(RenderPipelines.GUI_TEXTURED, Screen.MENU_BACKGROUND,
                 0, 0,
                 0, -topHeight.get(),
                 this.width, this.topHeight.get(), 32, 32);
 
-        context.blit(RenderType::guiTextured, Screen.MENU_BACKGROUND,
+        context.blit(RenderPipelines.GUI_TEXTURED, Screen.MENU_BACKGROUND,
                 0, this.height - bottomHeight.get(),
                 0, 0,
                 this.width, this.height, 32, 32);

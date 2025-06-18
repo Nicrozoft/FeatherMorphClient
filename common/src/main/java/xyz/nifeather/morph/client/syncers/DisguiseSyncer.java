@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityType;
@@ -18,6 +19,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.storage.TagValueInput;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
@@ -34,6 +36,8 @@ import xyz.nifeather.morph.client.mixin.accessors.AbstractHorseEntityMixin;
 import xyz.nifeather.morph.client.mixin.accessors.EntityAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LimbAnimatorAccessor;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
+import xiamomc.pluginbase.Annotations.Resolved;
+import xyz.nifeather.morph.client.utilties.ClientItemUtils;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -232,7 +236,10 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
         if (entity == null) return;
 
-        entity.readAdditionalSaveData(nbtCompound);
+        try (ProblemReporter.ScopedCollector scopedCollector = new ProblemReporter.ScopedCollector(entity.problemPath(), FeatherMorphClient.LOGGER))
+        {
+            entity.load(TagValueInput.create(scopedCollector, entity.registryAccess(), nbtCompound));
+        }
 
         if (entity instanceof Horse horse)
         {
@@ -240,7 +247,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
             if (haveSaddle)
             {
-                ItemStack itemStack = ItemStack.parse(bindingPlayer.level().registryAccess(), nbtCompound.getCompound("SaddleItem").orElseThrow())
+                ItemStack itemStack = ClientItemUtils.fromCompound(bindingPlayer.level().registryAccess(), nbtCompound.getCompound("SaddleItem").orElseThrow())
                         .orElse(air);
 
                 var isSaddle = itemStack.is(Items.SADDLE);
@@ -251,7 +258,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
             //Doesn't work for unknown reason
             if (nbtCompound.contains("ArmorItem"))
             {
-                ItemStack armorItem = ItemStack.parse(bindingPlayer.level().registryAccess(), nbtCompound.getCompound("ArmorItem").orElseThrow())
+                ItemStack armorItem = ClientItemUtils.fromCompound(bindingPlayer.level().registryAccess(), nbtCompound.getCompound("ArmorItem").orElseThrow())
                         .orElse(air);
 
                 horse.setBodyArmorItem(armorItem);

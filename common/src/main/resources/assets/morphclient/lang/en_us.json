@@ -66,6 +66,7 @@
   "option.morphclient.toast_progress": "Display toast progress",
   "option.morphclient.verbosePackets.description": "",
   "option.morphclient.verbosePackets.name": "(Debug) Log packets",
+  "option.morphclient.pip_workaround": "Enable PIP render workaround",
   "text.morphclient.display_real_names": "Displaying disguises' owner name",
   "text.morphclient.error.render_disguise1": "Error occurred rendering disguise",
   "text.morphclient.error.render_disguise2": "SelfView has been disabled until the current disguise has been changed!",

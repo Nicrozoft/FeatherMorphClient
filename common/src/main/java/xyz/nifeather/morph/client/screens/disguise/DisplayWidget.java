@@ -9,6 +9,7 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.model.geom.builders.UVPair;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -246,21 +247,21 @@ public class DisplayWidget extends MorphClientObject implements NarratableEntry,
 
         try
         {
-            matrices.pushPose();
+            matrices.pushMatrix();
 
             if (this.hovered)
-                matrices.translate(0, 0, 64);
+                matrices.translate(0, 0, matrices);
 
             var actState = activationState.get();
 
             if (actState == ActivationState.CURRENT)
-                matrices.translate(0, 0, 64);
+                matrices.translate(0, 0, matrices);
 
             this.backgroundContainer.setX(this.screenSpaceX);
             this.backgroundContainer.setY(this.screenSpaceY);
             this.backgroundContainer.render(context, mouseX, mouseY, delta);
 
-            matrices.translate(0, 0, 64);
+            matrices.translate(0, 0, matrices);
 
             var x = screenSpaceX + width - 24 - 15;
             var y = screenSpaceY + 1;
@@ -289,10 +290,12 @@ public class DisplayWidget extends MorphClientObject implements NarratableEntry,
         }
         finally
         {
+            //context.depthTreeUp();
             context.drawString(textRenderer, display,
                     screenSpaceX + 10, (screenSpaceY + Math.round((height - textRenderer.lineHeight) / 2f)), 0xffffffff);
+            //context.depthTreeDown();
 
-            matrices.popPose();
+            matrices.popMatrix();
         }
     }
 

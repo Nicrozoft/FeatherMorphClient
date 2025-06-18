@@ -108,6 +108,13 @@ public class EmoteScreen extends SpinnerScreen<SingleEmoteWidget>
         updateEmoteText(morphManager.emoteDisplayName);
     }
 
+    @Override
+    protected void onScreenEnter(@Nullable Screen lastScreen)
+    {
+        this.push(new TestScreen());
+        super.onScreenEnter(lastScreen);
+    }
+
     private final ServerHandler serverHandler;
 
     private SingleEmoteWidget addEmoteWidget(int x, int y)

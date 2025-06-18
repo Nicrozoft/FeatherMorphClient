@@ -267,9 +267,6 @@ public class EntityDisplay extends MDrawable
                 return;
             }
 
-            if (displayingEntity == Minecraft.getInstance().player)
-                PlayerRenderHelper.instance().skipRender = true;
-
             //context.fill(0, 0, renderWidth, renderHeight, MaterialColors.Red500.getColor());
 
             var scale = 1;
@@ -279,12 +276,26 @@ public class EntityDisplay extends MDrawable
             scale = Math.round((Math.min(this.getRenderHeight(), this.getRenderWidth()) * 0.8f) / scaledMaxEntityBorder);
             scale = Math.max(1, scale);
 
+            var xStart = (int)getScreenSpaceX();
+            var xEnd = xStart + renderWidth;
+            var yStart = (int)getScreenSpaceY();
+            var yEnd = yStart + renderHeight;
+
+            //context.fill(0, 0, renderWidth, renderHeight, MaterialColors.Teal500.getColor());
+            //context.drawString(Minecraft.getInstance().font, "xS: %s, xE: %s, yS: %s, yE: %s".formatted(xStart, xEnd, yStart, yEnd), 0, 0, 0xFFFFFFFF);
+
+            context.pose().translate(-xStart, -yStart);
+
+            PlayerRenderHelper.instance().skipRender = true;
+
             InventoryScreen.renderEntityInInventoryFollowsMouse(context,
-                    0, 0, renderWidth, renderHeight,
+                    xStart, yStart, xEnd, yEnd,
                     scale * initialEntitySize.get(),
                     0.0625f + entityYOffset,
-                    (float)mouseX - getScreenSpaceX(), (float)mouseY - getScreenSpaceY(),
+                    (float)xStart - renderWidth * 1.5f, (float)yStart,
                     displayingEntity);
+
+            context.pose().translate(xStart, yStart);
 
             PlayerRenderHelper.instance().skipRender = false;
         }
