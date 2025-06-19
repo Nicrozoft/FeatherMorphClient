@@ -166,7 +166,6 @@ public class NeoForgePlatformHelper implements PlatformHelper {
         NeoForgePlatformHelper.START_SERVER_TICK.invoker().onStartTick(event.getServer());
     }
 
-    //TODO
     @SubscribeEvent
     public void onAfterKilled(LivingDeathEvent event)
     {
@@ -174,7 +173,7 @@ public class NeoForgePlatformHelper implements PlatformHelper {
         if (source == null) return;
         var world = (ServerLevel) source.level();
         var entity = event.getEntity();
-        NeoForgePlatformHelperHolder.afterKilledOtherEntityCallbacks.forEach(callback -> callback.afterKilledOtherEntity(world, entity, source));
+        NeoForgePlatformHelperHolder.afterKilledOtherEntityCallbacks.forEach(callback -> callback.afterKilledOtherEntity(world, source, entity));
     }
 
     @SubscribeEvent
