@@ -1,10 +1,8 @@
 package xyz.nifeather.morph.shared.platform;
 
 import com.mojang.brigadier.arguments.ArgumentType;
-import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
@@ -19,7 +17,6 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -29,14 +26,11 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
-import xyz.nifeather.morph.client.mixin.accessors.KeyBindingAccessor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 public class NeoForgePlatformHelper implements PlatformHelper {
     public static final Event<ServerStartTick> START_SERVER_TICK = EventFactory.createArrayBacked(ServerStartTick.class, callbacks -> server ->
@@ -118,13 +112,6 @@ public class NeoForgePlatformHelper implements PlatformHelper {
         NeoForgePlatformHelperHolder.ARGUMENT_TYPES.put(id, serializer);
     }
 
-    @Override
-    public KeyMapping registerKeyBinding(KeyMapping binding)
-    {
-        Objects.requireNonNull(binding, "key binding cannot be null");
-        return KeyBindingRegistryImpl.registerKeyBinding(binding);
-    }
-
     private void ensureEventsRegistered()
     {
         if (!eventsRegistered) {
@@ -135,7 +122,6 @@ public class NeoForgePlatformHelper implements PlatformHelper {
                         NeoForgePlatformHelperHolder.ARGUMENT_TYPE_CLASSES.forEach(ArgumentTypeInfos::registerByClass);
                         NeoForgePlatformHelperHolder.ARGUMENT_TYPES.forEach(helper::register);
                     }));
-            bus.addListener(RegisterKeyMappingsEvent.class, KeyBindingRegistryImpl::process);
             NeoForge.EVENT_BUS.register(this);
             eventsRegistered = true;
         }
@@ -180,7 +166,6 @@ public class NeoForgePlatformHelper implements PlatformHelper {
         NeoForgePlatformHelper.START_SERVER_TICK.invoker().onStartTick(event.getServer());
     }
 
-    //TODO
     @SubscribeEvent
     public void onAfterKilled(LivingDeathEvent event)
     {
@@ -188,70 +173,13 @@ public class NeoForgePlatformHelper implements PlatformHelper {
         if (source == null) return;
         var world = (ServerLevel) source.level();
         var entity = event.getEntity();
-        NeoForgePlatformHelperHolder.afterKilledOtherEntityCallbacks.forEach(callback -> callback.afterKilledOtherEntity(world, entity, source));
+        NeoForgePlatformHelperHolder.afterKilledOtherEntityCallbacks.forEach(callback -> callback.afterKilledOtherEntity(world, source, entity));
     }
 
     @SubscribeEvent
     public void setCommandRegistrationCallbacks(RegisterCommandsEvent event)
     {
         NeoForgePlatformHelperHolder.commandRegistrationCallbacks.forEach(callback -> callback.register(event.getDispatcher(), event.getBuildContext(), event.getCommandSelection()));
-    }
-
-    private static class KeyBindingRegistryImpl
-    {
-        private static final List<KeyMapping> MODDED_KEY_BINDINGS = new ReferenceArrayList<>(); // ArrayList with identity based comparisons for contains/remove/indexOf etc., required for correctly handling duplicate keybinds
-        private static boolean processed;
-
-        private static Map<String, Integer> getCategoryMap()
-        {
-            return KeyBindingAccessor.fabric_getCategoryMap();
-        }
-
-        public static boolean addCategory(String categoryTranslationKey)
-        {
-            Map<String, Integer> map = getCategoryMap();
-
-            if (map.containsKey(categoryTranslationKey))
-            {
-                return false;
-            }
-
-            Optional<Integer> largest = map.values().stream().max(Integer::compareTo);
-            int largestInt = largest.orElse(0);
-            map.put(categoryTranslationKey, largestInt + 1);
-            return true;
-        }
-
-        public static KeyMapping registerKeyBinding(KeyMapping binding)
-        {
-            if (processed)
-            {
-                throw new IllegalStateException("Key bindings have already been processed");
-            }
-
-            for (KeyMapping existingKeyBindings : MODDED_KEY_BINDINGS)
-            {
-                if (existingKeyBindings == binding)
-                {
-                    throw new IllegalArgumentException("Attempted to register a key binding twice: " + binding.getName());
-                }
-                else if (existingKeyBindings.getName().equals(binding.getName()))
-                {
-                    throw new IllegalArgumentException("Attempted to register two key bindings with equal ID: " + binding.getName() + "!");
-                }
-            }
-
-            // This will do nothing if the category already exists.
-            addCategory(binding.getCategory());
-            MODDED_KEY_BINDINGS.add(binding);
-            return binding;
-        }
-
-        public static void process(RegisterKeyMappingsEvent event)
-        {
-            MODDED_KEY_BINDINGS.forEach(event::register);
-            processed = true;
-        }
     }
 
     private static class NeoForgePlatformHelperHolder

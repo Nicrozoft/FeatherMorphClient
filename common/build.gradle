@@ -25,8 +25,9 @@ dependencies {
     compileOnly("io.github.llamalad7:mixinextras-common:0.4.1")
     annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")
 
-    implementation(files("../libs/fabric-api-base-0.4.42+d1308ded49.jar"))
-    implementation(files("../libs/fabric-networking-api-v1-4.3.2+1acbdc4249.jar"))
+    implementation(files("../libs/fabric-api-base-${fabric_base}.jar"))
+    implementation(files("../libs/fabric-networking-api-v1-${fabric_networking}.jar"))
+    implementation(files("../libs/fabric-keybinding-api-v1-${fabric_keybinding}.jar"))
     implementation("me.shedaniel.cloth:cloth-config-neoforge:${clothconfig_version}")
 
     implementation("com.github.NiFeather:feathermorph-protocols:${protocolVersion}")
