@@ -2,13 +2,11 @@ package xyz.nifeather.morph.shared.platform;
 
 import com.mojang.brigadier.arguments.ArgumentType;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.resources.ResourceLocation;
 
@@ -72,11 +70,5 @@ public class FabricPlatformHelper implements PlatformHelper
     public <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> void registerArgumentType(ResourceLocation id, Class<? extends A> clazz, ArgumentTypeInfo<A, T> serializer)
     {
         ArgumentTypeRegistry.registerArgumentType(id, clazz, serializer);
-    }
-
-    @Override
-    public KeyMapping registerKeyBinding(KeyMapping binding)
-    {
-        return KeyBindingHelper.registerKeyBinding(binding);
     }
 }

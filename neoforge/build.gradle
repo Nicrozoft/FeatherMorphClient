@@ -17,8 +17,9 @@ neoForge {
         accessTransformers.from(at.absolutePath)
     }
     dependencies {
-        implementation(jarJar(files("../libs/fabric-api-base-0.4.42+d1308ded49.jar")))
-        implementation(jarJar(files("../libs/fabric-networking-api-v1-4.3.2+1acbdc4249.jar")))
+        implementation(jarJar(files("../libs/fabric-api-base-${fabric_base}.jar")))
+        implementation(jarJar(files("../libs/fabric-networking-api-v1-${fabric_networking}.jar")))
+        implementation(jarJar(files("../libs/fabric-keybinding-api-v1-${fabric_keybinding}.jar")))
         implementation("me.shedaniel.cloth:cloth-config-neoforge:${clothconfig_version}")
 
         implementation(jarJar("com.github.NiFeather:feathermorph-protocols:${protocolVersion}"))

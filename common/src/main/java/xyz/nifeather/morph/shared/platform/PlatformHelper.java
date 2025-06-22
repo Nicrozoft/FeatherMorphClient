@@ -2,9 +2,7 @@ package xyz.nifeather.morph.shared.platform;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
-import com.mojang.serialization.Codec;
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -12,10 +10,6 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -48,8 +42,6 @@ public interface PlatformHelper
 
     <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> void registerArgumentType(
             ResourceLocation id, Class<? extends A> clazz, ArgumentTypeInfo<A, T> serializer);
-
-    KeyMapping registerKeyBinding(KeyMapping binding);
 
     @FunctionalInterface
     interface HudRenderCallback

@@ -18,6 +18,12 @@ description = '''${description}'''
 config = "${mod_id}.mixins.json"
 
 [[mixins]]
+config = "${mod_id}_guifix.mixins.json"
+
+[[mixins]]
+config = "${mod_id}_pipfix.mixins.json"
+
+[[mixins]]
 config = "${mod_id}.nf.mixins.json"
 
 [[accessTransformers]]
