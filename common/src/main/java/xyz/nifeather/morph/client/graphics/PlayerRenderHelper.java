@@ -70,8 +70,7 @@ public class PlayerRenderHelper extends MorphClientObject
         });
     }
 
-    @Resolved
-    private DisguiseInstanceTracker instanceTracker;
+    private final DisguiseInstanceTracker instanceTracker = DisguiseInstanceTracker.getInstance();
 
     public boolean shouldHideLabel(@Nullable AbstractClientPlayer player)
     {

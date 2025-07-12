@@ -1,8 +1,10 @@
 package xyz.nifeather.morph.shared.platform;
 
 import com.mojang.brigadier.arguments.ArgumentType;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
@@ -17,6 +19,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -103,6 +106,15 @@ public class NeoForgePlatformHelper implements PlatformHelper {
     {
         NeoForgePlatformHelperHolder.commandRegistrationCallbacks.add(callback);
         ensureEventsRegistered();
+    }
+
+    public final NeoForgeKeybindingHelper keybindingHelper = new NeoForgeKeybindingHelper();
+
+    @Override
+    public KeyMapping registerPlatformKeyBinding(KeyMapping keyMapping)
+    {
+        keybindingHelper.addKeybind(keyMapping);
+        return keyMapping;
     }
 
     @Override

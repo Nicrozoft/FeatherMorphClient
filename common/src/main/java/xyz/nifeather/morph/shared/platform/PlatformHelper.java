@@ -3,6 +3,7 @@ package xyz.nifeather.morph.shared.platform;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -39,6 +40,8 @@ public interface PlatformHelper
     void registerAfterKilledOtherEntityEvent(AfterKilledOtherEntity callback);
 
     void registerCommandRegistrationEvent(CommandRegistrationCallback callback);
+
+    KeyMapping registerPlatformKeyBinding(KeyMapping keyMapping);
 
     <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> void registerArgumentType(
             ResourceLocation id, Class<? extends A> clazz, ArgumentTypeInfo<A, T> serializer);

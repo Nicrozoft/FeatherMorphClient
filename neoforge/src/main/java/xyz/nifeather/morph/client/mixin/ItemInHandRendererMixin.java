@@ -21,8 +21,6 @@ import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
 @Mixin(ItemInHandRenderer.class)
 public class ItemInHandRendererMixin
 {
-    @Unique
-    private static final PlayerRenderHelper morphclient$rendererHelper = PlayerRenderHelper.instance();
     @Shadow
     @Final
     private Minecraft minecraft;
@@ -78,7 +76,7 @@ public class ItemInHandRendererMixin
     @Unique
     private void morphclient$renderLeftArm(PoseStack matrices, MultiBufferSource vertexConsumers, int light)
     {
-        morphclient$rendererHelper.renderingLeftPart = true;
+        PlayerRenderHelper.instance().renderingLeftPart = true;
 
         this.morphclient$onArmRender(matrices, vertexConsumers, light);
     }
@@ -86,7 +84,7 @@ public class ItemInHandRendererMixin
     @Unique
     private void morphclient$renderRightArm(PoseStack matrices, MultiBufferSource vertexConsumers, int light)
     {
-        morphclient$rendererHelper.renderingLeftPart = false;
+        PlayerRenderHelper.instance().renderingLeftPart = false;
 
         this.morphclient$onArmRender(matrices, vertexConsumers, light);
     }
@@ -102,7 +100,7 @@ public class ItemInHandRendererMixin
     private void morphclient$onArmRender(PoseStack matrices, MultiBufferSource vertexConsumers,
                                          int light)
     {
-        morphclient$rendererHelper.onArmDrawCall(
+        PlayerRenderHelper.instance().onArmDrawCall(
                 matrices, vertexConsumers,
                 light
         );

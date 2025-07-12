@@ -5,7 +5,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.Util;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -190,32 +189,34 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
 
     private void registerKeys()
     {
+        var platform = Services.PLATFORM;
+
         //初始化按键
-        executeSkillKeyBind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        executeSkillKeyBind = platform.registerPlatformKeyBinding(new KeyMapping(
                 "key.morphclient.skill", InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_V, "category.morphclient.keybind"
         ));
 
-        unMorphKeyBind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        unMorphKeyBind = platform.registerPlatformKeyBinding(new KeyMapping(
                 "key.morphclient.unmorph", InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_DOWN, "category.morphclient.keybind"
         ));
 
         if (debugToasts)
         {
-            testKeyBindGrant = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+            testKeyBindGrant = platform.registerPlatformKeyBinding(new KeyMapping(
                     "key.morphclient.testToastGrant", InputConstants.Type.KEYSYM,
                     GLFW.GLFW_KEY_Z, "category.morphclient.keybind"
             ));
 
-            testKeyBindLost = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+            testKeyBindLost = platform.registerPlatformKeyBinding(new KeyMapping(
                     "key.morphclient.testToastLost", InputConstants.Type.KEYSYM,
                     GLFW.GLFW_KEY_X, "category.morphclient.keybind"
             ));
 
             for (int i = 1; i <= keybindCount; i++)
             {
-                var key = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                var key = platform.registerPlatformKeyBinding(new KeyMapping(
                         "key.morphclient.quick_disguise.%s".formatted(i),
                         InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.morphclient.keybind"
                 ));
@@ -223,27 +224,27 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
             }
         }
 
-        morphKeyBind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        morphKeyBind = platform.registerPlatformKeyBinding(new KeyMapping(
                 "key.morphclient.morph", InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_N, "category.morphclient.keybind"
         ));
 
-        toggleselfKeyBind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        toggleselfKeyBind = platform.registerPlatformKeyBinding(new KeyMapping(
                 "key.morphclient.toggle", InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_RIGHT, "category.morphclient.keybind"
         ));
 
-        emoteKeyBind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        emoteKeyBind = platform.registerPlatformKeyBinding(new KeyMapping(
                 "key.morphclient.emote", InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_G, "category.morphclient.keybind"
         ));
 
-        resetCacheKeybind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        resetCacheKeybind = platform.registerPlatformKeyBinding(new KeyMapping(
                 "key.morphclient.reset_cache", InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_UNKNOWN, "category.morphclient.keybind"
         ));
 
-        displayOwnerBind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        displayOwnerBind = platform.registerPlatformKeyBinding(new KeyMapping(
                 "key.morphclient.display_name", InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_F8, "category.morphclient.keybind"
         ));
