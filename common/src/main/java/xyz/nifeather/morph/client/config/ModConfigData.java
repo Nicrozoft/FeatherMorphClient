@@ -32,7 +32,7 @@ public class ModConfigData implements ConfigData
 
     public boolean singlePlayerDebugging = false;
 
-    public boolean disguiseListSmoothScroll = true;
+    public boolean disguiseListMouseDragging = false;
 
     public boolean enablePictureInPictureWorkaround = true;
 

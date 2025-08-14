@@ -395,6 +395,12 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
         var modConfigData = getModConfigData();
 
         categoryGeneral.addEntry(
+                entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.disguise_list_mouse_drag.name"), modConfigData.disguiseListMouseDragging)
+                        .setTooltip(Component.translatable("option.morphclient.disguise_list_mouse_drag.description"))
+                        .setDefaultValue(true)
+                        .setSaveConsumer(v -> modConfigData.disguiseListMouseDragging = v)
+                        .build()
+        ).addEntry(
                 entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.previewInInventory.name"), modConfigData.alwaysShowPreviewInInventory)
                         .setTooltip(Component.translatable("option.morphclient.previewInInventory.description"))
                         .setDefaultValue(false)
@@ -448,12 +454,6 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
                 entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.nametag_scaling"), modConfigData.scaleNameTag)
                         .setDefaultValue(false)
                         .setSaveConsumer(v -> modConfigData.scaleNameTag = v)
-                        .build()
-        ).addEntry(
-                entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.smoothscroll.name"), modConfigData.disguiseListSmoothScroll)
-                        .setTooltip(Component.translatable("option.morphclient.smoothscroll.description"))
-                        .setDefaultValue(true)
-                        .setSaveConsumer(v -> modConfigData.disguiseListSmoothScroll = v)
                         .build()
         );
 

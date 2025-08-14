@@ -1,8 +1,14 @@
 package xyz.nifeather.morph.client.screens.disguise;
 
+import net.minecraft.client.gui.components.AbstractScrollArea;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.renderer.item.properties.conditional.IsUsingItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
+import xyz.nifeather.morph.client.config.ModConfigData;
 import xyz.nifeather.morph.client.graphics.IMDrawable;
 import xyz.nifeather.morph.client.graphics.MarginPadding;
 import xyz.nifeather.morph.client.graphics.transforms.Recorder;
@@ -15,12 +21,17 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.util.Mth;
+import xyz.nifeather.morph.client.mixin.accessors.AbstractScrollAreaAccessor;
 
 public class DisguiseList extends ContainerObjectSelectionList<EntityDisplayEntry> implements IMDrawable
 {
+    private static final Logger log = LoggerFactory.getLogger(DisguiseList.class);
+    private final ModConfigData modConfig;
+
     public DisguiseList(Minecraft minecraftClient, int width, int height, int topPadding, int bottomPadding, int itemHeight)
     {
         super(minecraftClient, width, height, 0, itemHeight);
+        modConfig = FeatherMorphClientBootstrap.getInstance().getModConfigData();
     }
 
     public void addChild(EntityDisplayEntry entry)
@@ -45,11 +56,6 @@ public class DisguiseList extends ContainerObjectSelectionList<EntityDisplayEntr
             children().forEach(EntityDisplayEntry::clearChildren);
 
         clearEntries();
-    }
-
-    private boolean smoothScroll()
-    {
-        return FeatherMorphClientBootstrap.getInstance().getModConfigData().disguiseListSmoothScroll;
     }
 
     @Override
@@ -82,54 +88,43 @@ public class DisguiseList extends ContainerObjectSelectionList<EntityDisplayEntr
         this.setScrollAmount(amount);
     }
 
-    private long duration = 300;
+    private boolean mouseDown;
 
-    @Override
-    public void setScrollAmount(double targetAmount)
+    public void setMouseDown(boolean val)
     {
-        super.setScrollAmount(targetAmount);
-
-        targetAmount = Mth.clamp(targetAmount, 0, maxScrollAmount());
-
-        if (smoothScroll() && !noTransform)
-            Transformer.transform(this.scrollAmount, targetAmount, duration, Easing.OutQuint);
-        else
-            this.scrollAmount.set(targetAmount);
+        mouseDown = val;
     }
 
-    private final Recorder<Double> scrollAmount = new Recorder<>(0D);
-
-    private boolean noTransform = false;
+    private double lastMouseX;
+    private double lastMouseY;
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY)
+    public void mouseMoved(double mouseX, double mouseY)
     {
-        duration = 125;
+        super.mouseMoved(mouseX, mouseY);
 
-        this.noTransform = true;
-        var result = super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
-        this.noTransform = false;
+        if (mouseDown && modConfig.disguiseListMouseDragging)
+        {
+            double xDiff = mouseX - lastMouseX;
+            double yDiff = mouseY - lastMouseY;
 
-        return result;
+            // Accesswindener doesn't work for somehow
+            ((AbstractScrollAreaAccessor) this).setScrolling(true);
+            super.mouseDragged(getX() + 3, getY() + 3, 1, xDiff, -yDiff);
+            ((AbstractScrollAreaAccessor) this).setScrolling(false);
+        }
+
+        this.lastMouseX = mouseX;
+        this.lastMouseY = mouseY;
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount)
     {
-        duration = 300;
-
         verticalAmount *= 3f * FeatherMorphClientBootstrap.getInstance().getModConfigData().scrollSpeed;
         horizontalAmount *= 3f * FeatherMorphClientBootstrap.getInstance().getModConfigData().scrollSpeed;
 
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
-    }
-
-    @Override
-    public double scrollAmount()
-    {
-        return (!noTransform || smoothScroll())
-               ? this.scrollAmount.get()
-               : super.scrollAmount();
     }
 
     @Override

@@ -16,6 +16,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.LoggerFactory;
 import xiamomc.pluginbase.Bindables.Bindable;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.EntityCache;
@@ -471,8 +472,23 @@ public class DisguiseScreen extends FeatherScreen
     }
 
     @Override
+    public boolean mouseClicked(double p_94695_, double p_94696_, int p_94697_)
+    {
+        disguiseList.setMouseDown(true);
+        return super.mouseClicked(p_94695_, p_94696_, p_94697_);
+    }
+
+    @Override
+    public boolean mouseReleased(double p_94722_, double p_94723_, int p_94724_)
+    {
+        disguiseList.setMouseDown(false);
+        return super.mouseReleased(p_94722_, p_94723_, p_94724_);
+    }
+
+    @Override
     public void mouseMoved(double mouseX, double mouseY)
     {
+        disguiseList.mouseMoved(mouseX, mouseY);
         super.mouseMoved(mouseX, mouseY);
     }
 

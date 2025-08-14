@@ -30,6 +30,7 @@
     "PlayerMixin",
     "WorldRendererMixin",
     "accessors.AbstractHorseEntityMixin",
+    "accessors.AbstractScrollAreaAccessor",
     "accessors.ArmorStandEntityAccessor",
     "accessors.DragonEntityRendererAccessor",
     "accessors.EntityAccessor",

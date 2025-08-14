@@ -97,5 +97,7 @@
   "url.morphclient.owc2024": "盛极而衰",
   "url.morphclient.starrail": "♫ 无愧 无悔 ♫",
   "url.morphclient.starrail2": "♫ 为何不配？为何要跪？ ♫",
-  "url.morphclient.xbalanque": "希巴拉克大人 ᐠ( ᑒ )ᐟ"
+  "url.morphclient.xbalanque": "希巴拉克大人 ᐠ( ᑒ )ᐟ",
+  "option.morphclient.disguise_list_mouse_drag.description": "使用光标拖拽来滚动形态列表，使用 TouchController 模组时可能会有所帮助",
+  "option.morphclient.disguise_list_mouse_drag.name": "拖拽滚动"
 }
