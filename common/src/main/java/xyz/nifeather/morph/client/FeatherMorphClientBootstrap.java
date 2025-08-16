@@ -27,6 +27,7 @@ import xyz.nifeather.morph.client.graphics.hud.HudRenderHelper;
 import xyz.nifeather.morph.client.graphics.toasts.DisguiseEntryToast;
 import xyz.nifeather.morph.client.graphics.toasts.RequestToast;
 import xyz.nifeather.morph.client.network.ServerHandler;
+import xyz.nifeather.morph.client.properties.PropertyHandlers;
 import xyz.nifeather.morph.client.screens.WaitingForServerScreen;
 import xyz.nifeather.morph.client.screens.disguise.DisguiseScreen;
 import xyz.nifeather.morph.client.screens.emote.EmoteScreen;
@@ -146,6 +147,8 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
         Services.PLATFORM.registerHudRenderEvent(hudRenderHelper::onRender);
 
         modelWorkarounds = ModelWorkarounds.getInstance();
+
+        PropertyHandlers.init();
     }
 
     private final HudRenderHelper hudRenderHelper = new HudRenderHelper();

@@ -36,9 +36,9 @@ import xyz.nifeather.morph.client.mixin.accessors.AbstractHorseEntityMixin;
 import xyz.nifeather.morph.client.mixin.accessors.EntityAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LimbAnimatorAccessor;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
-import xiamomc.pluginbase.Annotations.Resolved;
 import xyz.nifeather.morph.client.utilties.ClientItemUtils;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class DisguiseSyncer extends MorphClientObject
@@ -94,7 +94,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
         bindingMeta.outdated = true;
 
-        refreshEntity();
+        setupEntity();
     }
 
     private AnimationHandler animHandler;
@@ -133,24 +133,37 @@ public abstract class DisguiseSyncer extends MorphClientObject
     {
         if (disguiseInstance == null || id == 0) return null;
 
-        var world = bindingPlayer.level();
-        if (world == null) return null;
+        return bindingPlayer.level().getEntity(id);
+    }
 
-        return world.getEntity(id);
+    @NotNull
+    private final CompletableFuture<LivingEntity> entityFuture = new CompletableFuture<>();
+
+    protected void finishEntityFuture(LivingEntity instance)
+    {
+        entityFuture.complete(instance);
+    }
+
+    /**
+     * Called when the entity finished setup
+     */
+    public CompletableFuture<LivingEntity> getEntityFuture()
+    {
+        return entityFuture;
     }
 
     /**
      * @return Whether we created the entity successfully
      */
-    public boolean refreshEntity()
+    protected boolean setupEntity()
     {
+        if (disguiseInstance != null)
+            throw new IllegalStateException("This syncer %s already have a disguise instance on bind!".formatted(this.toString()));
+
         try (var clientWorld = Minecraft.getInstance().level)
         {
             if (clientWorld == null)
-            {
-                disguiseInstance = null;
                 return false;
-            }
 
             var entityCache = getEntityCache();
 
@@ -209,6 +222,8 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
             initialSync();
             baseSync();
+
+            finishEntityFuture(newInstance);
         }
         catch (Throwable t)
         {
@@ -564,7 +579,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
         if (bindingPlayer.isRemoved() || bindingPlayer.level() != Minecraft.getInstance().level)
         {
-            logger.info(this + " Player removed, scheduling dispose");
+            logger.info(this + " Player removed, scheduling syncer dispose");
             this.addSchedule(this::dispose);
             return;
         }
@@ -578,10 +593,10 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
             if (prev != null)
             {
-                logger.info(this + " World changed, refreshing");
+                logger.info(this + " World changed, scheduling syncer dispose");
 
                 getEntityCache().dropAll();
-                refreshEntity();
+                addSchedule(this::dispose);
             }
 
             return;
@@ -589,8 +604,8 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
         if (disguiseInstance.isRemoved())
         {
-            logger.info(this + " Instance removed, refreshing");
-            refreshEntity();
+            logger.info(this + " Instance removed, scheduling syncer dispose");
+            addSchedule(this::dispose);
             return;
         }
 

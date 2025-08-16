@@ -298,9 +298,18 @@ public class MorphLocalPlayer extends RemotePlayer
         return bindingPlayer != null && bindingPlayer.isSpectator();
     }
 
+    private HumanoidArm overrideMainArm;
+
+    public void setOverrideMainArm(@Nullable HumanoidArm arm)
+    {
+        this.overrideMainArm = arm;
+    }
+
     @Override
     public HumanoidArm getMainArm()
     {
+        if (overrideMainArm != null) return overrideMainArm;
+
         return bindingPlayer == null ? super.getMainArm() : bindingPlayer.getMainArm();
     }
 

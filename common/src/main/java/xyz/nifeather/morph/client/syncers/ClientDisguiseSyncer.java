@@ -57,9 +57,9 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     }
 
     @Override
-    public boolean refreshEntity()
+    public boolean setupEntity()
     {
-        if (!super.refreshEntity())
+        if (!super.setupEntity())
         {
             acceptSyncing = false;
             return false;
@@ -129,24 +129,6 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     @Override
     public void syncTick()
     {
-        if (this.disposed())
-            throw new RuntimeException("May not update a disposed DisguiseSyncer");
-
-        if (!acceptSyncing)
-            return;
-
-        var clientPlayer = Minecraft.getInstance().player;
-        if (bindingPlayer != clientPlayer && clientPlayer != null)
-            bindingPlayer = clientPlayer;
-
-        if (disguiseInstance == null || disguiseInstance.isRemoved() || disguiseInstance.level() == null)
-        {
-            if (!this.refreshEntity())
-                acceptSyncing = false;
-
-            return;
-        }
-
         baseSync();
         syncYawPitch();
     }

@@ -588,7 +588,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Override
     public void onUpdatePropertiesCommand(S2CUpdatePropertiesCommand command)
     {
-        // todo
+        morphManager.handlePropertiesUpdate(command.getProperties());
     }
 
     //endregion Impl of ServerHandler

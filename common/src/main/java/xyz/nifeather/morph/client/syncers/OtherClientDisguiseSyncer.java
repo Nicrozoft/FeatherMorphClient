@@ -13,9 +13,9 @@ public class OtherClientDisguiseSyncer extends DisguiseSyncer
     }
 
     @Override
-    public boolean refreshEntity()
+    public boolean setupEntity()
     {
-        if (!super.refreshEntity())
+        if (!super.setupEntity())
             return false;
 
         if (disguiseInstance instanceof MorphLocalPlayer localPlayer)

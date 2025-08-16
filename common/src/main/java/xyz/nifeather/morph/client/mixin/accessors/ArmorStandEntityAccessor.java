@@ -9,4 +9,7 @@ public interface ArmorStandEntityAccessor
 {
     @Invoker
     void callSetShowArms(boolean showArms);
+
+    @Invoker
+    void callSetSmall(boolean small);
 }

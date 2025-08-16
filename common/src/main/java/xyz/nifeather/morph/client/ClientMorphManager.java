@@ -12,7 +12,9 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -22,6 +24,8 @@ import xiamomc.pluginbase.Bindables.Bindable;
 import xiamomc.pluginbase.Exceptions.NullDependencyException;
 import xyz.nifeather.morph.client.graphics.toasts.DisguiseEntryToast;
 import xyz.nifeather.morph.client.graphics.toasts.NewDisguiseSetToast;
+import xyz.nifeather.morph.client.properties.AbstractPropertyHandler;
+import xyz.nifeather.morph.client.properties.PropertyHandlers;
 import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 import xyz.nifeather.morph.client.syncers.OtherClientDisguiseSyncer;
@@ -31,6 +35,7 @@ import xyz.nifeather.morph.shared.AnimationNames;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
@@ -177,6 +182,8 @@ public class ClientMorphManager extends MorphClientObject
             localPlayerSyncer = null;
         }
 
+        this.propertyHandler = null;
+
         if (n == null || n.isEmpty()) return;
 
         localPlayerSyncer = instanceTracker.setSyncer(Minecraft.getInstance().player, n);
@@ -188,6 +195,17 @@ public class ClientMorphManager extends MorphClientObject
 
         if (serverSkin != null)
             localPlayerSyncer.updateSkin(serverSkin);
+
+        localPlayerSyncer.getEntityFuture().thenAccept(entity ->
+        {
+            var newHandler = PropertyHandlers.INSTANCE.getHandler(entity)
+                    .orElse(PropertyHandlers.INSTANCE.fallbackHandler());
+
+            newHandler.tryCast(entity)
+                    .ifPresent(living -> newHandler.handle(cachedProperties, living));
+
+            this.propertyHandler = newHandler;
+        });
     }
 
     //region Add/Remove/Set disguises
@@ -350,6 +368,8 @@ public class ClientMorphManager extends MorphClientObject
         emoteDisplayName = null;
         serverSkin = null;
 
+        cachedProperties.clear();
+
         String finalVal = val;
         this.addSchedule(() -> refreshLocalSyncer(finalVal));
         syncerRefreshScheduled.set(true);
@@ -401,5 +421,34 @@ public class ClientMorphManager extends MorphClientObject
             logger.warn("Calling UpdateSkin while localPlayerSyncer is null!");
             Thread.dumpStack();
         }
+    }
+
+    private final Map<String, String> cachedProperties = new ConcurrentHashMap<>();
+
+    @Nullable
+    private AbstractPropertyHandler<?> propertyHandler;
+
+    public void handlePropertiesUpdate(Map<String, String> input)
+    {
+        cachedProperties.putAll(input);
+
+        if (this.localPlayerSyncer == null)
+            return;
+
+        var entity = this.localPlayerSyncer.getDisguiseInstance();
+        if (entity == null)
+            return;
+
+        var propertyHandler = (AbstractPropertyHandler<Entity>) propertyHandler();
+        if (propertyHandler == null)
+            return;
+
+        propertyHandler.tryCast(entity).ifPresent(cast -> propertyHandler.handle(input, cast));
+    }
+
+    @Nullable
+    public AbstractPropertyHandler<?> propertyHandler()
+    {
+        return this.propertyHandler;
     }
 }
