@@ -185,7 +185,6 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
     private KeyMapping testKeyBindLost;
 
     private final int keybindCount = 4;
-    private final List<KeyMapping> quickDisguiseKeys = new ObjectArrayList<>(keybindCount);
 
     private void registerKeys()
     {
@@ -213,15 +212,6 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
                     "key.morphclient.testToastLost", InputConstants.Type.KEYSYM,
                     GLFW.GLFW_KEY_X, "category.morphclient.keybind"
             ));
-
-            for (int i = 1; i <= keybindCount; i++)
-            {
-                var key = platform.registerPlatformKeyBinding(new KeyMapping(
-                        "key.morphclient.quick_disguise.%s".formatted(i),
-                        InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "category.morphclient.keybind"
-                ));
-                quickDisguiseKeys.add(key);
-            }
         }
 
         morphKeyBind = platform.registerPlatformKeyBinding(new KeyMapping(
@@ -338,14 +328,6 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
 
         while (emoteKeyBind.consumeClick())
             Minecraft.getInstance().setScreen(new WaitingForServerScreen(new EmoteScreen()));
-
-        for (int i = 0; i < this.quickDisguiseKeys.size(); i++)
-        {
-            var key = quickDisguiseKeys.get(i);
-
-            while (key.consumeClick())
-                morphManager.onQuickDisguise(i);
-        }
     }
 
     @Nullable

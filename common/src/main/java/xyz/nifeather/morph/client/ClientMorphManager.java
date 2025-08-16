@@ -354,7 +354,7 @@ public class ClientMorphManager extends MorphClientObject
         this.addSchedule(() -> refreshLocalSyncer(finalVal));
         syncerRefreshScheduled.set(true);
 
-        if (val != null && (val.isBlank() || val.isEmpty()))
+        if (val != null && val.isBlank())
             val = null;
 
         currentIdentifier.set(val);
@@ -401,60 +401,5 @@ public class ClientMorphManager extends MorphClientObject
             logger.warn("Calling UpdateSkin while localPlayerSyncer is null!");
             Thread.dumpStack();
         }
-    }
-
-    private final Map<Integer, String> quickDisguiseMap = new Object2ObjectArrayMap<>();
-
-    public void setupQuickDisguise(Map<Integer, String> newMap)
-    {
-        this.clearQuickDisguise();
-        this.quickDisguiseMap.putAll(newMap);
-    }
-
-    public void setupQuickDisguise(int index, String disguiseID)
-    {
-        quickDisguiseMap.put(index, disguiseID);
-    }
-
-    public void clearQuickDisguise()
-    {
-        quickDisguiseMap.clear();
-    }
-
-    private void testClientDisguise(int index)
-    {
-        String[] disguises = new String[]
-                {
-                        "player:Faruzan_",
-                        "minecraft:sheep",
-                        "minecraft:ender_dragon",
-                        "player:Tairiitsuu"
-                };
-
-        var player = Minecraft.getInstance().player;
-        player.displayClientMessage(Component.literal("Test! " + disguises[index]), true);
-        this.selfVisibleEnabled.set(!this.selfVisibleEnabled.get());
-
-        this.availableMorphs.clear();
-        this.availableMorphs.addAll(List.of("minecraft:sheep", "player:Faruzan_", "minecraft:ender_dragon", "player:Tairiitsuu"));
-        FeatherMorphClientBootstrap.getInstance().serverHandler.testSetServerReady();
-        this.setEmotes(List.of("crawl", "sniff", "lay", "roar"));
-        this.setCurrent(disguises[index]);
-    }
-
-    public void onQuickDisguise(int index)
-    {
-        if (1+1==2)
-        {
-            testClientDisguise(index);
-            return;
-        }
-
-        Minecraft.getInstance().player.displayClientMessage(Component.literal("QUick Disguise! " + index), false);
-
-        var disguise = quickDisguiseMap.getOrDefault(index, null);
-        if (disguise == null) return;
-
-        FeatherMorphClientBootstrap.getInstance().sendMorphCommand(disguise);
     }
 }

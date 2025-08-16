@@ -70,7 +70,6 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
                 .registerS2C(S2CCommandNames.SetFakeEquip, ClientSetEquipCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetDisplayingFakeEquip, S2CSetDisplayingFakeEquipCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetSkinProfile, S2CSetProfileCommand::fromArguments)
-                .registerS2C(S2CCommandNames.SetSelfViewIdentifier, S2CSetSelfViewIdentifierCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetSkillCooldown, S2CSetSkillCooldownCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetSNbt, S2CSetSNbtCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetSneaking, S2CSetSneakingCommand::fromArguments)
@@ -97,6 +96,9 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
                 .registerS2C(S2CCommandNames.CRSyncRender, S2CCRSyncRegisterCommand::fromArguments)
                 .registerS2C(S2CCommandNames.CRRemove, S2CCRUnregisterCommand::fromArguments)
                 .registerS2C(S2CCommandNames.CRMeta, S2CCRSetMetaCommand::fromArguments);
+
+        // Update Properties
+        registries.registerS2C(S2CCommandNames.UpdateProperties, S2CUpdatePropertiesCommand::fromArguments);
     }
 
     @Resolved
@@ -446,12 +448,6 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     }
 
     @Override
-    public void onSetSelfViewIdentifierCommand(S2CSetSelfViewIdentifierCommand s2CSetSelfViewCommand)
-    {
-        //morphManager.selfViewIdentifier.set(s2CSetSelfViewCommand.serializeArguments());
-    }
-
-    @Override
     public void onSetSkillCooldownCommand(S2CSetSkillCooldownCommand s2CSetSkillCooldownCommand)
     {
         skillHandler.setSkillCooldown(s2CSetSkillCooldownCommand.val);
@@ -587,6 +583,12 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     public void onSetAnimationDisplayCommand(S2CSetAnimationDisplayNameCommand command)
     {
         morphManager.setEmoteDisplay(command.getDisplayIdentifier());
+    }
+
+    @Override
+    public void onUpdatePropertiesCommand(S2CUpdatePropertiesCommand command)
+    {
+        // todo
     }
 
     //endregion Impl of ServerHandler
