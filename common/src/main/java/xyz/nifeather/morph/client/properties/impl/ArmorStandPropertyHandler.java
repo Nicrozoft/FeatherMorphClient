@@ -14,7 +14,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 import java.util.List;
 import java.util.Optional;
 
-public class ArmorStandPropertyHandler extends LivingEntityPropertyHandler<ArmorStand>
+public class ArmorStandPropertyHandler extends EntityPropertyHandler<ArmorStand>
 {
     public final ClientProperty<Boolean> SHOW_ARMS = ClientProperty.of(PropertyNames.ARMOR_STAND_SHOW_ARMS, CommonInputHandles.BOOLEAN);
     public final ClientProperty<Boolean> HAS_BASE_PLATE = ClientProperty.of(PropertyNames.ARMOR_STAND_HAS_BASE_PLATE, CommonInputHandles.BOOLEAN);
@@ -65,20 +65,22 @@ public class ArmorStandPropertyHandler extends LivingEntityPropertyHandler<Armor
         return Optional.ofNullable(entity instanceof ArmorStand armorStand ? armorStand : null);
     }
 
-    protected <X> void applyToEntity(ArmorStand armorStand, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(ArmorStand entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         switch (property.identifier())
         {
-            case PropertyNames.ARMOR_STAND_SHOW_ARMS -> armorStand.setShowArms((Boolean)value);
-            case PropertyNames.ARMOR_STAND_HAS_BASE_PLATE -> armorStand.setNoBasePlate(!(Boolean)value);
-            case PropertyNames.ARMOR_STAND_SMALL -> ((ArmorStandEntityAccessor)armorStand).callSetSmall((Boolean)value);
+            case PropertyNames.ARMOR_STAND_SHOW_ARMS -> entity.setShowArms((Boolean)value);
+            case PropertyNames.ARMOR_STAND_HAS_BASE_PLATE -> entity.setNoBasePlate(!(Boolean)value);
+            case PropertyNames.ARMOR_STAND_SMALL -> ((ArmorStandEntityAccessor)entity).callSetSmall((Boolean)value);
 
-            case PropertyNames.ARMOR_STAND_HEAD_ROTATION -> armorStand.setHeadPose((Rotations) value);
-            case PropertyNames.ARMOR_STAND_BODY_ROTATION -> armorStand.setBodyPose((Rotations) value);
-            case PropertyNames.ARMOR_STAND_LEFT_ARM_ROTATION -> armorStand.setLeftArmPose((Rotations) value);
-            case PropertyNames.ARMOR_STAND_RIGHT_ARM_ROTATION -> armorStand.setRightArmPose((Rotations) value);
-            case PropertyNames.ARMOR_STAND_LEFT_LEG_ROTATION -> armorStand.setLeftLegPose((Rotations) value);
-            case PropertyNames.ARMOR_STAND_RIGHT_LEG_ROTATION -> armorStand.setRightLegPose((Rotations) value);
+            case PropertyNames.ARMOR_STAND_HEAD_ROTATION -> entity.setHeadPose((Rotations) value);
+            case PropertyNames.ARMOR_STAND_BODY_ROTATION -> entity.setBodyPose((Rotations) value);
+            case PropertyNames.ARMOR_STAND_LEFT_ARM_ROTATION -> entity.setLeftArmPose((Rotations) value);
+            case PropertyNames.ARMOR_STAND_RIGHT_ARM_ROTATION -> entity.setRightArmPose((Rotations) value);
+            case PropertyNames.ARMOR_STAND_LEFT_LEG_ROTATION -> entity.setLeftLegPose((Rotations) value);
+            case PropertyNames.ARMOR_STAND_RIGHT_LEG_ROTATION -> entity.setRightLegPose((Rotations) value);
         }
     }
 }

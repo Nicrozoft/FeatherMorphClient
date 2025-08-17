@@ -79,7 +79,7 @@ public abstract class EntityRenderDispatcherMixin
         var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(source);
         if (syncer == null) return source;
 
-        //syncer.onEarlyEntityRender();
+        syncer.onRenderSetup();
 
         var morphclient$instance = syncer.getDisguiseInstance();
         return morphclient$instance == null ? source : morphclient$instance;
@@ -98,7 +98,7 @@ public abstract class EntityRenderDispatcherMixin
             var syncer = asDisguiseRenderState.morphclient$getDisguiseSyncer();
 
             if (syncer != null)
-                syncer.onEarlyEntityRender();
+                syncer.onEarlyEntityRender(state);
         }
     }
 

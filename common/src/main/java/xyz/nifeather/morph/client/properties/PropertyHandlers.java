@@ -2,12 +2,11 @@ package xyz.nifeather.morph.client.properties;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.monster.Phantom;
-import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
-import xyz.nifeather.morph.client.mixin.accessors.MushroomCowAccessor;
+import net.minecraft.world.entity.LivingEntity;
 import xyz.nifeather.morph.client.properties.impl.*;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -86,10 +85,7 @@ public class PropertyHandlers
     {
         var match = handlerMap.getOrDefault(entity.getType(), null);
 
-        if (match != null)
-            return Optional.of((AbstractPropertyHandler<E>)match);
-        else
-            return Optional.empty();
+        return Optional.of((AbstractPropertyHandler<E>) Objects.requireNonNullElse(match, fallbackPropertyHandler));
     }
 
     public <E extends Entity> void register(EntityType<E> entityType, AbstractPropertyHandler<E> handler)

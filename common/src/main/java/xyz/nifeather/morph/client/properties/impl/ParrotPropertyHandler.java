@@ -9,7 +9,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class ParrotPropertyHandler extends LivingEntityPropertyHandler<Parrot>
+public class ParrotPropertyHandler extends EntityPropertyHandler<Parrot>
 {
     public final ClientProperty<Parrot.Variant> VARIANT = ClientProperty.of(PropertyNames.PARROT_VARIANT, this::readParrotVariant);
 
@@ -34,6 +34,8 @@ public class ParrotPropertyHandler extends LivingEntityPropertyHandler<Parrot>
     @Override
     protected <X> void applyToEntity(Parrot entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (property.equals(VARIANT))
             ((ParrotAccessor)entity).callSetVariant((Parrot.Variant) value);
     }

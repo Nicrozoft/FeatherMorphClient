@@ -8,7 +8,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class MooshroomPropertyHandler extends LivingEntityPropertyHandler<MushroomCow>
+public class MooshroomPropertyHandler extends EntityPropertyHandler<MushroomCow>
 {
     public final ClientProperty<MushroomCow.Variant> VARIANT = ClientProperty.of(PropertyNames.MOOSHROOM_VARIANT, this::readMushroomCowVariant);
 
@@ -33,6 +33,8 @@ public class MooshroomPropertyHandler extends LivingEntityPropertyHandler<Mushro
     @Override
     protected <X> void applyToEntity(MushroomCow entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (property.equals(VARIANT))
             ((MushroomCowAccessor)entity).callSetVariant((MushroomCow.Variant) value);
     }

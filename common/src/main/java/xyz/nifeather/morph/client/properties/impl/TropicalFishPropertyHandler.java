@@ -10,7 +10,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class TropicalFishPropertyHandler extends LivingEntityPropertyHandler<TropicalFish>
+public class TropicalFishPropertyHandler extends EntityPropertyHandler<TropicalFish>
 {
     public final ClientProperty<DyeColor> BODY_COLOR = ClientProperty.of(PropertyNames.TROPICAL_FISH_BODY_COLOR, s -> CommonInputHandles.readEnum(DyeColor.values(), s));
     public final ClientProperty<DyeColor> PATTERN_COLOR = ClientProperty.of(PropertyNames.TROPICAL_FISH_PATTERN_COLOR, s -> CommonInputHandles.readEnum(DyeColor.values(), s));
@@ -30,6 +30,8 @@ public class TropicalFishPropertyHandler extends LivingEntityPropertyHandler<Tro
     @Override
     protected <X> void applyToEntity(TropicalFish entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         switch (property.identifier())
         {
             case PropertyNames.TROPICAL_FISH_BODY_COLOR -> ((TropicalFishAccessor)entity).callSetBaseColor((DyeColor) value);

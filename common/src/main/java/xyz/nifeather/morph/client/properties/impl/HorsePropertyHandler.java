@@ -11,7 +11,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class HorsePropertyHandler extends LivingEntityPropertyHandler<Horse>
+public class HorsePropertyHandler extends EntityPropertyHandler<Horse>
 {
     public final ClientProperty<Markings> STYLE = ClientProperty.of(PropertyNames.HORSE_STYLE, this::readHorseStyle);
     public final ClientProperty<Variant> COLOR = ClientProperty.of(PropertyNames.HORSE_COLOR, this::readHorseColor);
@@ -42,6 +42,8 @@ public class HorsePropertyHandler extends LivingEntityPropertyHandler<Horse>
     @Override
     protected <X> void applyToEntity(Horse entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         switch (property.identifier())
         {
             case PropertyNames.HORSE_COLOR -> ((HorseAccessor)entity).callSetVariantAndMarkings((Variant) value, entity.getMarkings());

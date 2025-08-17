@@ -9,7 +9,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class SheepPropertyHandler extends LivingEntityPropertyHandler<Sheep>
+public class SheepPropertyHandler extends EntityPropertyHandler<Sheep>
 {
     public final ClientProperty<DyeColor> COLOR = ClientProperty.of(PropertyNames.SHEEP_COLOR, s -> CommonInputHandles.readEnum(DyeColor.values(), s));
 
@@ -27,6 +27,8 @@ public class SheepPropertyHandler extends LivingEntityPropertyHandler<Sheep>
     @Override
     protected <X> void applyToEntity(Sheep entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (property.equals(COLOR))
             entity.setColor((DyeColor) value);
     }

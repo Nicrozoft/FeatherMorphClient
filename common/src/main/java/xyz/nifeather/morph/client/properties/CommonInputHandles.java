@@ -65,6 +65,11 @@ public class CommonInputHandles
         return Optional.empty();
     }
 
+    public static Optional<String> string(String input)
+    {
+        return Optional.of(input);
+    }
+
     public static <X> Optional<X> empty(String str)
     {
         return Optional.empty();

@@ -14,7 +14,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 import java.util.Optional;
 import java.util.UUID;
 
-public class WolfPropertyHandler extends LivingEntityPropertyHandler<Wolf>
+public class WolfPropertyHandler extends EntityPropertyHandler<Wolf>
 {
     public final ClientProperty<Holder<WolfVariant>> VARIANT = ClientProperty.of(PropertyNames.WOLF_VARIANT, s -> CommonInputHandles.readVariantHolder(Registries.WOLF_VARIANT, s));
     public final ClientProperty<UUID> OWNER = ClientProperty.of(PropertyNames.WOLF_OWNER, CommonInputHandles::uuid);
@@ -33,6 +33,8 @@ public class WolfPropertyHandler extends LivingEntityPropertyHandler<Wolf>
     @Override
     protected <X> void applyToEntity(Wolf entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         switch (property.identifier())
         {
             case PropertyNames.WOLF_VARIANT -> ((WolfAccessor)entity).callSetVariant((Holder<WolfVariant>) value);

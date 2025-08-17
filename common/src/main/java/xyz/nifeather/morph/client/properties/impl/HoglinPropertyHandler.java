@@ -8,7 +8,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class HoglinPropertyHandler extends LivingEntityPropertyHandler<Hoglin>
+public class HoglinPropertyHandler extends EntityPropertyHandler<Hoglin>
 {
     public final ClientProperty<Boolean> IS_BABY = ClientProperty.of(PropertyNames.HOGLIN_IS_BABY, CommonInputHandles.BOOLEAN);
 
@@ -26,6 +26,8 @@ public class HoglinPropertyHandler extends LivingEntityPropertyHandler<Hoglin>
     @Override
     protected <X> void applyToEntity(Hoglin entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (property.equals(IS_BABY))
             entity.setAge(((Boolean)value) ? Integer.MIN_VALUE : 1);
     }

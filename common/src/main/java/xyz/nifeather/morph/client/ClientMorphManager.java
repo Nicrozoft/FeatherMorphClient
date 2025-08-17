@@ -198,8 +198,7 @@ public class ClientMorphManager extends MorphClientObject
 
         localPlayerSyncer.getEntityFuture().thenAccept(entity ->
         {
-            var newHandler = PropertyHandlers.INSTANCE.getHandler(entity)
-                    .orElse(PropertyHandlers.INSTANCE.fallbackHandler());
+            var newHandler = PropertyHandlers.INSTANCE.getHandler(entity).orElseThrow();
 
             newHandler.tryCast(entity)
                     .ifPresent(living -> newHandler.handle(cachedProperties, living));

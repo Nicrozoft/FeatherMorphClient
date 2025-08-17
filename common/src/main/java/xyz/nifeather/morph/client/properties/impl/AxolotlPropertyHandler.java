@@ -9,7 +9,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class AxolotlPropertyHandler extends LivingEntityPropertyHandler<Axolotl>
+public class AxolotlPropertyHandler extends EntityPropertyHandler<Axolotl>
 {
     public final ClientProperty<Axolotl.Variant> VARIANT = ClientProperty.of(PropertyNames.AXOLOTL_VARIANT, this::readVariant);
 
@@ -34,6 +34,8 @@ public class AxolotlPropertyHandler extends LivingEntityPropertyHandler<Axolotl>
     @Override
     protected <X> void applyToEntity(Axolotl entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (property.equals(VARIANT))
             ((AxolotlAccessor)entity).callSetVariant((Axolotl.Variant) value);
     }

@@ -9,7 +9,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class RabbitPropertyHandler extends LivingEntityPropertyHandler<Rabbit>
+public class RabbitPropertyHandler extends EntityPropertyHandler<Rabbit>
 {
     public final ClientProperty<Rabbit.Variant> VARIANT = ClientProperty.of(PropertyNames.RABBIT_VARIANT, s -> CommonInputHandles.readEnum(Rabbit.Variant.values(), s));
 
@@ -27,6 +27,8 @@ public class RabbitPropertyHandler extends LivingEntityPropertyHandler<Rabbit>
     @Override
     protected <X> void applyToEntity(Rabbit entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (property.equals(VARIANT))
             ((RabbitAccessor)entity).callSetVariant((Rabbit.Variant) value);
     }

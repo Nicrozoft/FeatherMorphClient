@@ -9,7 +9,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class EnderDragonPropertyHandler extends LivingEntityPropertyHandler<EnderDragon>
+public class EnderDragonPropertyHandler extends EntityPropertyHandler<EnderDragon>
 {
     public final ClientProperty<Integer> DRAGON_PHASE = ClientProperty.of(PropertyNames.ENDER_DRAGON_DRAGON_PHASE, CommonInputHandles::intOrEmpty);
 
@@ -27,6 +27,8 @@ public class EnderDragonPropertyHandler extends LivingEntityPropertyHandler<Ende
     @Override
     protected <X> void applyToEntity(EnderDragon entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (property.equals(DRAGON_PHASE))
             entity.getPhaseManager().setPhase(EnderDragonPhase.getById((Integer)value));
     }

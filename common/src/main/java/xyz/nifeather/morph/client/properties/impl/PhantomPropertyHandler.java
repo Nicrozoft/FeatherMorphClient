@@ -8,7 +8,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class PhantomPropertyHandler extends LivingEntityPropertyHandler<Phantom>
+public class PhantomPropertyHandler extends EntityPropertyHandler<Phantom>
 {
     public final ClientProperty<Integer> SIZE = ClientProperty.of(PropertyNames.PHANTOM_SIZE, CommonInputHandles::intOrEmpty);
 
@@ -26,6 +26,8 @@ public class PhantomPropertyHandler extends LivingEntityPropertyHandler<Phantom>
     @Override
     protected <X> void applyToEntity(Phantom entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (property.equals(SIZE))
             entity.setPhantomSize((Integer) value);
     }

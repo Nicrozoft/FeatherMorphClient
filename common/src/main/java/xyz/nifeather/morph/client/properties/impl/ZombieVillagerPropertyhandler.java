@@ -3,7 +3,6 @@ package xyz.nifeather.morph.client.properties.impl;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.monster.ZombieVillager;
 import net.minecraft.world.entity.npc.VillagerData;
 import net.minecraft.world.entity.npc.VillagerProfession;
@@ -14,7 +13,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class ZombieVillagerPropertyhandler extends LivingEntityPropertyHandler<ZombieVillager>
+public class ZombieVillagerPropertyhandler extends EntityPropertyHandler<ZombieVillager>
 {
     public final ClientProperty<Boolean> IS_BABY = ClientProperty.of(PropertyNames.ZOMBIE_VILLAGER_IS_BABY, CommonInputHandles.BOOLEAN);
     public final ClientProperty<Holder<VillagerType>> TYPE = ClientProperty.of(PropertyNames.ZOMBIE_VILLAGER_TYPE, s -> CommonInputHandles.readVariantHolder(Registries.VILLAGER_TYPE, s));
@@ -35,6 +34,8 @@ public class ZombieVillagerPropertyhandler extends LivingEntityPropertyHandler<Z
     @Override
     protected <X> void applyToEntity(ZombieVillager entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         VillagerData data = entity.getVillagerData();
 
         switch (property.identifier())

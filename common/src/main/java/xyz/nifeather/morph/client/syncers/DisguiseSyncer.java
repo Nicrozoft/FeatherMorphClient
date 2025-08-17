@@ -10,13 +10,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityEvent;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.Horse;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.TagValueInput;
@@ -374,13 +371,31 @@ public abstract class DisguiseSyncer extends MorphClientObject
         posRecorder.applyToPlayer(disguiseInstance);
     }
 
-    public void onEarlyEntityRender()
+    public void onRenderSetup()
     {
         if (!allowTick) return;
 
         try
         {
-            preEntityRender();
+            preEntityRenderSetup();
+        }
+        catch (Exception e)
+        {
+            onSyncError(e);
+        }
+    }
+
+    private void preEntityRenderSetup()
+    {
+    }
+
+    public void onEarlyEntityRender(EntityRenderState renderState)
+    {
+        if (!allowTick) return;
+
+        try
+        {
+            preEntityRender(renderState);
         }
         catch (Exception e)
         {
@@ -417,7 +432,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     private static final PositionRecorder posRecorder = new PositionRecorder();
 
-    public void preEntityRender()
+    public void preEntityRender(EntityRenderState renderState)
     {
         if (disguiseInstance == null)
             return;
@@ -437,6 +452,9 @@ public abstract class DisguiseSyncer extends MorphClientObject
         disguiseInstance.xOld = bindingPlayer.xOld;
         disguiseInstance.yOld = bindingPlayer.yOld;
         disguiseInstance.zOld = bindingPlayer.zOld;
+
+        renderState.nameTag = disguiseInstance.getName();
+        renderState.nameTagAttachment = disguiseInstance.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, disguiseInstance.getYRot(1));
     }
 
     public void updateSkin(GameProfile profile)

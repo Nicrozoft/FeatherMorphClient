@@ -8,7 +8,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class PandaPropertyHandler extends LivingEntityPropertyHandler<Panda>
+public class PandaPropertyHandler extends EntityPropertyHandler<Panda>
 {
     public final ClientProperty<Panda.Gene> MAIN_GENE = ClientProperty.of(PropertyNames.PANDA_MAIN_GENE, this::readGene);
     public final ClientProperty<Panda.Gene> HIDDEN_GENE = ClientProperty.of(PropertyNames.PANDA_HIDDEN_GENE, this::readGene);
@@ -34,6 +34,8 @@ public class PandaPropertyHandler extends LivingEntityPropertyHandler<Panda>
     @Override
     protected <X> void applyToEntity(Panda entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         switch (property.identifier())
         {
             case PropertyNames.PANDA_MAIN_GENE -> entity.setMainGene((Panda.Gene) value);

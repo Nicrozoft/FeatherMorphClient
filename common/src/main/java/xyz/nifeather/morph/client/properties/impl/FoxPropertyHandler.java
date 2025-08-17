@@ -8,7 +8,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class FoxPropertyHandler extends LivingEntityPropertyHandler<Fox>
+public class FoxPropertyHandler extends EntityPropertyHandler<Fox>
 {
     public final ClientProperty<Fox.Variant> VARIANT = ClientProperty.of(PropertyNames.FOX_VARIANT, this::readVariant);
 
@@ -31,6 +31,8 @@ public class FoxPropertyHandler extends LivingEntityPropertyHandler<Fox>
     @Override
     protected <X> void applyToEntity(Fox entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (property.equals(VARIANT))
             ((FoxAccessor)entity).callSetVariant((Fox.Variant) value);
     }

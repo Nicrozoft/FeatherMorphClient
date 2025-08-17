@@ -8,7 +8,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class ZombiePropertyhandler extends LivingEntityPropertyHandler<Zombie>
+public class ZombiePropertyhandler extends EntityPropertyHandler<Zombie>
 {
     public final ClientProperty<Boolean> IS_BABY = ClientProperty.of(PropertyNames.ZOMBIE_IS_BABY, CommonInputHandles.BOOLEAN);
 
@@ -26,6 +26,8 @@ public class ZombiePropertyhandler extends LivingEntityPropertyHandler<Zombie>
     @Override
     protected <X> void applyToEntity(Zombie entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (property.equals(IS_BABY))
             entity.setBaby((Boolean) value);
     }

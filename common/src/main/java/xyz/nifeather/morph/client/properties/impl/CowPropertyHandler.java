@@ -11,7 +11,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class CowPropertyHandler extends LivingEntityPropertyHandler<Cow>
+public class CowPropertyHandler extends EntityPropertyHandler<Cow>
 {
     public final ClientProperty<Holder<CowVariant>> VARIANT = ClientProperty.of(PropertyNames.COW_VARIANT, s -> CommonInputHandles.readVariantHolder(Registries.COW_VARIANT, s));
 
@@ -29,6 +29,8 @@ public class CowPropertyHandler extends LivingEntityPropertyHandler<Cow>
     @Override
     protected <X> void applyToEntity(Cow entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (property.identifier().equals(PropertyNames.COW_VARIANT))
             entity.setVariant((Holder<CowVariant>) value);
     }

@@ -9,7 +9,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class CreeperPropertyHandler extends LivingEntityPropertyHandler<Creeper>
+public class CreeperPropertyHandler extends EntityPropertyHandler<Creeper>
 {
     public final ClientProperty<Boolean> CHARGED = ClientProperty.of(PropertyNames.CREEPER_CHARGED, CommonInputHandles.BOOLEAN);
 
@@ -27,6 +27,8 @@ public class CreeperPropertyHandler extends LivingEntityPropertyHandler<Creeper>
     @Override
     protected <X> void applyToEntity(Creeper entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (property.identifier().equals(PropertyNames.CREEPER_CHARGED))
             ((IMorphCreeper)entity).morphclient$setPowered((Boolean)value);
     }

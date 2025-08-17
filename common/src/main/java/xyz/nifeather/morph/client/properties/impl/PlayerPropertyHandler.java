@@ -12,7 +12,7 @@ import xyz.nifeather.morph.client.utilties.MathUtils;
 
 import java.util.Optional;
 
-public class PlayerPropertyHandler extends LivingEntityPropertyHandler<Player>
+public class PlayerPropertyHandler extends EntityPropertyHandler<Player>
 {
     private final ClientProperty<HumanoidArm> MAIN_HAND = ClientProperty.of(PropertyNames.PLAYER_MAIN_HAND, this::humanoidArmFromString);
     private final ClientProperty<Integer> STUCKED_ARROWS = ClientProperty.of(PropertyNames.ENTITY_ARROW_COUNT, CommonInputHandles::intOrEmpty);
@@ -37,6 +37,8 @@ public class PlayerPropertyHandler extends LivingEntityPropertyHandler<Player>
     @Override
     protected <X> void applyToEntity(Player entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (!(entity instanceof MorphLocalPlayer morphLocalPlayer)) return;
         if (!(entity instanceof IMorphLivingEntity customLiving)) return;
 

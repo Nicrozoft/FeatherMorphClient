@@ -8,7 +8,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class ZoglinPropertyHandler extends LivingEntityPropertyHandler<Zoglin>
+public class ZoglinPropertyHandler extends EntityPropertyHandler<Zoglin>
 {
     public final ClientProperty<Boolean> IS_BABY = ClientProperty.of(PropertyNames.ZOGLIN_IS_BABY, CommonInputHandles.BOOLEAN);
 
@@ -26,6 +26,8 @@ public class ZoglinPropertyHandler extends LivingEntityPropertyHandler<Zoglin>
     @Override
     protected <X> void applyToEntity(Zoglin entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (property.equals(IS_BABY))
             entity.setBaby((Boolean)value);
     }

@@ -12,7 +12,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class PigPropertyHandler extends LivingEntityPropertyHandler<Pig>
+public class PigPropertyHandler extends EntityPropertyHandler<Pig>
 {
     public final ClientProperty<Holder<PigVariant>> VARIANT = ClientProperty.of(PropertyNames.PIG_VARIANT, s -> CommonInputHandles.readVariantHolder(Registries.PIG_VARIANT, s));
 
@@ -30,6 +30,8 @@ public class PigPropertyHandler extends LivingEntityPropertyHandler<Pig>
     @Override
     protected <X> void applyToEntity(Pig entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (property.identifier().equals(PropertyNames.PIG_VARIANT))
             ((PigAccessor)entity).callSetVariant((Holder<PigVariant>) value);
     }

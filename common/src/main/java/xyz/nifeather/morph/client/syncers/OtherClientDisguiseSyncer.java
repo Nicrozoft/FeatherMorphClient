@@ -63,12 +63,6 @@ public class OtherClientDisguiseSyncer extends DisguiseSyncer
     }
 
     @Override
-    public void preEntityRender()
-    {
-        super.preEntityRender();
-    }
-
-    @Override
     protected void initialSync()
     {
         syncPosition();

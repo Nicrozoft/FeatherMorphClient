@@ -9,7 +9,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class GoatPropertyHandler extends LivingEntityPropertyHandler<Goat>
+public class GoatPropertyHandler extends EntityPropertyHandler<Goat>
 {
     public final ClientProperty<Boolean> HAS_LEFT_HORN = ClientProperty.of(PropertyNames.GOAT_HAS_LEFT_HORN, CommonInputHandles.BOOLEAN);
     public final ClientProperty<Boolean> HAS_RIGHT_HORN = ClientProperty.of(PropertyNames.GOAT_HAS_RIGHT_HORN, CommonInputHandles.BOOLEAN);
@@ -28,6 +28,8 @@ public class GoatPropertyHandler extends LivingEntityPropertyHandler<Goat>
     @Override
     protected <X> void applyToEntity(Goat entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         switch (property.identifier())
         {
             case PropertyNames.GOAT_HAS_LEFT_HORN -> ((IMorphGoat)entity).morphclient$setHasLeftHorn((Boolean)value);

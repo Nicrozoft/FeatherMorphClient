@@ -10,7 +10,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class TraderLlamaPropertyHandler extends LivingEntityPropertyHandler<TraderLlama>
+public class TraderLlamaPropertyHandler extends EntityPropertyHandler<TraderLlama>
 {
     public final ClientProperty<Llama.Variant> COLOR = ClientProperty.of(PropertyNames.LLAMA_COLOR, this::readLlamaVariant);
 
@@ -35,6 +35,8 @@ public class TraderLlamaPropertyHandler extends LivingEntityPropertyHandler<Trad
     @Override
     protected <X> void applyToEntity(TraderLlama entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (property.equals(COLOR))
             ((LlamaAccessor)entity).callSetVariant((Llama.Variant) value);
     }

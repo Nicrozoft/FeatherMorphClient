@@ -14,7 +14,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 import java.util.Optional;
 import java.util.UUID;
 
-public class CatPropertyHandler extends LivingEntityPropertyHandler<Cat>
+public class CatPropertyHandler extends EntityPropertyHandler<Cat>
 {
     public final ClientProperty<Holder<CatVariant>> VARIANT = ClientProperty.of(PropertyNames.CAT_VARIANT, s -> CommonInputHandles.readVariantHolder(Registries.CAT_VARIANT, s));
     public final ClientProperty<UUID> OWNER = ClientProperty.of(PropertyNames.CAT_OWNER, CommonInputHandles::uuid);
@@ -33,6 +33,8 @@ public class CatPropertyHandler extends LivingEntityPropertyHandler<Cat>
     @Override
     protected <X> void applyToEntity(Cat entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         switch (property.identifier())
         {
             case PropertyNames.CAT_VARIANT -> ((CatAccessor)entity).callSetVariant((Holder<CatVariant>) value);

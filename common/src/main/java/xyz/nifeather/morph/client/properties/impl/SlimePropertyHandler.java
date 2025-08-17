@@ -8,7 +8,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class SlimePropertyHandler extends LivingEntityPropertyHandler<Slime>
+public class SlimePropertyHandler extends EntityPropertyHandler<Slime>
 {
     public final ClientProperty<Integer> SIZE = ClientProperty.of(PropertyNames.SLIME_MAGMA_SIZE, CommonInputHandles::intOrEmpty);
 
@@ -26,6 +26,8 @@ public class SlimePropertyHandler extends LivingEntityPropertyHandler<Slime>
     @Override
     protected <X> void applyToEntity(Slime entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (property.equals(SIZE))
             entity.setSize((Integer)value, false);
     }

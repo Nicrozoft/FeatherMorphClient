@@ -8,7 +8,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class SnowGolemPropertyHandler extends LivingEntityPropertyHandler<SnowGolem>
+public class SnowGolemPropertyHandler extends EntityPropertyHandler<SnowGolem>
 {
     public final ClientProperty<Boolean> HAS_PUMPKIN = ClientProperty.of(PropertyNames.SNOW_GOLEM_HAS_PUMPKIN, CommonInputHandles.BOOLEAN);
 
@@ -26,6 +26,8 @@ public class SnowGolemPropertyHandler extends LivingEntityPropertyHandler<SnowGo
     @Override
     protected <X> void applyToEntity(SnowGolem entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         if (property.equals(HAS_PUMPKIN))
             entity.setPumpkin((Boolean) value);
     }

@@ -13,7 +13,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class VillagerPropertyHandler extends LivingEntityPropertyHandler<Villager>
+public class VillagerPropertyHandler extends EntityPropertyHandler<Villager>
 {
     public final ClientProperty<Holder<VillagerType>> TYPE = ClientProperty.of(PropertyNames.VILLAGER_TYPE, s -> CommonInputHandles.readVariantHolder(Registries.VILLAGER_TYPE, s));
     public final ClientProperty<Holder<VillagerProfession>> PROFESSION = ClientProperty.of(PropertyNames.VILLAGER_PROFESSION, s -> CommonInputHandles.readVariantHolder(Registries.VILLAGER_PROFESSION, s));
@@ -33,6 +33,8 @@ public class VillagerPropertyHandler extends LivingEntityPropertyHandler<Village
     @Override
     protected <X> void applyToEntity(Villager entity, ClientProperty<X> property, X value)
     {
+        super.applyToEntity(entity, property, value);
+
         VillagerData data = entity.getVillagerData();
 
         switch (property.identifier())
