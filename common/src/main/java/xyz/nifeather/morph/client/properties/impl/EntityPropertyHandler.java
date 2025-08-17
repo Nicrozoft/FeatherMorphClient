@@ -1,11 +1,10 @@
 package xyz.nifeather.morph.client.properties.impl;
 
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mojang.serialization.JavaOps;
+import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.TagParser;
+import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.world.entity.Entity;
@@ -26,23 +25,22 @@ public abstract class EntityPropertyHandler<E extends Entity> extends AbstractPr
         register(CUSTOM_NAME, CUSTOM_NAME_VISIBLE);
     }
 
+    private final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+
     @Override
     protected <X> void applyToEntity(E entity, ClientProperty<X> property, X value)
     {
-        FeatherMorphClientBootstrap.LOGGER.error("LIVING APPLT TO ENTITY");
         if (property.equals(CUSTOM_NAME))
         {
-            FeatherMorphClientBootstrap.LOGGER.error("CUSTOM NAME!");
             try
             {
-                var compound = TagParser.parseCompoundFully(value.toString());
+                // https://docs.fabricmc.net/develop/text-and-translations#deserializing-text
+                var json = gson.fromJson(value.toString(), JsonElement.class);
+                var component = ComponentSerialization.CODEC.decode(JsonOps.INSTANCE, json)
+                        .getOrThrow()
+                        .getFirst();
 
-                var dynamic = entity.level().registryAccess().createSerializationContext(NbtOps.INSTANCE);
-
-                var component = ComponentSerialization.CODEC.decode(dynamic, compound).getOrThrow().getFirst();
                 entity.setCustomName(component);
-
-                FeatherMorphClientBootstrap.LOGGER.error("Component is " + component);
             }
             catch (Throwable t)
             {
