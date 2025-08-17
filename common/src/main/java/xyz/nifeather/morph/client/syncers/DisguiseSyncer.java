@@ -453,8 +453,11 @@ public abstract class DisguiseSyncer extends MorphClientObject
         disguiseInstance.yOld = bindingPlayer.yOld;
         disguiseInstance.zOld = bindingPlayer.zOld;
 
-        renderState.nameTag = disguiseInstance.getName();
-        renderState.nameTagAttachment = disguiseInstance.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, disguiseInstance.getYRot(1));
+        if (disguiseInstance.getType() != EntityType.PLAYER && disguiseInstance.hasCustomName())
+        {
+            renderState.nameTag = disguiseInstance.getName();
+            renderState.nameTagAttachment = disguiseInstance.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, disguiseInstance.getYRot(1));
+        }
     }
 
     public void updateSkin(GameProfile profile)
