@@ -382,7 +382,7 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
         categoryGeneral.addEntry(
                 entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.disguise_list_mouse_drag.name"), modConfigData.disguiseListMouseDragging)
                         .setTooltip(Component.translatable("option.morphclient.disguise_list_mouse_drag.description"))
-                        .setDefaultValue(true)
+                        .setDefaultValue(false)
                         .setSaveConsumer(v -> modConfigData.disguiseListMouseDragging = v)
                         .build()
         ).addEntry(
