@@ -22,6 +22,7 @@ public class PropertyNames
 
     public static final String CAT_VARIANT = "cat/variant";
     public static final String CAT_OWNER = "cat/owner";
+    public static final String CAT_COLLAR_COLOR = "cat/collar_color";
 
     public static final String CHICKEN_VARIANT = "chicken/variant";
 
@@ -79,6 +80,7 @@ public class PropertyNames
 
     public static final String WOLF_OWNER = "wolf/owner";
     public static final String WOLF_VARIANT = "wolf/variant";
+    public static final String WOLF_COLLAR_COLOR = "wolf/collar_color";
 
     public static final String ZOMBIE_IS_BABY = "zombie/is_baby";
 
@@ -86,4 +88,7 @@ public class PropertyNames
     public static final String ZOMBIE_VILLAGER_TYPE = "zombie_villager/type";
     public static final String ZOMBIE_VILLAGER_PROFESSION = "zombie_villager/profession";
     public static final String ZOMBIE_VILLAGER_LEVEL = "zombie_villager/level";
+
+    // Reserved
+    public static final String GUARDIAN_ATTACK_TARGET = "guardian/attack_target";
 }

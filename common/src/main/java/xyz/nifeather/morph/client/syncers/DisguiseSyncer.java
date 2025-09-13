@@ -2,21 +2,30 @@ package xyz.nifeather.morph.client.syncers;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.GuardianRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.GuardianRenderState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.Horse;
+import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
@@ -27,10 +36,12 @@ import xyz.nifeather.morph.client.EntityCache;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.MorphClientObject;
 import xyz.nifeather.morph.client.entities.IDisguiseRenderState;
+import xyz.nifeather.morph.client.entities.IHasOverrideGlowing;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.entities.MorphLocalPlayer;
 import xyz.nifeather.morph.client.mixin.accessors.AbstractHorseEntityMixin;
 import xyz.nifeather.morph.client.mixin.accessors.EntityAccessor;
+import xyz.nifeather.morph.client.mixin.accessors.GuardianRendererAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LimbAnimatorAccessor;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 import xyz.nifeather.morph.client.utilties.ClientItemUtils;
@@ -181,7 +192,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
                 prevEntity.hurtTime = 0;
 
-                prevEntity.discard();
+                disposeEntity(prevEntity);
                 entityCache.discardEntity(disguiseId);
             }
 
@@ -324,7 +335,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
         {
             try
             {
-                disguiseInstance.remove(Entity.RemovalReason.DISCARDED);
+                disposeEntity(disguiseInstance);
             }
             catch (Exception ee)
             {
@@ -458,6 +469,9 @@ public abstract class DisguiseSyncer extends MorphClientObject
             renderState.nameTag = disguiseInstance.getName();
             renderState.nameTagAttachment = disguiseInstance.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, disguiseInstance.getYRot(1));
         }
+
+        if (renderState instanceof GuardianRenderState guardianRenderState)
+            guardianRenderState.eyePosition = new Vec3(bindingPlayer.xo, bindingPlayer.yo, bindingPlayer.zo);
     }
 
     public void updateSkin(GameProfile profile)
@@ -738,6 +752,17 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     //region Disposal
 
+    protected void disposeEntity(@NotNull LivingEntity disguise)
+    {
+        if (disguise instanceof Guardian guardian && guardian.getActiveAttackTarget() instanceof IHasOverrideGlowing overrideGlowing)
+            overrideGlowing.morphclient$overrideClientGlowing(false);
+
+        if (RenderSystem.isOnRenderThread())
+            disguise.discard();
+        else
+            addSchedule(disguise::discard);
+    }
+
     private final AtomicBoolean disposed = new AtomicBoolean(false);
 
     public final boolean disposed()
@@ -756,12 +781,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
             getEntityCache().dispose();
 
         if (disguiseInstance != null)
-        {
-            if (RenderSystem.isOnRenderThread())
-                disguiseInstance.discard();
-            else
-                addSchedule(disguiseInstance::discard);
-        }
+            disposeEntity(disguiseInstance);
 
         try
         {

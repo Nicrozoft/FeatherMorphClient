@@ -6,6 +6,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.animal.wolf.WolfVariant;
+import net.minecraft.world.item.DyeColor;
 import xyz.nifeather.morph.client.mixin.accessors.WolfAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
@@ -18,10 +19,11 @@ public class WolfPropertyHandler extends EntityPropertyHandler<Wolf>
 {
     public final ClientProperty<Holder<WolfVariant>> VARIANT = ClientProperty.of(PropertyNames.WOLF_VARIANT, s -> CommonInputHandles.readVariantHolder(Registries.WOLF_VARIANT, s));
     public final ClientProperty<UUID> OWNER = ClientProperty.of(PropertyNames.WOLF_OWNER, CommonInputHandles::uuid);
+    public final ClientProperty<DyeColor> COLLAR_COLOR = ClientProperty.of(PropertyNames.WOLF_COLLAR_COLOR, CommonInputHandles::readDyeColor);
 
     public WolfPropertyHandler()
     {
-        register(VARIANT, OWNER);
+        register(VARIANT, OWNER, COLLAR_COLOR);
     }
 
     @Override
@@ -39,6 +41,7 @@ public class WolfPropertyHandler extends EntityPropertyHandler<Wolf>
         {
             case PropertyNames.WOLF_VARIANT -> ((WolfAccessor)entity).callSetVariant((Holder<WolfVariant>) value);
             case PropertyNames.WOLF_OWNER -> entity.setOwnerReference(new EntityReference<>((UUID) value));
+            case PropertyNames.CAT_COLLAR_COLOR -> ((WolfAccessor)entity).callSetCollarColor((DyeColor) value);
         }
     }
 }
