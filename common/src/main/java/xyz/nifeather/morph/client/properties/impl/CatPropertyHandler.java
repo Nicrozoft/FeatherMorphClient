@@ -4,6 +4,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.animal.CatVariant;
 import net.minecraft.world.item.DyeColor;
@@ -41,8 +42,22 @@ public class CatPropertyHandler extends EntityPropertyHandler<Cat>
         switch (property.identifier())
         {
             case PropertyNames.CAT_VARIANT -> accessor.callSetVariant((Holder<CatVariant>) value);
-            case PropertyNames.CAT_OWNER -> entity.setOwnerReference(new EntityReference<>((UUID) value));
-            case PropertyNames.CAT_COLLAR_COLOR -> accessor.callSetCollarColor((DyeColor) value);
+            case PropertyNames.CAT_OWNER ->
+            {
+                entity.setOwnerReference(new EntityReference<>((UUID) value));
+                writeTamed(entity);
+            }
+
+            case PropertyNames.CAT_COLLAR_COLOR ->
+            {
+                accessor.callSetCollarColor((DyeColor) value);
+                writeTamed(entity);
+            }
         }
+    }
+
+    private void writeTamed(TamableAnimal entity)
+    {
+        entity.setTame(true, true);
     }
 }

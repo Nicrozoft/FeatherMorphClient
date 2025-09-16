@@ -4,6 +4,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.animal.wolf.WolfVariant;
 import net.minecraft.world.item.DyeColor;
@@ -40,8 +41,22 @@ public class WolfPropertyHandler extends EntityPropertyHandler<Wolf>
         switch (property.identifier())
         {
             case PropertyNames.WOLF_VARIANT -> ((WolfAccessor)entity).callSetVariant((Holder<WolfVariant>) value);
-            case PropertyNames.WOLF_OWNER -> entity.setOwnerReference(new EntityReference<>((UUID) value));
-            case PropertyNames.CAT_COLLAR_COLOR -> ((WolfAccessor)entity).callSetCollarColor((DyeColor) value);
+            case PropertyNames.WOLF_OWNER ->
+            {
+                entity.setOwnerReference(new EntityReference<>((UUID) value));
+                writeTamed(entity);
+            }
+
+            case PropertyNames.WOLF_COLLAR_COLOR ->
+            {
+                ((WolfAccessor)entity).callSetCollarColor((DyeColor) value);
+                writeTamed(entity);
+            }
         }
+    }
+
+    private void writeTamed(TamableAnimal entity)
+    {
+        entity.setTame(true, true);
     }
 }
