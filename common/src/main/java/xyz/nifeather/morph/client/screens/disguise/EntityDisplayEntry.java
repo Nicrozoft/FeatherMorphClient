@@ -90,12 +90,16 @@ public class EntityDisplayEntry extends ContainerObjectSelectionList.Entry<Entit
         children.add(displayWidget);
     }
 
+    // i -> mouseX
+    // j -> mouseY
+    // f -> timeDelta
+    // bl -> hovered
     @Override
-    public void render(GuiGraphics matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta)
+    public void renderContent(GuiGraphics guiGraphics, int i, int j, boolean bl, float f)
     {
-        displayWidget.screenSpaceY = y;
-        displayWidget.screenSpaceX = x;
-        displayWidget.render(matrices, mouseX, mouseY, tickDelta);
+        //displayWidget.screenSpaceY = y;
+        //displayWidget.screenSpaceX = x;
+        displayWidget.render(guiGraphics, i, j, f);
     }
 
     @Override

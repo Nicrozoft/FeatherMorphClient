@@ -1,6 +1,7 @@
 package xyz.nifeather.morph.client.screens.spinner;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -61,11 +62,11 @@ public class ClickableSpinnerWidget extends Container
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button)
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl)
     {
         if (!hovered() && !isFocused()) return false;
 
-        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
+        if (mouseButtonEvent.button() == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {
             if (this.onClick != null)
                 this.onClick.run();
@@ -73,7 +74,7 @@ public class ClickableSpinnerWidget extends Container
             Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
         }
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(mouseButtonEvent, bl);
     }
 
     @Override

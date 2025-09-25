@@ -1,13 +1,12 @@
 package xyz.nifeather.morph.client.utilties;
 
+import com.google.common.collect.ImmutableMultimap;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
 import net.minecraft.Util;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntArrayTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 
@@ -38,51 +37,52 @@ public class NbtHelperCopy
     }
 
     @Nullable
-    public static GameProfile toGameProfile(CompoundTag nbt)
+    public static GameProfile toGameProfile(CompoundTag compound)
     {
-        UUID uuid = readUUID(nbt.get("Id"));
-        if (uuid == null)
-            uuid = Util.NIL_UUID;
+        String name = "NIL";
+        if (compound.contains("Name"))
+            name = compound.getString("Name").orElseThrow();
 
-        String name = nbt.getString("Name").orElse(null);
-        if (name == null)
+        UUID uuid = Util.NIL_UUID;
+        if (compound.contains("Id"))
         {
-            FeatherMorphClientBootstrap.LOGGER.warn("Given NBT does not contain a name, can't convert to GameProfile");
-            return null;
+            var tag = compound.get("Id");
+            var readUUID = readUUID(tag);
+
+            if (readUUID != null)
+                uuid = readUUID;
         }
+
+        if (!compound.contains("Properties")) return new GameProfile(uuid, name);
 
         try
         {
-            GameProfile gameProfile = new GameProfile(uuid, name);
+            var propertiesCompound = compound.getCompound("Properties").orElseThrow();
+            ImmutableMultimap.Builder<String, Property> propertiesBuilder = ImmutableMultimap.builder();
 
-            if (!nbt.contains("Properties"))
-                return gameProfile;
-
-            CompoundTag nbtCompound = nbt.getCompound("Properties").orElseThrow();
-
-            for (String subKey : nbtCompound.keySet())
+            propertiesCompound.forEach((key, tag) ->
             {
-                ListTag nbtList = nbtCompound.getList(subKey).orElseThrow();
+                var list = propertiesCompound.getListOrEmpty(key);
 
-                for (int i = 0; i < nbtList.size(); ++i)
+                for (int i = 0; i < list.size(); i++)
                 {
-                    CompoundTag nbtCompound2 = nbtList.getCompound(i).orElseThrow();
+                    var childCompound = list.getCompound(i).orElse(null);
+                    if (childCompound == null) continue;
 
-                    String base64Url = nbtCompound2.getString("Value").orElse("");
+                    var value = childCompound.getString("Value").orElseThrow();
 
-                    if (nbtCompound2.contains("Signature"))
-                        gameProfile.getProperties().put(subKey, new Property(subKey, base64Url, nbtCompound2.getString("Signature").orElseThrow()));
+                    if (childCompound.contains("Signature"))
+                        propertiesBuilder.put(key, new Property(key, value, childCompound.getString("Signature").orElseThrow()));
                     else
-                        gameProfile.getProperties().put(subKey, new Property(subKey, base64Url));
+                        propertiesBuilder.put(key, new Property(key, value));
                 }
-            }
+            });
 
-            return gameProfile;
+            return new GameProfile(uuid, name, new PropertyMap(propertiesBuilder.build()));
         }
-        catch (Throwable var11)
+        catch (Throwable t)
         {
-            FeatherMorphClientBootstrap.LOGGER.warn("Failed parsing compound to GameProfile: " + var11.getMessage());
-            var11.printStackTrace();
+            FeatherMorphClientBootstrap.LOGGER.warn("Can't parse profile properties", t);
 
             return null;
         }

@@ -55,7 +55,7 @@ public final class KappaCapeProvider implements ICapeProvider
     @Override
     public CompletableFuture<Optional<ResourceLocation>> getCapeAsync(GameProfile profile)
     {
-        var uuid = profile.getId();
+        var uuid = profile.id();
 
         var existingRequest = onGoingRequests.getOrDefault(uuid, null);
         if (existingRequest != null)
@@ -76,16 +76,16 @@ public final class KappaCapeProvider implements ICapeProvider
     public Optional<ResourceLocation> loadCape(GameProfile profile)
     {
         // Check if the player doesn't already have a cape.
-        ResourceLocation existingCape = capes.get(profile.getName());
+        ResourceLocation existingCape = capes.get(profile.name());
 
         if (existingCape != null)
             return Optional.of(existingCape);
 
-        var ofCape = this.tryUrl(profile, "https://optifine.net/capes/" + profile.getName() + ".png");
+        var ofCape = this.tryUrl(profile, "https://optifine.net/capes/" + profile.name() + ".png");
         if (ofCape != null)
             return Optional.of(ofCape);
 
-        var sOptifine = this.tryUrl(profile, "http://s.optifine.net/capes/" + profile.getName() + ".png");
+        var sOptifine = this.tryUrl(profile, "http://s.optifine.net/capes/" + profile.name() + ".png");
         return sOptifine == null ? Optional.empty() : Optional.of(sOptifine);
     }
 
@@ -129,16 +129,16 @@ public final class KappaCapeProvider implements ICapeProvider
             {
                 // 1.21.5: No longer allow creating texture async
                 var texture = new DynamicTexture(() ->
-                        "cape_tex_" + player.getId().toString().toLowerCase().replace("-", "_"), tex);
+                        "cape_tex_" + player.id().toString().toLowerCase().replace("-", "_"), tex);
 
                 // Register texture is still allow async, but for sanity we do it on Minecraft thread
-                ResourceLocation texID = ResourceLocation.fromNamespaceAndPath("kappa", player.getId().toString().replace("-", "_"));
+                ResourceLocation texID = ResourceLocation.fromNamespaceAndPath("kappa", player.id().toString().replace("-", "_"));
                 Minecraft.getInstance().getTextureManager().register(texID, texture);
 
                 return texID;
             }, Minecraft.getInstance()).join();
 
-            capes.put(player.getName(), id);
+            capes.put(player.name(), id);
             return id;
         }
         catch (FileNotFoundException e)

@@ -8,6 +8,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -313,8 +314,12 @@ public class DisplayWidget extends MorphClientObject implements NarratableEntry,
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button)
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl)
     {
+        int button = mouseButtonEvent.button();
+        double mouseX = mouseButtonEvent.x();
+        double mouseY = mouseButtonEvent.y();
+
         if (!isHovered()) return false;
 
         if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
@@ -363,7 +368,7 @@ public class DisplayWidget extends MorphClientObject implements NarratableEntry,
             }
         }
 
-        return GuiEventListener.super.mouseClicked(mouseX, mouseY, button);
+        return GuiEventListener.super.mouseClicked(mouseButtonEvent, bl);
     }
 
     private boolean isHovered()

@@ -176,7 +176,7 @@ public class PlayerDataStoreNew extends DirectoryJsonBasedStorage<PlayerMeta> im
         var storedMeta = this.get(uuid.toString());
 
         var matchingPlayer = MorphServerLoader.mcserver.getPlayerList().getPlayer(uuid);
-        String playerName = matchingPlayer == null ? uuid.toString() : matchingPlayer.getGameProfile().getName();
+        String playerName = matchingPlayer == null ? uuid.toString() : matchingPlayer.getGameProfile().name();
 
         // Don't process default meta
         if (!isDefaultMeta(storedMeta))

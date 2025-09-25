@@ -1,5 +1,6 @@
 package xyz.nifeather.morph.client.screens.emote;
 
+import net.minecraft.client.input.KeyEvent;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
@@ -179,12 +180,12 @@ public class EmoteScreen extends SpinnerScreen<SingleEmoteWidget>
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers)
+    public boolean keyPressed(KeyEvent keyEvent)
     {
-        if (FeatherMorphClientBootstrap.getInstance().getEmoteKeyBind().matches(keyCode, scanCode))
+        if (FeatherMorphClientBootstrap.getInstance().getEmoteKeyBind().matches(keyEvent))
             FeatherMorphClientBootstrap.getInstance().schedule(this::tryClose);
 
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(keyEvent);
     }
 
     private void tryClose()

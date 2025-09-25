@@ -30,7 +30,7 @@ public class ManagementCommand extends BrigadierCommand
     public void registerAsChild(ArgumentBuilder<CommandSourceStack, ?> parentBuilder)
     {
         var then = Commands.literal("manage")
-                .requires(source -> source.hasPermission(server.getOperatorUserPermissionLevel()));
+                .requires(source -> source.hasPermission(server.operatorUserPermissionLevel()));
 
         subCommands.forEach(ibc -> ibc.registerAsChild(then));
 

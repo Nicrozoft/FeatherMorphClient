@@ -2,6 +2,8 @@ package xyz.nifeather.morph.client.screens.disguise;
 
 import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.renderer.item.properties.conditional.IsUsingItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,10 +36,16 @@ public class DisguiseList extends ContainerObjectSelectionList<EntityDisplayEntr
         modConfig = FeatherMorphClientBootstrap.getInstance().getModConfigData();
     }
 
-    public void addChild(EntityDisplayEntry entry)
+    @Override
+    protected int addEntry(EntityDisplayEntry entry, int i)
     {
         entry.updateParentAllowedScreenSpaceWidth(this.getRowWidth());
-        this.children().add(entry);
+        return super.addEntry(entry, i);
+    }
+
+    public void addChild(EntityDisplayEntry entry)
+    {
+        addEntry(entry);
     }
 
     public void addChildrenRange(List<EntityDisplayEntry> entry)
@@ -81,7 +89,7 @@ public class DisguiseList extends ContainerObjectSelectionList<EntityDisplayEntr
     {
         if (widget == null || !children().contains(widget)) return;
 
-        var amount = children().indexOf(widget) * itemHeight - itemHeight * 4;
+        var amount = children().indexOf(widget) * defaultEntryHeight - defaultEntryHeight * 4;
         var maxScroll = this.maxScrollAmount();
         if (amount > maxScroll) amount = maxScroll;
 
@@ -110,7 +118,7 @@ public class DisguiseList extends ContainerObjectSelectionList<EntityDisplayEntr
 
             // Accesswindener doesn't work for somehow
             ((AbstractScrollAreaAccessor) this).setScrolling(true);
-            super.mouseDragged(getX() + 3, getY() + 3, 1, xDiff, -yDiff);
+            super.mouseDragged(new MouseButtonEvent(getX() + 3, getY() + 3, new MouseButtonInfo(1, 0)), xDiff, -yDiff);
             ((AbstractScrollAreaAccessor) this).setScrolling(false);
         }
 
@@ -145,11 +153,6 @@ public class DisguiseList extends ContainerObjectSelectionList<EntityDisplayEntr
     public int getRowWidth()
     {
         return Math.round(this.getWidth() * 0.7f);
-    }
-
-    public void setHeaderHeight(int newHeaderHeight)
-    {
-        this.headerHeight = newHeaderHeight;
     }
 
     @Override

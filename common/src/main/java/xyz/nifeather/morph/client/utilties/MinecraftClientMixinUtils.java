@@ -11,9 +11,11 @@ public class MinecraftClientMixinUtils
 {
     public static void setApiService(YggdrasilAuthenticationService authenticationService, File runDirectory)
     {
+        /*
         Services apiServices = Services.create(authenticationService, runDirectory);
-        apiServices.profileCache().setExecutor(Minecraft.getInstance());
+        apiServices.nameToIdCache().setExecutor(Minecraft.getInstance());
 
         MorphLocalPlayer.setMinecraftAPIServices(apiServices, Minecraft.getInstance());
+        */
     }
 }

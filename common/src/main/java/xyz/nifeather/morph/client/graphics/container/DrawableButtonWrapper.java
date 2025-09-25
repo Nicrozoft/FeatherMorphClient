@@ -2,6 +2,8 @@ package xyz.nifeather.morph.client.graphics.container;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import xyz.nifeather.morph.client.graphics.MDrawable;
 import xyz.nifeather.morph.client.graphics.color.MaterialColors;
 
@@ -47,21 +49,20 @@ public class DrawableButtonWrapper extends MDrawable
     }
 
     @Override
-    public boolean keyReleased(int keyCode, int scanCode, int modifiers)
+    public boolean keyReleased(KeyEvent event)
     {
-        return widget.keyReleased(keyCode, scanCode, modifiers);
+        return widget.keyReleased(event);
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers)
+    public boolean keyPressed(KeyEvent event)
     {
-        return widget.keyPressed(keyCode, scanCode, modifiers);
+        return widget.keyPressed(event);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button)
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl)
     {
-        widget.mouseClicked(mouseX, mouseY, button);
-        return true;
+        return widget.mouseClicked(mouseButtonEvent, bl);
     }
 }

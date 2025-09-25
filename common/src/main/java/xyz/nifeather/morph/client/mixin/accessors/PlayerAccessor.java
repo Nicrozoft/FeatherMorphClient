@@ -7,6 +7,4 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(Player.class)
 public interface PlayerAccessor
 {
-    @Invoker
-    public void invokeMoveCloak();
 }

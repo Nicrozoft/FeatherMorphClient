@@ -12,6 +12,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -193,53 +194,55 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
     {
         var platform = Services.PLATFORM;
 
+        var category = KeyMapping.Category.register(ResourceLocation.fromNamespaceAndPath("morphclient", "keybind"));
+
         //初始化按键
         executeSkillKeyBind = platform.registerPlatformKeyBinding(new KeyMapping(
                 "key.morphclient.skill", InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_V, "category.morphclient.keybind"
+                GLFW.GLFW_KEY_V, category
         ));
 
         unMorphKeyBind = platform.registerPlatformKeyBinding(new KeyMapping(
                 "key.morphclient.unmorph", InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_DOWN, "category.morphclient.keybind"
+                GLFW.GLFW_KEY_DOWN, category
         ));
 
         if (debugToasts)
         {
             testKeyBindGrant = platform.registerPlatformKeyBinding(new KeyMapping(
                     "key.morphclient.testToastGrant", InputConstants.Type.KEYSYM,
-                    GLFW.GLFW_KEY_Z, "category.morphclient.keybind"
+                    GLFW.GLFW_KEY_Z, category
             ));
 
             testKeyBindLost = platform.registerPlatformKeyBinding(new KeyMapping(
                     "key.morphclient.testToastLost", InputConstants.Type.KEYSYM,
-                    GLFW.GLFW_KEY_X, "category.morphclient.keybind"
+                    GLFW.GLFW_KEY_X, category
             ));
         }
 
         morphKeyBind = platform.registerPlatformKeyBinding(new KeyMapping(
                 "key.morphclient.morph", InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_N, "category.morphclient.keybind"
+                GLFW.GLFW_KEY_N, category
         ));
 
         toggleselfKeyBind = platform.registerPlatformKeyBinding(new KeyMapping(
                 "key.morphclient.toggle", InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_RIGHT, "category.morphclient.keybind"
+                GLFW.GLFW_KEY_RIGHT, category
         ));
 
         emoteKeyBind = platform.registerPlatformKeyBinding(new KeyMapping(
                 "key.morphclient.emote", InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_G, "category.morphclient.keybind"
+                GLFW.GLFW_KEY_G, category
         ));
 
         resetCacheKeybind = platform.registerPlatformKeyBinding(new KeyMapping(
                 "key.morphclient.reset_cache", InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_UNKNOWN, "category.morphclient.keybind"
+                GLFW.GLFW_KEY_UNKNOWN, category
         ));
 
         displayOwnerBind = platform.registerPlatformKeyBinding(new KeyMapping(
                 "key.morphclient.display_name", InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_F8, "category.morphclient.keybind"
+                GLFW.GLFW_KEY_F8, category
         ));
     }
 

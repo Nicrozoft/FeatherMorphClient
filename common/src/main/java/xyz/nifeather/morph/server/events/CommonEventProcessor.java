@@ -2,6 +2,7 @@ package xyz.nifeather.morph.server.events;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,7 +22,7 @@ public class CommonEventProcessor extends ServerPluginObject
     @Resolved(shouldSolveImmediately = true)
     private MorphManager morphManager;
 
-    private void onEntityKilledEntityEvent(ServerLevel world, Entity damager, LivingEntity killed)
+    private void onEntityKilledEntityEvent(ServerLevel world, Entity damager, LivingEntity killed, DamageSource damageSource)
     {
         if (!(damager instanceof ServerPlayer player))
             return;

@@ -1,34 +1,32 @@
 package xyz.nifeather.morph.client.entities;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.yggdrasil.ProfileResult;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.RemotePlayer;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.Services;
-import net.minecraft.server.players.GameProfileCache;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
+import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.graphics.capes.ICapeProvider;
 import xyz.nifeather.morph.client.graphics.capes.providers.KappaCapeProvider;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MorphLocalPlayer extends RemotePlayer
@@ -36,6 +34,8 @@ public class MorphLocalPlayer extends RemotePlayer
     private final Tuple<Integer, GameProfile> currentProfilePair = new Tuple<>(0, null);
 
     private final String playerName;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @NotNull
     private ResourceLocation morphTextureIdentifier = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/entity/player/wide/steve.png");
@@ -50,7 +50,7 @@ public class MorphLocalPlayer extends RemotePlayer
     private String skinTextureUrl;
 
     @NotNull
-    private PlayerSkin.Model model = PlayerSkin.Model.SLIM;
+    private PlayerModelType model = PlayerModelType.SLIM;
 
     public boolean personEquals(MorphLocalPlayer other)
     {
@@ -91,75 +91,65 @@ public class MorphLocalPlayer extends RemotePlayer
         bindingPlayer = newInstance;
     }
 
-    public MorphLocalPlayer(ClientLevel clientWorld, GameProfile profile, @Nullable Player bindingPlayer)
+    public MorphLocalPlayer(ClientLevel clientWorld, GameProfile initialProfile, @Nullable Player bindingPlayer)
     {
-        super(clientWorld, profile);
+        super(clientWorld, initialProfile);
 
         this.setBindingPlayer(bindingPlayer);
 
         //if (bindingPlayer == null) bindingPlayer = MinecraftClient.getInstance().player;
         //this.bindingPlayer = bindingPlayer;
 
-        this.playerName = profile.getName();
+        this.playerName = initialProfile.name();
 
         currentProfilePair.setA(0);
-        currentProfilePair.setB(profile);
+        currentProfilePair.setB(initialProfile);
 
         this.entityData.set(DATA_PLAYER_MODE_CUSTOMISATION, (byte)127);
-        this.updateSkin(profile, true);
+        this.updateSkin(initialProfile, true);
     }
 
-    private int requestId = 0;
+    private volatile int requestId = 0;
 
     private final static ICapeProvider customCapeProvider = new KappaCapeProvider();
 
-    private static Services apiServices;
-    private static Executor apiExecutor;
-
-    public static void setMinecraftAPIServices(Services apiSrv, Executor apiExec)
-    {
-        apiServices = apiSrv;
-        apiExecutor = apiExec;
-    }
-
     //region From SkullBlockEntity
 
-    public static CompletableFuture<Optional<GameProfile>> fetchProfileWithTextures(GameProfile profile)
+    private static CompletableFuture<Optional<GameProfile>> fetchProfile(String playerName)
     {
-        return profile.getProperties().containsKey("textures")
-                ? CompletableFuture.completedFuture(Optional.of(profile))
-                : CompletableFuture.supplyAsync(() ->
-        {
-            var sessionService = Minecraft.getInstance().getMinecraftSessionService();
+        //var logger = LoggerFactory.getLogger("MorphLocalPlayer#fetchProfile");
 
-            if (sessionService != null)
+        return CompletableFuture.supplyAsync(() ->
+        {
+            // Fetch UUID first, first lookup in cache, if null, call profileRepository to find
+            var services = Minecraft.getInstance().services();
+            var cachedNameIdPair = services.nameToIdCache().get(playerName).orElse(null);
+
+            //logger.info("Cached id pair is " + cachedNameIdPair);
+
+            if (cachedNameIdPair == null)
             {
-                ProfileResult profileResult = sessionService.fetchProfile(profile.getId(), true);
-                return profileResult == null ? Optional.of(profile) : Optional.of(profileResult.profile());
-            } else
-            {
-                return Optional.empty();
+                var repoProfile = services.profileRepository().findProfileByName(playerName).orElse(null);
+                //logger.info("From profile repo is " + repoProfile);
+
+                if (repoProfile != null)
+                    cachedNameIdPair = new NameAndId(repoProfile.id(), repoProfile.name());
             }
-        }, Util.backgroundExecutor());
-    }
 
-    private static GameProfileCache userCache;
+            //logger.info("The final value is " + cachedNameIdPair);
+            if (cachedNameIdPair == null)
+                return Optional.empty();
 
-    private static CompletableFuture<Optional<GameProfile>> fetchProfile(String name)
-    {
-        if (userCache == null && apiServices != null)
-            userCache = apiServices.profileCache();
+            // Then fetch skin
+            //logger.info("Start fetch task!");
+            var profileFetchResult = services.sessionService().fetchProfile(cachedNameIdPair.id(), true);
 
-        GameProfileCache userCache = MorphLocalPlayer.userCache;
-        return userCache == null
-                ? CompletableFuture.completedFuture(Optional.empty())
-                : userCache.getAsync(name).thenCompose((optional) ->
-        {
-            return optional.isPresent() ? fetchProfileWithTextures(optional.get()) : CompletableFuture.completedFuture(Optional.empty());
-        }).thenApplyAsync((profile) ->
-        {
-            return profile;
-        }, apiExecutor);
+            //logger.info("Task completed with " + profileFetchResult);
+            if (profileFetchResult == null)
+                return Optional.empty();
+
+            return Optional.of(profileFetchResult.profile());
+        });
     }
 
     //endregion From SkullBlockEntity
@@ -186,91 +176,37 @@ public class MorphLocalPlayer extends RemotePlayer
 
         //logger.info("Fetching skin for " + profile);
 
-        if (!profile.getName().equals(playerName))
-        {
-            //logger.info("Profile %s player name not match : '%s' <-> '%s'".formatted(profile.getId(), profile.getName(), playerName));
-            return;
-        }
+        // No longer care about this
+        //if (!profile.name().equals(playerName))
+        //{
+        //    logger.info("Profile %s player name not match : '%s' <-> '%s'".formatted(profile.id(), profile.name(), playerName));
+        //    return;
+        //}
 
-        requestId++;
+        var reqId = requestId;
+        requestId = reqId + 1;
 
         var invokeId = requestId;
 
-        // 根据传入的profile来决定要不要由我们自己获取皮肤
-        CompletableFuture<Optional<GameProfile>> profileFetchTask;
-
-        // 如果传入的是NIL_UUID，则自己获取，否则就用传入的profile
-        if (profile.getId().equals(Util.NIL_UUID))
-            profileFetchTask = fetchProfile(profile.getName());
-        else
-            profileFetchTask = CompletableFuture.completedFuture(Optional.of(profile));
-
-        profileFetchTask.thenApply(optional ->
+        if (profile.properties().containsKey("textures"))
         {
-            // 确保targetProfile不是null
-            GameProfile targetProfile = optional.orElse(profile);
+            this.updateSkinTextures(profile);
+            return;
+        }
 
-            //logger.info("Target UUID is " + targetProfile.getId() + " :: Optional is " + optional.orElse(null));
-
-            // 开始获取皮肤信息
-            startFetchTask(targetProfile, invokeId);
-            return null;
+        fetchProfile(profile.name()).thenAccept(optional ->
+        {
+            if (invokeId == requestId)
+                FeatherMorphClientBootstrap.getInstance().schedule(() -> optional.ifPresent(this::updateSkinTextures));
         });
     }
 
-    private void startFetchTask(GameProfile profile, int invokeId)
-    {
-        // 通过fetchProfileWithTextures获取带皮肤的gameProfile
-        var texturedProfileFetchTask = fetchProfileWithTextures(profile);
-        texturedProfileFetchTask.thenApply((optional ->
-        {
-            GameProfile gameProfile = optional.orElse(null);
-
-            // 如果没有，则不做任何举动
-            if (gameProfile == null)
-                return null;
-
-            // 反之，获取其中的皮肤
-            var skinProvider = Minecraft.getInstance().getSkinManager();
-            var skinFetchTask = skinProvider.getOrLoad(profile);
-            skinFetchTask.thenAccept(texturesOptional ->
-            {
-                if (texturesOptional.isEmpty())
-                    return;
-
-                onFetchComplete(invokeId, texturesOptional.get(), profile);
-            });
-
-            return null;
-        }));
-    }
-
-    private void onFetchComplete(int invokeId, PlayerSkin tex, GameProfile profile)
-    {
-        if (this.isRemoved()) return;
-
-        var currentId = currentProfilePair.getA();
-
-        if (invokeId < currentId)
-            return;
-
-        this.capeTextureIdentifier = tex.capeTexture();
-        currentProfilePair.setA(requestId);
-        currentProfilePair.setB(profile);
-
-        this.skinTextureUrl = tex.textureUrl();
-
-        this.morphTextureIdentifier = tex.texture();
-        this.model = tex.model();
-
-        updateSkinTextures(profile);
-    }
-
     @Nullable
-    private PlayerInfo playerInfo;
+    private volatile PlayerInfo playerInfo;
 
     private void updateSkinTextures(GameProfile profile)
     {
+        //logger.info("Apply skin! " + profile.name() + " :: " + profile.id());
         RenderSystem.assertOnRenderThread();
         this.playerInfo = new PlayerInfo(profile, false);
     }
@@ -279,7 +215,7 @@ public class MorphLocalPlayer extends RemotePlayer
     private BlockPos overrideSleepPos;
 
     @Override
-    public Optional<BlockPos> getSleepingPos()
+    public @NotNull Optional<BlockPos> getSleepingPos()
     {
         if (overrideSleepPos != null)
             return Optional.of(overrideSleepPos);
@@ -306,7 +242,7 @@ public class MorphLocalPlayer extends RemotePlayer
     }
 
     @Override
-    public HumanoidArm getMainArm()
+    public @NotNull HumanoidArm getMainArm()
     {
         if (overrideMainArm != null) return overrideMainArm;
 
@@ -320,7 +256,7 @@ public class MorphLocalPlayer extends RemotePlayer
     }
 
     @Override
-    public ItemStack getUseItem()
+    public @NotNull ItemStack getUseItem()
     {
         return bindingPlayer == null ? super.getUseItem() : bindingPlayer.getUseItem();
     }
@@ -350,7 +286,7 @@ public class MorphLocalPlayer extends RemotePlayer
     }
 
     @Override
-    public Vec3 position()
+    public @NotNull Vec3 position()
     {
         return bindingPlayer == null ? super.position() : bindingPlayer.position();
     }
@@ -376,7 +312,7 @@ public class MorphLocalPlayer extends RemotePlayer
     @Override
     public boolean shouldShowName()
     {
-        return hasBindingPlayer() && (Minecraft.getInstance().cameraEntity != bindingPlayer || bindingPlayer != Minecraft.getInstance().player);
+        return hasBindingPlayer() && (Minecraft.getInstance().getCameraEntity() != bindingPlayer || bindingPlayer != Minecraft.getInstance().player);
     }
 
     @Override

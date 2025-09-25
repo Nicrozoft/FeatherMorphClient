@@ -131,7 +131,7 @@ public class HudRenderHelper extends MorphClientObject
         // 然后再位移到屏幕里面
         matrices.translate(barHeightRecorder.get() + 2, windowHeight - height - 2, matrices);
 
-        context.renderOutline(0, 0, width, height, renderColor.darker(1.3).getColor());
+        context.submitOutline(0, 0, width, height, renderColor.darker(1.3).getColor());
 
         // 填充背景
         context.fill(padding, padding, width - padding, height - padding, renderColor.getColor());

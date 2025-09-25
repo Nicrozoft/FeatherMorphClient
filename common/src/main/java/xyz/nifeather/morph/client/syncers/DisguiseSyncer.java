@@ -5,11 +5,14 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.ClientAvatarEntity;
+import net.minecraft.client.entity.ClientAvatarState;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.GuardianRenderer;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.GuardianRenderState;
 import net.minecraft.nbt.CompoundTag;
@@ -35,10 +38,7 @@ import xyz.nifeather.morph.client.DisguiseInstanceTracker;
 import xyz.nifeather.morph.client.EntityCache;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.MorphClientObject;
-import xyz.nifeather.morph.client.entities.IDisguiseRenderState;
-import xyz.nifeather.morph.client.entities.IHasOverrideGlowing;
-import xyz.nifeather.morph.client.entities.IMorphClientEntity;
-import xyz.nifeather.morph.client.entities.MorphLocalPlayer;
+import xyz.nifeather.morph.client.entities.*;
 import xyz.nifeather.morph.client.mixin.accessors.AbstractHorseEntityMixin;
 import xyz.nifeather.morph.client.mixin.accessors.EntityAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.GuardianRendererAccessor;
@@ -414,7 +414,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
         }
     }
 
-    private static class PositionRecorder
+    public static class PositionRecorder
     {
         private double xOld, yOld, zOld, renderXOld, renderYOld, renderZOld;
 
@@ -472,6 +472,16 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
         if (renderState instanceof GuardianRenderState guardianRenderState)
             guardianRenderState.eyePosition = new Vec3(bindingPlayer.xo, bindingPlayer.yo, bindingPlayer.zo);
+
+        if (renderState instanceof AvatarRenderState avatarRenderState)
+        {
+            float tickDelta = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
+            var playerState = (AvatarRenderState) Minecraft.getInstance().getEntityRenderDispatcher().extractEntity(bindingPlayer, tickDelta);
+
+            avatarRenderState.capeFlap = playerState.capeFlap;
+            avatarRenderState.capeLean = playerState.capeLean;
+            avatarRenderState.capeLean2 = playerState.capeLean2;
+        }
     }
 
     public void updateSkin(GameProfile profile)
@@ -731,7 +741,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
             if (entity instanceof IMorphClientEntity asMorphClientEntity)
                 asMorphClientEntity.featherMorph$overridePose(null);
 
-            entity.startRiding(bindingPlayer, true);
+            entity.startRiding(bindingPlayer);
         }
         else if (!bindingPlayer.isPassenger() && entity.isPassenger())
         {

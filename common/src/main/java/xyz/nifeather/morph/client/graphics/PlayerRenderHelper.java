@@ -14,10 +14,11 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
@@ -31,7 +32,6 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import xiamomc.pluginbase.Annotations.Initializer;
-import xiamomc.pluginbase.Annotations.Resolved;
 import xiamomc.pluginbase.Exceptions.NullDependencyException;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
@@ -126,7 +126,7 @@ public class PlayerRenderHelper extends MorphClientObject
      * @param vertexConsumerProvider {@link MultiBufferSource}
      * @param light 光照等级
      */
-    public void renderCrystalBeam(DeltaTracker tickCounter, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int light)
+    public void submitCrystalBeamIfPossible(DeltaTracker tickCounter, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, SubmitNodeCollector submitNodeCollector, int light)
     {
         DisguiseSyncer abstractSyncer = instanceTracker.getSyncerFor(Minecraft.getInstance().player);
 
@@ -168,10 +168,10 @@ public class PlayerRenderHelper extends MorphClientObject
         matrixStack.translate(lerpPlayerX - cameraX, lerpPlayerY - cameraY - yOffset, lerpPlayerZ - cameraZ);
 
         //渲染光柱
-        EnderDragonRenderer.renderCrystalBeams(relativeX,
+        EnderDragonRenderer.submitCrystalBeams(relativeX,
                 relativeY + getCrystalYOffsetCopy(connectedCrystal, tickDelta),
                 relativeZ,
-                player.tickCount + tickDelta, matrixStack, vertexConsumerProvider, light);
+                player.tickCount + tickDelta, matrixStack, submitNodeCollector, light);
 
         matrixStack.popPose();
     }
@@ -298,7 +298,7 @@ public class PlayerRenderHelper extends MorphClientObject
      * @return Whether rendered disguise instance
      */
     @SuppressWarnings("rawtypes")
-    public boolean onArmDrawCall(PoseStack matrices, MultiBufferSource vertexConsumers, int light)
+    public boolean onArmDrawCall(PoseStack matrices, SubmitNodeCollector submitNodeCollector, int light)
     {
         //logger.info("On Arms!");
         if (!allowRender) return false;
@@ -331,12 +331,14 @@ public class PlayerRenderHelper extends MorphClientObject
 
                 if (disguiseEntity instanceof MorphLocalPlayer localPlayer)
                 {
-                    var renderer = (PlayerRenderer) livingEntityRenderer;
+                    var renderer = (AvatarRenderer) livingEntityRenderer;
+
+                    ResourceLocation id = localPlayer.getSkin().body().texturePath();
 
                     if (renderingLeftPart)
-                        renderer.renderLeftHand(matrices, vertexConsumers, light, localPlayer.getSkin().texture(), true);
+                        renderer.renderLeftHand(matrices, submitNodeCollector, light, id, true);
                     else
-                        renderer.renderRightHand(matrices, vertexConsumers, light, localPlayer.getSkin().texture(), true);
+                        renderer.renderRightHand(matrices, submitNodeCollector, light, id, true);
 
                     return true;
                 }
@@ -370,7 +372,10 @@ public class PlayerRenderHelper extends MorphClientObject
                         : light;
 
                 targetArm.xRot = 0;
-                targetArm.render(matrices, vertexConsumers.getBuffer(layer), light, OverlayTexture.NO_OVERLAY);
+
+                var id = Minecraft.getInstance().player.getSkin().body().id();
+                submitNodeCollector.submitModelPart(targetArm, matrices, RenderType.entityTranslucent(id), //todo: remove this workaround
+                        light, OverlayTexture.NO_OVERLAY, null);
 
                 return true;
             }

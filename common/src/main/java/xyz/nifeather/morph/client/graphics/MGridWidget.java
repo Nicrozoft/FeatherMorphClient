@@ -91,42 +91,6 @@ public class MGridWidget extends GridLayout implements IMDrawable
         IMDrawable.super.mouseMoved(mouseX, mouseY);
     }
 
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button)
-    {
-        return IMDrawable.super.mouseClicked(mouseX, mouseY, button);
-    }
-
-    @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        return IMDrawable.super.mouseReleased(mouseX, mouseY, button);
-    }
-
-    @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        return IMDrawable.super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
-    }
-
-    @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        return IMDrawable.super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
-    }
-
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        return IMDrawable.super.keyPressed(keyCode, scanCode, modifiers);
-    }
-
-    @Override
-    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        return IMDrawable.super.keyReleased(keyCode, scanCode, modifiers);
-    }
-
-    @Override
-    public boolean charTyped(char chr, int modifiers) {
-        return IMDrawable.super.charTyped(chr, modifiers);
-    }
-
     @Nullable
     @Override
     public ComponentPath nextFocusPath(FocusNavigationEvent navigation) {

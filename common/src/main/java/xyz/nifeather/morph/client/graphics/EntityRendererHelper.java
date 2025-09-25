@@ -5,17 +5,27 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.phys.Vec3;
+import org.apache.logging.log4j.core.pattern.TextRenderer;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.entities.IDisguiseRenderState;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.graphics.color.ColorUtils;
+import xyz.nifeather.morph.client.graphics.color.Colors;
 import xyz.nifeather.morph.client.graphics.color.MaterialColors;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Map;
 
@@ -93,74 +103,61 @@ public class EntityRendererHelper
         renderState.morphclient$setClientPlayer(renderingEntity == Minecraft.getInstance().player);
     }
 
-    public final void renderRevealNameIfPossible(EntityRenderDispatcher dispatcher,
-                                                 EntityRenderState state, Font textRenderer,
-                                                 PoseStack matrices, MultiBufferSource vertexConsumers)
+    public final void submitRevealNames(PoseStack ignored, SubmitNodeCollector collector, CameraRenderState cameraRenderState)
     {
         if (!doRenderRealName) return;
 
-        if (!(state instanceof IDisguiseRenderState asDisguiseRenderState))
+        // apply rotation
+        var camera = Minecraft.getInstance().getEntityRenderDispatcher().camera;
+        if (camera == null)
             return;
 
-        // 服务器发送来的揭示数据是 玩家ID <-> 玩家名 的格式
-        // 因此当客户端玩家有伪装时，渲染其本体也会显示揭示标签
-        // 但我们不想这样，所以跳过此实体的渲染
-        if (asDisguiseRenderState.morphclient$isClientPlayer())
-            return;
+        float tickDelta = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
 
-        if (asDisguiseRenderState.morphclient$getRevealName() == null)
-            return;
-
-        renderLabelOnTop(matrices, vertexConsumers, textRenderer, state, dispatcher,
-                asDisguiseRenderState.morphclient$getRevealName(), asDisguiseRenderState.morphclient$masterPosition());
-    }
-
-    public void renderLabelOnTop(PoseStack matrices, MultiBufferSource vertexConsumers,
-                                 Font textRenderer,
-                                 EntityRenderState renderState, EntityRenderDispatcher dispatcher,
-                                 String textToRender,
-                                 @Nullable Vec3 anchorPosition)
-    {
-        matrices.pushPose();
-
-        Vec3 labelRelativePosition = renderState.nameTagAttachment;
-
-        if (labelRelativePosition == null)
-            labelRelativePosition = new Vec3(0, 0.25, 0);
-
-        labelRelativePosition.add(renderState.boundingBoxHeight);
-
-        matrices.translate(labelRelativePosition.x, labelRelativePosition.y + 0.5f, labelRelativePosition.z);
-
-        matrices.mulPose(dispatcher.cameraOrientation());
-        matrices.scale(0.025F, -0.025F, 0.025F);
-
-        if (FeatherMorphClientBootstrap.getInstance().getModConfigData().scaleNameTag && anchorPosition != null)
+        var poseStack = new PoseStack();
+        for (DisguiseSyncer syncer : DisguiseInstanceTracker.getInstance().getAllSyncer())
         {
-            var labelWorldPosition = anchorPosition.add(labelRelativePosition);
-            var distance = dispatcher.camera.getPosition().distanceTo(labelWorldPosition);
-            var scale = Math.max(1, (float)distance / 7.5f);
-            matrices.scale(scale, scale, scale);
+            var disguiseInstance = syncer.getDisguiseInstance();
+            if (disguiseInstance == null) continue;
+
+            poseStack.pushPose();
+
+            // Set position, then create disguise's render state
+            Vec3 originalPos = disguiseInstance.position();
+            disguiseInstance.setPos(syncer.getBindingPlayer().position());
+            var renderState = Minecraft.getInstance().getEntityRenderDispatcher().extractEntity(disguiseInstance, 0f);
+            disguiseInstance.setPos(originalPos);
+
+            if (!(renderState instanceof IDisguiseRenderState disguiseRenderState)) continue;
+
+            var revealName = disguiseRenderState.morphclient$getRevealName();
+            if (revealName == null) revealName = "<client unknown>(%s)".formatted(syncer.getBindingPlayer().getPlainTextName());
+
+            var bindingPlayer = syncer.getBindingPlayer();
+            var anchorPosition = Mth.lerp(tickDelta, bindingPlayer.oldPosition(), bindingPlayer.position());
+
+            // apply position relative to the camera
+            // Nametag offset
+            var labelOffset = renderState.nameTagAttachment != null
+                              ? renderState.nameTagAttachment
+                              : new Vec3(0, renderState.boundingBoxHeight, 0);
+
+            if (renderState.nameTag != null)
+                labelOffset = labelOffset.add(0, 0.3, 0);
+
+            var positionDiff = anchorPosition.subtract(camera.position()).add(labelOffset);
+            poseStack.translate(positionDiff);
+
+            // If tag should scale on distance
+            if (FeatherMorphClientBootstrap.getInstance().getModConfigData().scaleNameTag)
+            {
+                var distance = camera.position().distanceTo(anchorPosition);
+                var scale = Math.max(1, (float)distance / 7.5f);
+                poseStack.scale(scale, scale, scale);
+            }
+
+            collector.submitNameTag(poseStack, Vec3.ZERO, 0, Component.literal(revealName).withColor(textColor), false, LightTexture.FULL_BRIGHT, 0, cameraRenderState);
+            poseStack.popPose();
         }
-
-        float clientBackgroundOpacity = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
-        int finalColor = (int)(clientBackgroundOpacity * 255.0f) << 24;
-
-        var positionMatrix = matrices.last().pose();
-        var x = textRenderer.width(textToRender) / -2f;
-
-        //背景+文字
-        textRenderer.drawInBatch(textToRender, x, 0,
-                textColorTransparent, false,
-                positionMatrix, vertexConsumers,
-                Font.DisplayMode.SEE_THROUGH, finalColor, LightTexture.FULL_BRIGHT);
-
-        //文字
-        textRenderer.drawInBatch(textToRender, x, 0,
-                textColor, false,
-                positionMatrix, vertexConsumers,
-                Font.DisplayMode.NORMAL, 0, LightTexture.FULL_BRIGHT);
-
-        matrices.popPose();
     }
 }

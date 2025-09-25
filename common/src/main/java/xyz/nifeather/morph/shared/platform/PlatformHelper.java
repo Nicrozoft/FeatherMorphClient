@@ -14,6 +14,7 @@ import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -90,8 +91,9 @@ public interface PlatformHelper
          * @param world        the world
          * @param entity       the entity
          * @param killedEntity the entity which was killed by the {@code entity}
+         * @param damageSource The {@link DamageSource}
          */
-        void afterKilledOtherEntity(ServerLevel world, Entity entity, LivingEntity killedEntity);
+        void afterKilledOtherEntity(ServerLevel world, Entity entity, LivingEntity killedEntity, DamageSource damageSource);
     }
 
     @FunctionalInterface

@@ -43,7 +43,7 @@ public class WolfPropertyHandler extends EntityPropertyHandler<Wolf>
             case PropertyNames.WOLF_VARIANT -> ((WolfAccessor)entity).callSetVariant((Holder<WolfVariant>) value);
             case PropertyNames.WOLF_OWNER ->
             {
-                entity.setOwnerReference(new EntityReference<>((UUID) value));
+                entity.setOwnerReference(EntityReference.of((UUID) value));
                 writeTamed(entity);
             }
 

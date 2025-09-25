@@ -1,11 +1,11 @@
 package xyz.nifeather.morph.client.graphics.container;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.client.input.MouseButtonEvent;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.graphics.IMDrawable;
 import xyz.nifeather.morph.client.graphics.MDrawable;
-import xyz.nifeather.morph.client.graphics.color.MaterialColors;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -114,8 +114,11 @@ public class BasicContainer<T extends IMDrawable> extends MDrawable implements C
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button)
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl)
     {
+        var mouseX = mouseButtonEvent.x();
+        var mouseY = mouseButtonEvent.y();
+
         var filter = this.children.stream().filter(child ->
         {
             return mouseX > child.getScreenSpaceX() && mouseX < child.getScreenSpaceX() + child.getRenderWidth()
@@ -126,7 +129,7 @@ public class BasicContainer<T extends IMDrawable> extends MDrawable implements C
 
         for (T t : filter)
         {
-            if (t.mouseClicked(mouseX, mouseY, button))
+            if (t.mouseClicked(mouseButtonEvent, bl))
             {
                 handled = true;
                 break;

@@ -14,14 +14,13 @@ import xyz.nifeather.morph.client.utilties.Screens;
 
 import java.io.File;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftClientMixin
 {
-    @Shadow @Final private YggdrasilAuthenticationService authenticationService;
+    //@Shadow @Final private YggdrasilAuthenticationService authenticationService;
 
     @Shadow @Final public File gameDirectory;
 
@@ -33,11 +32,12 @@ public abstract class MinecraftClientMixin
         Transformer.onClientRenderEnd(Minecraft.getInstance());
     }
 
+    /*
     @Inject(method = "setLevel", at = @At("HEAD"))
     private void featherMorph$onJoinServer(ClientLevel world, ReceivingLevelScreen.Reason worldEntryReason, CallbackInfo ci)
     {
         MinecraftClientMixinUtils.setApiService(this.authenticationService, this.gameDirectory);
-    }
+    }*/
 
     @Inject(method = "setScreen", at = @At("HEAD"))
     private void featherMorph$onSetScreen(Screen screenNext, CallbackInfo ci)

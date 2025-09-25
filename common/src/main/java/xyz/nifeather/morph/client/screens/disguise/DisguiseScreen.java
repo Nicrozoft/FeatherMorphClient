@@ -9,6 +9,7 @@ import net.minecraft.client.gui.navigation.ScreenAxis;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -472,17 +473,17 @@ public class DisguiseScreen extends FeatherScreen
     }
 
     @Override
-    public boolean mouseClicked(double p_94695_, double p_94696_, int p_94697_)
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl)
     {
         disguiseList.setMouseDown(true);
-        return super.mouseClicked(p_94695_, p_94696_, p_94697_);
+        return super.mouseClicked(mouseButtonEvent, bl);
     }
 
     @Override
-    public boolean mouseReleased(double p_94722_, double p_94723_, int p_94724_)
+    public boolean mouseReleased(MouseButtonEvent mouseButtonEvent)
     {
         disguiseList.setMouseDown(false);
-        return super.mouseReleased(p_94722_, p_94723_, p_94724_);
+        return super.mouseReleased(mouseButtonEvent);
     }
 
     @Override

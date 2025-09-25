@@ -44,7 +44,7 @@ public class CatPropertyHandler extends EntityPropertyHandler<Cat>
             case PropertyNames.CAT_VARIANT -> accessor.callSetVariant((Holder<CatVariant>) value);
             case PropertyNames.CAT_OWNER ->
             {
-                entity.setOwnerReference(new EntityReference<>((UUID) value));
+                entity.setOwnerReference(EntityReference.of((UUID) value));
                 writeTamed(entity);
             }
 

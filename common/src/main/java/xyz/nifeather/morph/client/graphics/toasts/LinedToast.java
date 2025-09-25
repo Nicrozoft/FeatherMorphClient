@@ -242,11 +242,11 @@ public class LinedToast extends MorphClientObject implements Toast
                 lineWidth, this.height() - yPadding - 1,
                 lineColor.getColor());
 
-        context.renderOutline(xRightPadding + 1, yPadding + 1,
+        context.submitOutline(xRightPadding + 1, yPadding + 1,
                 this.width() - xLeftPadding - 2, this.height() - yPadding - 2,
                 lineColor.getColor());
 
-        context.renderOutline(xRightPadding, yPadding,
+        context.submitOutline(xRightPadding, yPadding,
                 this.width() - xLeftPadding, this.height() - yPadding,
                 borderColor.getColor());
 

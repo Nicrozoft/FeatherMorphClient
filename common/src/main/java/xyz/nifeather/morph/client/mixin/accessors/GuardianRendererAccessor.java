@@ -10,6 +10,4 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(GuardianRenderer.class)
 public interface GuardianRendererAccessor
 {
-    @Invoker
-    public void callRenderBeam(PoseStack poseStack, VertexConsumer vertexConsumer, Vec3 vec3, float f, float g, float h);
 }

@@ -1,8 +1,9 @@
 plugins {
     id 'multiloader-common'
-    id 'net.neoforged.moddev'
+    id 'fabric-loom'
+    //id 'net.neoforged.moddev'
 }
-
+/*
 neoForge {
     neoFormVersion = neo_form_version
     // Automatically enable AccessTransformers if the file exists
@@ -14,11 +15,17 @@ neoForge {
     //    minecraftVersion = parchment_minecraft
     //    mappingsVersion = parchment_version
     //}
-}
+}*/
 
 def protocolVersion = protocols_use_local_build == "true" ? protocols_local_version : protocols_version
 
 dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.layered {
+        officialMojangMappings()
+        //parchment("org.parchmentmc.data:parchment-${parchment_minecraft}:${parchment_version}@zip")
+    }
+
     compileOnly("org.spongepowered:mixin:0.8.7")
     compileOnly("org.ow2.asm:asm-tree:9.6")
     // fabric and neoforge both bundle mixinextras, so it is safe to use it in common
