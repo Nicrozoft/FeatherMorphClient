@@ -1,8 +1,14 @@
 package xyz.nifeather.morph.client.properties;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
@@ -63,6 +69,26 @@ public class CommonInputHandles
         }
 
         return Optional.empty();
+    }
+
+    private static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+
+    public static Optional<Component> component(String input)
+    {
+        try
+        {
+            // https://docs.fabricmc.net/develop/text-and-translations#deserializing-text
+            var json = gson.fromJson(input, JsonElement.class);
+            var component = ComponentSerialization.CODEC.decode(JsonOps.INSTANCE, json)
+                    .getOrThrow()
+                    .getFirst();
+
+            return Optional.ofNullable(component);
+        }
+        catch (Throwable ignored)
+        {
+            return Optional.of(Component.literal("<Component deserialization failed>"));
+        }
     }
 
     public static Optional<String> string(String input)

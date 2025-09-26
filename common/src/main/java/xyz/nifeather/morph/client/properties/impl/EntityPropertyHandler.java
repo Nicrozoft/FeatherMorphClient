@@ -17,7 +17,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 public abstract class EntityPropertyHandler<E extends Entity> extends AbstractPropertyHandler<E>
 {
     // Custom name is unsupported, since we use Adventure components on the plugin side...
-    public final ClientProperty<String> CUSTOM_NAME = ClientProperty.of(PropertyNames.ENTITY_CUSTOM_NAME, CommonInputHandles::string);
+    public final ClientProperty<Component> CUSTOM_NAME = ClientProperty.of(PropertyNames.ENTITY_CUSTOM_NAME, CommonInputHandles::component);
     public final ClientProperty<Boolean> CUSTOM_NAME_VISIBLE = ClientProperty.of(PropertyNames.ENTITY_CUSTOM_NAME_VISIBLE, CommonInputHandles.BOOLEAN);
 
     public EntityPropertyHandler()
@@ -31,26 +31,8 @@ public abstract class EntityPropertyHandler<E extends Entity> extends AbstractPr
     protected <X> void applyToEntity(E entity, ClientProperty<X> property, X value)
     {
         if (property.equals(CUSTOM_NAME))
-        {
-            try
-            {
-                // https://docs.fabricmc.net/develop/text-and-translations#deserializing-text
-                var json = gson.fromJson(value.toString(), JsonElement.class);
-                var component = ComponentSerialization.CODEC.decode(JsonOps.INSTANCE, json)
-                        .getOrThrow()
-                        .getFirst();
-
-                entity.setCustomName(component);
-            }
-            catch (Throwable t)
-            {
-                FeatherMorphClientBootstrap.LOGGER.error("Failed to deserialize component", t);
-                entity.setCustomName(Component.literal("<Component serialization failed>"));
-            }
-        }
+            entity.setCustomName((Component) value);
         else if (property.equals(CUSTOM_NAME_VISIBLE))
-        {
             entity.setCustomNameVisible((Boolean) value);
-        }
     }
 }

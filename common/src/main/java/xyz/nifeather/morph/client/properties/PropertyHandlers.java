@@ -76,6 +76,8 @@ public class PropertyHandlers
         register(EntityType.ZOMBIE_VILLAGER, new ZombieVillagerPropertyhandler());
 
         register(EntityType.GUARDIAN, new GuardianPropertyHandler());
+
+        register(EntityType.MANNEQUIN, new MannequinPropertyHandler());
     }
 
     public FallbackPropertyHandler fallbackHandler()
