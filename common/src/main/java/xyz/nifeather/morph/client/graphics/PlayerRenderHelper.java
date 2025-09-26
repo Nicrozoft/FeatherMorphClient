@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.ClientAvatarEntity;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.LayerDefinitions;
@@ -37,7 +38,6 @@ import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
 import xyz.nifeather.morph.client.MorphClientObject;
 import xyz.nifeather.morph.client.Vec3dUtils;
-import xyz.nifeather.morph.client.entities.MorphLocalPlayer;
 import xyz.nifeather.morph.client.mixin.accessors.DragonEntityRendererAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LivingRendererAccessor;
 import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
@@ -316,24 +316,23 @@ public class PlayerRenderHelper extends MorphClientObject
 
             ModelPart targetArm;
             ModelInfo modelInfo;
-            RenderType layer = null;
+            RenderType renderType = null;
             EntityModel model = null;
 
             if (disguiseRenderer instanceof EnderDragonRenderer enderDragonEntityRenderer)
             {
                 model = ((DragonEntityRendererAccessor) enderDragonEntityRenderer).getModel();
-                layer = dragonLayer;
+                renderType = dragonLayer;
             }
-
-            if (disguiseRenderer instanceof LivingEntityRenderer livingEntityRenderer)
+            else if (disguiseRenderer instanceof LivingEntityRenderer livingEntityRenderer)
             {
                 model = livingEntityRenderer.getModel();
 
-                if (disguiseEntity instanceof MorphLocalPlayer localPlayer)
+                if (disguiseEntity instanceof ClientAvatarEntity avatar)
                 {
                     var renderer = (AvatarRenderer) livingEntityRenderer;
 
-                    ResourceLocation id = localPlayer.getSkin().body().texturePath();
+                    ResourceLocation id = avatar.getSkin().body().texturePath();
 
                     if (renderingLeftPart)
                         renderer.renderLeftHand(matrices, submitNodeCollector, light, id, true);
@@ -343,9 +342,8 @@ public class PlayerRenderHelper extends MorphClientObject
                     return true;
                 }
 
-                var renderState = (LivingEntityRenderState) livingEntityRenderer.createRenderState();
-                livingEntityRenderer.extractRenderState(disguiseEntity, renderState, 0);
-                layer = ((LivingRendererAccessor) livingEntityRenderer).callGetRenderType(renderState, true, false, true);
+                var renderState = (LivingEntityRenderState) livingEntityRenderer.createRenderState(disguiseEntity, 0);
+                renderType = ((LivingRendererAccessor) livingEntityRenderer).callGetRenderType(renderState, true, false, true);
             }
 
             if (model != null)
@@ -356,10 +354,9 @@ public class PlayerRenderHelper extends MorphClientObject
 
             if (targetArm != null)
             {
-                layer = layer == null ? RenderType.solid() : layer;
+                renderType = renderType == null ? RenderType.solid() : renderType;
 
                 targetArm.visible = true;
-                //targetArm.resetTransform();
 
                 var scale = modelInfo.scale;
                 matrices.scale((float)scale.x(), (float)scale.y(), (float)scale.z());
@@ -373,8 +370,7 @@ public class PlayerRenderHelper extends MorphClientObject
 
                 targetArm.xRot = 0;
 
-                var id = Minecraft.getInstance().player.getSkin().body().id();
-                submitNodeCollector.submitModelPart(targetArm, matrices, RenderType.entityTranslucent(id), //todo: remove this workaround
+                submitNodeCollector.submitModelPart(targetArm, matrices, renderType,
                         light, OverlayTexture.NO_OVERLAY, null);
 
                 return true;
