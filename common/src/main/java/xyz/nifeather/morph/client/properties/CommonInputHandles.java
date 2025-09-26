@@ -3,6 +3,7 @@ package xyz.nifeather.morph.client.properties;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
@@ -12,7 +13,10 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.component.ResolvableProfile;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
+import xyz.nifeather.morph.client.utilties.NbtHelperCopy;
+import xyz.nifeather.morph.client.utilties.NbtUtils;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -112,5 +116,43 @@ public class CommonInputHandles
         }
 
         return Optional.empty();
+    }
+
+    public static Optional<ResolvableProfile> resolvableProfile(String input)
+    {
+        var record = gson.fromJson(input, MorphResolvableProfileRecord.class);
+        return record.isDynamic()
+               ? resolvableProfileDynamic(record)
+               : resolvableProfileStatic(record);
+    }
+
+    public static Optional<ResolvableProfile> resolvableProfileDynamic(MorphResolvableProfileRecord record)
+    {
+        if (record.uuid() != null)
+            return Optional.of(ResolvableProfile.createUnresolved(record.uuid()));
+        else if (record.name() != null)
+            return Optional.of(ResolvableProfile.createUnresolved(record.name()));
+
+        FeatherMorphClientBootstrap.LOGGER.error("Unable to create dynamic ResolvableProfile: Either UUID and name is NULL");
+
+        return Optional.empty();
+    }
+
+    public static Optional<ResolvableProfile> resolvableProfileStatic(MorphResolvableProfileRecord record)
+    {
+        var profile = gameProfile(record.data());
+        if (profile.isEmpty())
+        {
+            FeatherMorphClientBootstrap.LOGGER.error("Unable to create static ResolvableProfile, not a valid profile string");
+            return Optional.empty();
+        }
+
+        return Optional.of(ResolvableProfile.createResolved(profile.get()));
+    }
+
+    public static Optional<GameProfile> gameProfile(String input)
+    {
+        var compound = NbtUtils.parseSNbt(input);
+        return Optional.ofNullable(compound == null ? null : NbtHelperCopy.toGameProfile(compound));
     }
 }

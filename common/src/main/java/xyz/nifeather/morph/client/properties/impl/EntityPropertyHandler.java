@@ -16,7 +16,6 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 public abstract class EntityPropertyHandler<E extends Entity> extends AbstractPropertyHandler<E>
 {
-    // Custom name is unsupported, since we use Adventure components on the plugin side...
     public final ClientProperty<Component> CUSTOM_NAME = ClientProperty.of(PropertyNames.ENTITY_CUSTOM_NAME, CommonInputHandles::component);
     public final ClientProperty<Boolean> CUSTOM_NAME_VISIBLE = ClientProperty.of(PropertyNames.ENTITY_CUSTOM_NAME_VISIBLE, CommonInputHandles.BOOLEAN);
 
