@@ -2,28 +2,21 @@ package xyz.nifeather.morph.client.graphics;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.phys.Vec3;
-import org.apache.logging.log4j.core.pattern.TextRenderer;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Quaternionf;
-import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.entities.IDisguiseRenderState;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.graphics.color.ColorUtils;
-import xyz.nifeather.morph.client.graphics.color.Colors;
 import xyz.nifeather.morph.client.graphics.color.MaterialColors;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
@@ -103,9 +96,17 @@ public class EntityRendererHelper
         renderState.morphclient$setClientPlayer(renderingEntity == Minecraft.getInstance().player);
     }
 
-    public final void submitRevealNames(PoseStack ignored, SubmitNodeCollector collector, CameraRenderState cameraRenderState)
+    private final PoseStack renderPoseStack = new PoseStack();
+
+    public final void submitRevealName(PoseStack ignored, EntityRenderState renderState,
+                                       SubmitNodeCollector collector, CameraRenderState cameraRenderState,
+                                       ProfilerFiller profilerFiller)
     {
         if (!doRenderRealName) return;
+        if (!(renderState instanceof IDisguiseRenderState disguiseRenderState)) return;
+
+        var syncer = disguiseRenderState.morphclient$getDisguiseSyncer();
+        if (syncer == null) return;
 
         // apply rotation
         var camera = Minecraft.getInstance().getEntityRenderDispatcher().camera;
@@ -114,50 +115,38 @@ public class EntityRendererHelper
 
         float tickDelta = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
 
-        var poseStack = new PoseStack();
-        for (DisguiseSyncer syncer : DisguiseInstanceTracker.getInstance().getAllSyncer())
+        if (!renderPoseStack.isEmpty())
+            throw new RuntimeException("Non-empty PoseStack for submitRevealName");
+
+        renderPoseStack.pushPose();
+
+        var revealName = disguiseRenderState.morphclient$getRevealName();
+        if (revealName == null) revealName = "<client unknown>(%s)".formatted(syncer.getBindingPlayer().getPlainTextName());
+
+        var bindingPlayer = syncer.getBindingPlayer();
+        var anchorPosition = Mth.lerp(tickDelta, bindingPlayer.oldPosition(), bindingPlayer.position());
+
+        // apply position relative to the camera
+        // Nametag offset
+        var labelOffset = renderState.nameTagAttachment != null
+                          ? renderState.nameTagAttachment
+                          : new Vec3(0, renderState.boundingBoxHeight, 0);
+
+        if (renderState.nameTag != null)
+            labelOffset = labelOffset.add(0, 0.3, 0);
+
+        var positionDiff = anchorPosition.subtract(camera.position()).add(labelOffset);
+        renderPoseStack.translate(positionDiff);
+
+        // If tag should scale on distance
+        if (FeatherMorphClientBootstrap.getInstance().getModConfigData().scaleNameTag)
         {
-            var disguiseInstance = syncer.getDisguiseInstance();
-            if (disguiseInstance == null) continue;
-
-            poseStack.pushPose();
-
-            // Set position, then create disguise's render state
-            Vec3 originalPos = disguiseInstance.position();
-            disguiseInstance.setPos(syncer.getBindingPlayer().position());
-            var renderState = Minecraft.getInstance().getEntityRenderDispatcher().extractEntity(disguiseInstance, 0f);
-            disguiseInstance.setPos(originalPos);
-
-            if (!(renderState instanceof IDisguiseRenderState disguiseRenderState)) continue;
-
-            var revealName = disguiseRenderState.morphclient$getRevealName();
-            if (revealName == null) revealName = "<client unknown>(%s)".formatted(syncer.getBindingPlayer().getPlainTextName());
-
-            var bindingPlayer = syncer.getBindingPlayer();
-            var anchorPosition = Mth.lerp(tickDelta, bindingPlayer.oldPosition(), bindingPlayer.position());
-
-            // apply position relative to the camera
-            // Nametag offset
-            var labelOffset = renderState.nameTagAttachment != null
-                              ? renderState.nameTagAttachment
-                              : new Vec3(0, renderState.boundingBoxHeight, 0);
-
-            if (renderState.nameTag != null)
-                labelOffset = labelOffset.add(0, 0.3, 0);
-
-            var positionDiff = anchorPosition.subtract(camera.position()).add(labelOffset);
-            poseStack.translate(positionDiff);
-
-            // If tag should scale on distance
-            if (FeatherMorphClientBootstrap.getInstance().getModConfigData().scaleNameTag)
-            {
-                var distance = camera.position().distanceTo(anchorPosition);
-                var scale = Math.max(1, (float)distance / 7.5f);
-                poseStack.scale(scale, scale, scale);
-            }
-
-            collector.submitNameTag(poseStack, Vec3.ZERO, 0, Component.literal(revealName).withColor(textColor), false, LightTexture.FULL_BRIGHT, 0, cameraRenderState);
-            poseStack.popPose();
+            var distance = camera.position().distanceTo(anchorPosition);
+            var scale = Math.max(1, (float)distance / 7.5f);
+            renderPoseStack.scale(scale, scale, scale);
         }
+
+        collector.submitNameTag(renderPoseStack, Vec3.ZERO, 0, Component.literal(revealName).withColor(textColor), false, LightTexture.FULL_BRIGHT, 0, cameraRenderState);
+        renderPoseStack.popPose();
     }
 }

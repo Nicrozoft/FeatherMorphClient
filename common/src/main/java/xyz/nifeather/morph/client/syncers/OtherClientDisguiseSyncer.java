@@ -57,12 +57,6 @@ public class OtherClientDisguiseSyncer extends DisguiseSyncer
     }
 
     @Override
-    public void postEntityRender()
-    {
-        super.postEntityRender();
-    }
-
-    @Override
     protected void initialSync()
     {
         syncPosition();

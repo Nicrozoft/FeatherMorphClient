@@ -2,29 +2,19 @@ package xyz.nifeather.morph.client.syncers;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.ClientAvatarEntity;
-import net.minecraft.client.entity.ClientAvatarState;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.GuardianRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.GuardianRenderState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.entity.monster.Guardian;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.TagValueInput;
@@ -41,7 +31,6 @@ import xyz.nifeather.morph.client.MorphClientObject;
 import xyz.nifeather.morph.client.entities.*;
 import xyz.nifeather.morph.client.mixin.accessors.AbstractHorseEntityMixin;
 import xyz.nifeather.morph.client.mixin.accessors.EntityAccessor;
-import xyz.nifeather.morph.client.mixin.accessors.GuardianRendererAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LimbAnimatorAccessor;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 import xyz.nifeather.morph.client.utilties.ClientItemUtils;
@@ -371,98 +360,21 @@ public abstract class DisguiseSyncer extends MorphClientObject
         }
     }
 
-    public void postEntityRender()
+    public void preRenderStateSetup()
     {
-        if (disguiseInstance == null)
-            return;
+        if (!allowTick || disguiseInstance == null) return;
 
-        var playerPos = bindingPlayer.position();
+        disguiseInstance.snapTo(bindingPlayer.position(), bindingPlayer.getYRot(), bindingPlayer.getXRot());
+        disguiseInstance.setOldPosAndRot(bindingPlayer.oldPosition(), bindingPlayer.yRotO, bindingPlayer.xRotO);
 
-        disguiseInstance.setPosRaw(playerPos.x, playerPos.y - 4096, playerPos.z);
-        posRecorder.applyToPlayer(disguiseInstance);
     }
 
-    public void onRenderSetup()
+    public void modifyRenderState(EntityRenderState renderState)
     {
         if (!allowTick) return;
 
-        try
-        {
-            preEntityRenderSetup();
-        }
-        catch (Exception e)
-        {
-            onSyncError(e);
-        }
-    }
-
-    private void preEntityRenderSetup()
-    {
-    }
-
-    public void onEarlyEntityRender(EntityRenderState renderState)
-    {
-        if (!allowTick) return;
-
-        try
-        {
-            preEntityRender(renderState);
-        }
-        catch (Exception e)
-        {
-            onSyncError(e);
-        }
-    }
-
-    public static class PositionRecorder
-    {
-        private double xOld, yOld, zOld, renderXOld, renderYOld, renderZOld;
-
-        public void readFromPlayer(LivingEntity player)
-        {
-            this.xOld = player.xo;
-            this.yOld = player.yo;
-            this.zOld = player.zo;
-
-            this.renderXOld = player.xOld;
-            this.renderYOld = player.yOld;
-            this.renderZOld = player.zOld;
-        }
-
-        public void applyToPlayer(LivingEntity player)
-        {
-            player.xo = xOld;
-            player.yo = yOld;
-            player.zo = zOld;
-
-            player.xOld = renderXOld;
-            player.yOld = renderYOld;
-            player.zOld = renderZOld;
-        }
-    }
-
-    private static final PositionRecorder posRecorder = new PositionRecorder();
-
-    public void preEntityRender(EntityRenderState renderState)
-    {
         if (disguiseInstance == null)
             return;
-
-        // workaround: When an entity is far away from the player, EMF will reduce the update rate for it.
-        var playerPos = bindingPlayer.position();
-        disguiseInstance.setPosRaw(playerPos.x, playerPos.y, playerPos.z);
-
-        posRecorder.readFromPlayer(disguiseInstance);
-
-        disguiseInstance.xo = bindingPlayer.xo;
-        disguiseInstance.yo = bindingPlayer.yo;
-        disguiseInstance.zo = bindingPlayer.zo;
-
-        // And this is for 3d skin layer compatibility
-        // See https://github.com/tr7zw/3d-Skin-Layers/blob/bd8637d2fedd0b9d836b3932b5b0e2415337a40c/src/main/java/dev/tr7zw/skinlayers/mixin/CustomHeadLayerMixin.java#L49
-        disguiseInstance.xOld = bindingPlayer.xOld;
-        disguiseInstance.yOld = bindingPlayer.yOld;
-        disguiseInstance.zOld = bindingPlayer.zOld;
 
         if (disguiseInstance.getType() != EntityType.PLAYER && disguiseInstance.hasCustomName())
         {
@@ -482,6 +394,17 @@ public abstract class DisguiseSyncer extends MorphClientObject
             avatarRenderState.capeLean = playerState.capeLean;
             avatarRenderState.capeLean2 = playerState.capeLean2;
         }
+    }
+
+    public void postRenderStateSetup()
+    {
+        if (!allowTick || disguiseInstance == null) return;
+
+        disguiseInstance.snapTo(disguiseInstance.position().add(0, -4096, 0));
+    }
+
+    public void postRenderSubmit()
+    {
     }
 
     public void updateSkin(GameProfile profile)
@@ -509,13 +432,6 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     public void onEntityRenderStateSetup(EntityRenderState renderState, IDisguiseRenderState asDisguiseRenderState)
     {
-        var tickManager = Minecraft.getInstance().getDeltaTracker();
-        var tickProgress = tickManager.getGameTimeDeltaPartialTick(true);
-
-        // workaround for 3d skin layer
-        renderState.x = Mth.lerp(tickProgress, bindingPlayer.xOld, bindingPlayer.getX());
-        renderState.y = Mth.lerp(tickProgress, bindingPlayer.yOld, bindingPlayer.getY());
-        renderState.z = Mth.lerp(tickProgress, bindingPlayer.zOld, bindingPlayer.getZ());
     }
 
     protected abstract void initialSync();

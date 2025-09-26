@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.state.LevelRenderState;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import org.joml.Matrix4f;
@@ -38,6 +39,9 @@ public class LevelRendererMixin
     @Final
     private SubmitNodeStorage submitNodeStorage;
 
+    @Shadow
+    private double prevCamRotX;
+
     @Inject(method = "extractEntity", at = @At("HEAD"), cancellable = true)
     public void morphclient$overrideEntityRenderState(Entity entity, float f, CallbackInfoReturnable<EntityRenderState> cir)
     {
@@ -56,9 +60,10 @@ public class LevelRendererMixin
         var disguiseInstance = syncer.getDisguiseInstance();
         if (disguiseInstance == null) return;
 
-        syncer.onRenderSetup();
+        syncer.preRenderStateSetup();
         var state = entityRenderDispatcher.extractEntity(disguiseInstance, f);
-        syncer.onEarlyEntityRender(state);
+        syncer.modifyRenderState(state);
+        syncer.postRenderStateSetup();
 
         cir.setReturnValue(state);
     }
@@ -67,23 +72,23 @@ public class LevelRendererMixin
     public void morphclient$postEntitySubmit(PoseStack poseStack, LevelRenderState levelRenderState, SubmitNodeCollector submitNodeCollector, CallbackInfo ci,
                                        @Local EntityRenderState entityRenderState)
     {
+        var profilerFiller = Profiler.get();
+        profilerFiller.push("morphclient_post_submit");
+
         if (entityRenderState instanceof IDisguiseRenderState asDisguiseRenderState)
         {
             var syncer = asDisguiseRenderState.morphclient$getDisguiseSyncer();
 
             if (syncer != null)
-                syncer.postEntityRender();
-        }
-    }
+            {
+                syncer.postRenderSubmit();
 
-    @Inject(method = "method_62214", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;submitEntities(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/state/LevelRenderState;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V", shift = At.Shift.AFTER))
-    public void morphclient$postSubmitEntities(GpuBufferSlice gpuBufferSlice, LevelRenderState levelRenderState,
-                                               ProfilerFiller profilerFiller, Matrix4f matrix4f, ResourceHandle resourceHandle,
-                                               ResourceHandle resourceHandle2, boolean bl, Frustum frustum, ResourceHandle resourceHandle3,
-                                               ResourceHandle resourceHandle4, CallbackInfo ci,
-                                               @Local PoseStack poseStack)
-    {
-        profilerFiller.popPush("morphclient_render_tag");
-        EntityRendererHelper.instance.submitRevealNames(poseStack, this.submitNodeStorage, levelRenderState.cameraRenderState);
+                profilerFiller.push("submit_reveal_name");
+                EntityRendererHelper.instance.submitRevealName(poseStack, entityRenderState, this.submitNodeStorage, levelRenderState.cameraRenderState, profilerFiller);
+                profilerFiller.pop();
+            }
+        }
+
+        profilerFiller.pop();
     }
 }

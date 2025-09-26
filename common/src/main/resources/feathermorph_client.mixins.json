@@ -21,6 +21,7 @@
     "accessors.GuardianAccessor",
     "accessors.HorseAccessor",
     "accessors.LlamaAccessor",
+    "accessors.MannequinAccessor",
     "accessors.MushroomCowAccessor",
     "accessors.ParrotAccessor",
     "accessors.PigAccessor",
