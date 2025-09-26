@@ -1,5 +1,6 @@
 package xyz.nifeather.morph.client.properties.impl;
 
+import com.mojang.authlib.GameProfile;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
@@ -16,6 +17,7 @@ public class PlayerPropertyHandler extends EntityPropertyHandler<Player>
 {
     private final ClientProperty<HumanoidArm> MAIN_HAND = ClientProperty.of(PropertyNames.PLAYER_MAIN_HAND, this::humanoidArmFromString);
     private final ClientProperty<Integer> STUCKED_ARROWS = ClientProperty.of(PropertyNames.ENTITY_ARROW_COUNT, CommonInputHandles::intOrEmpty);
+    private final ClientProperty<GameProfile> SKIN = ClientProperty.of(PropertyNames.PLAYER_SKIN, CommonInputHandles::gameProfile);
 
     private Optional<HumanoidArm> humanoidArmFromString(String input)
     {
@@ -25,7 +27,7 @@ public class PlayerPropertyHandler extends EntityPropertyHandler<Player>
 
     public PlayerPropertyHandler()
     {
-        register(MAIN_HAND, STUCKED_ARROWS);
+        register(MAIN_HAND, STUCKED_ARROWS, SKIN);
     }
 
     @Override
@@ -46,6 +48,7 @@ public class PlayerPropertyHandler extends EntityPropertyHandler<Player>
         {
             case PropertyNames.PLAYER_MAIN_HAND -> morphLocalPlayer.setOverrideMainArm(((HumanoidArm)value));
             case PropertyNames.ENTITY_ARROW_COUNT -> customLiving.morphclient$setOverrideArrowCount(MathUtils.clamp(0, 100, (Integer)value));
+            case PropertyNames.PLAYER_SKIN -> morphLocalPlayer.updateSkin((GameProfile) value);
         }
     }
 }

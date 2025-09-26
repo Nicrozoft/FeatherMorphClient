@@ -192,7 +192,7 @@ public class DisguiseScreen extends FeatherScreen
             if (fullList != null)
             {
                 disguiseList.clearChildren(false);
-                disguiseList.children().addAll(fullList);
+                disguiseList.addChildrenRange(fullList);
                 fullList = null;
             }
 

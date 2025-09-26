@@ -159,9 +159,14 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         return true;
     }
 
+    public static final List<String> clientFeatures = List.of(
+            SharedValues.newProtocolIdentify,
+            "equip_property"
+    );
+
     private void tryProtocols()
     {
-        var initRecord = new ClientInitializeRecordV3(List.of(SharedValues.newProtocolIdentify, "frog_alt_equipment_command"), getImplmentingApiVersion(), false);
+        var initRecord = new ClientInitializeRecordV3(clientFeatures, getImplmentingApiVersion(), false);
         V3ProtocolHandler.INSTANCE.sendInitializeRequest(initRecord);
 
         this.addSchedule(() ->
@@ -195,7 +200,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Override
     public int getImplmentingApiVersion()
     {
-        return Constants.PROTOCOL_VERSION;
+        return 16; //Constants.PROTOCOL_VERSION;
     }
 
     public final Bindable<Boolean> serverReady = new Bindable<>(false);
