@@ -12,15 +12,26 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityEquipment;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ResolvableProfile;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
+import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
+import xyz.nifeather.morph.client.properties.struct.MorphEquipmentStruct;
+import xyz.nifeather.morph.client.properties.struct.MorphResolvableProfileStruct;
+import xyz.nifeather.morph.client.utilties.ClientItemUtils;
 import xyz.nifeather.morph.client.utilties.NbtHelperCopy;
 import xyz.nifeather.morph.client.utilties.NbtUtils;
+import xyz.nifeather.morph.network.commands.S2C.set.S2CSetFakeEquipCommand;
+import xyz.nifeather.morph.network.utils.Asserts;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 public class CommonInputHandles
@@ -120,13 +131,13 @@ public class CommonInputHandles
 
     public static Optional<ResolvableProfile> resolvableProfile(String input)
     {
-        var record = gson.fromJson(input, MorphResolvableProfileRecord.class);
+        var record = gson.fromJson(input, MorphResolvableProfileStruct.class);
         return record.isDynamic()
                ? resolvableProfileDynamic(record)
                : resolvableProfileStatic(record);
     }
 
-    public static Optional<ResolvableProfile> resolvableProfileDynamic(MorphResolvableProfileRecord record)
+    public static Optional<ResolvableProfile> resolvableProfileDynamic(MorphResolvableProfileStruct record)
     {
         if (record.uuid() != null)
             return Optional.of(ResolvableProfile.createUnresolved(record.uuid()));
@@ -138,7 +149,7 @@ public class CommonInputHandles
         return Optional.empty();
     }
 
-    public static Optional<ResolvableProfile> resolvableProfileStatic(MorphResolvableProfileRecord record)
+    public static Optional<ResolvableProfile> resolvableProfileStatic(MorphResolvableProfileStruct record)
     {
         var profile = gameProfile(record.data());
         if (profile.isEmpty())
@@ -154,5 +165,35 @@ public class CommonInputHandles
     {
         var compound = NbtUtils.parseSNbt(input);
         return Optional.ofNullable(compound == null ? null : NbtHelperCopy.toGameProfile(compound));
+    }
+
+    public static Optional<EntityEquipment> equipment(String input)
+    {
+        var struct = gson.fromJson(input, MorphEquipmentStruct.class);
+        int dataVersion = struct.dataVersion();
+
+        var equipment = new EntityEquipment();
+
+        struct.equipmentData().forEach((slotName, snbt) ->
+        {
+            var protocolSlot = S2CSetFakeEquipCommand.ProtocolEquipmentSlot.valueOf(slotName.toUpperCase());
+            var item = ClientSetEquipCommand.jsonToStack(snbt, dataVersion);
+
+            EquipmentSlot slot = switch (protocolSlot)
+            {
+                case MAINHAND -> EquipmentSlot.MAINHAND;
+                case OFF_HAND -> EquipmentSlot.OFFHAND;
+
+                case HELMET -> EquipmentSlot.HEAD;
+                case CHESTPLATE -> EquipmentSlot.CHEST;
+                case LEGGINGS ->  EquipmentSlot.LEGS;
+                case BOOTS -> EquipmentSlot.FEET;
+            };
+
+            if (item != null)
+                equipment.set(slot, item);
+        });
+
+        return Optional.of(equipment);
     }
 }

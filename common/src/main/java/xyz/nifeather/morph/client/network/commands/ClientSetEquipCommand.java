@@ -60,7 +60,7 @@ public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack>
 
 
     @Nullable
-    private static ItemStack jsonToStack(String rawJson, int sourceDataVersion)
+    public static ItemStack jsonToStack(String rawJson, int sourceDataVersion)
     {
         var world = Minecraft.getInstance().level;
         if (world == null)
