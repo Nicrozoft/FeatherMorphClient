@@ -104,7 +104,6 @@ public class HudRenderHelper extends MorphClientObject
         try
         {
             matrices.pushMatrix();
-
             renderBar(context, renderTickCounter);
         }
         finally
@@ -125,20 +124,22 @@ public class HudRenderHelper extends MorphClientObject
         var windowHeight = context.guiHeight();
         var matrices = context.pose();
 
-        var renderColor = ColorUtils.forOpacity(bgColorRecord.get(), drawAlpha.get());
+        var backgroundColor = ColorUtils.forOpacity(bgColorRecord.get(), drawAlpha.get());
+        var contentColor = ColorUtils.forOpacity(colorRecord.get(), drawAlpha.get()).getColor();
 
         // 先位移到屏幕外面
         // 然后再位移到屏幕里面
-        matrices.translate(barHeightRecorder.get() + 2, windowHeight - height - 2, matrices);
-
-        context.submitOutline(0, 0, width, height, renderColor.darker(1.3).getColor());
+        var offsetX = barHeightRecorder.get() + 2;
+        var offsetY = windowHeight - height - 2;
+        matrices.translate(offsetX, offsetY, matrices);
 
         // 填充背景
-        context.fill(padding, padding, width - padding, height - padding, renderColor.getColor());
+        //bug: GuiGraphics#submitOutline only works in screens
+        context.fill(0, 0, width, height, backgroundColor.darker(1.3).getColor());
 
         // 填充进度
         var barStart = padding + Math.round((height - padding * 2) * (revDisplayRecorder.get() / 100));
         var barEnd = height - padding;
-        context.fill(padding, barStart, width - padding, barEnd, colorRecord.get().getColor());
+        context.fill(padding, barStart, width - padding, barEnd, contentColor);
     }
 }
