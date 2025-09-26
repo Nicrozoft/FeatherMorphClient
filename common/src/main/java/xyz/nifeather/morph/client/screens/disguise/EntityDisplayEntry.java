@@ -97,8 +97,9 @@ public class EntityDisplayEntry extends ContainerObjectSelectionList.Entry<Entit
     @Override
     public void renderContent(GuiGraphics guiGraphics, int i, int j, boolean bl, float f)
     {
-        //displayWidget.screenSpaceY = y;
-        //displayWidget.screenSpaceX = x;
+        displayWidget.screenSpaceX = this.getContentX();
+        displayWidget.screenSpaceY = this.getContentY();
+
         displayWidget.render(guiGraphics, i, j, f);
     }
 
