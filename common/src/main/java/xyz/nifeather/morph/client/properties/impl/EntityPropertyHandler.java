@@ -71,7 +71,6 @@ public abstract class EntityPropertyHandler<E extends Entity> extends AbstractPr
 
             if (syncer == null || !syncer.equals(ClientDisguiseSyncer.getCurrentInstance())) return;
 
-            System.out.println("Set override! display? " + value);
             FeatherMorphClientBootstrap.getInstance().morphManager.equipOverriden.set((Boolean) value);
         }
     }

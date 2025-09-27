@@ -84,7 +84,7 @@ public class LevelRendererMixin
                 syncer.postRenderSubmit();
 
                 profilerFiller.push("submit_reveal_name");
-                EntityRendererHelper.instance.submitRevealName(poseStack, entityRenderState, this.submitNodeStorage, levelRenderState.cameraRenderState, profilerFiller);
+                EntityRendererHelper.instance.submitRevealName(poseStack, entityRenderState, this.submitNodeStorage, levelRenderState.cameraRenderState);
                 profilerFiller.pop();
             }
         }

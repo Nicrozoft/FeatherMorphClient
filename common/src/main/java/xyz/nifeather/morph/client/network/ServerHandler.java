@@ -403,6 +403,12 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Override
     public void onSetFakeEquipCommand(S2CSetFakeEquipCommand<?> s2CSetEquipCommand)
     {
+        if (serverVersion >= 16)
+        {
+            logger.info("Ignoring %s as the server support a newer protocol".formatted(s2CSetEquipCommand.getClass().getSimpleName()));
+            return;
+        }
+
         if (!(s2CSetEquipCommand.getItemStack() instanceof ItemStack stack)) return;
 
         switch (s2CSetEquipCommand.getSlot())
@@ -420,6 +426,12 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Override
     public void onSetDisplayingFakeEquipCommand(S2CSetDisplayingFakeEquipCommand s2CSetFakeEquipCommand)
     {
+        if (serverVersion >= 16)
+        {
+            logger.info("Ignoring %s as the server support a newer protocol".formatted(s2CSetFakeEquipCommand.getClass().getSimpleName()));
+            return;
+        }
+
         morphManager.equipOverriden.set(s2CSetFakeEquipCommand.displaying);
     }
 
@@ -436,6 +448,12 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Override
     public void onSetProfileCommand(S2CSetProfileCommand s2CSetProfileCommand)
     {
+        if (serverVersion >= 16)
+        {
+            logger.info("Ignoring %s as the server support a newer protocol".formatted(s2CSetProfileCommand.getClass().getSimpleName()));
+            return;
+        }
+
         try
         {
             var nbt = NbtUtils.parseOrThrow(s2CSetProfileCommand.getProfileSNbt());

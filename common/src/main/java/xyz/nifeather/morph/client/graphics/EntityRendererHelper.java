@@ -99,8 +99,7 @@ public class EntityRendererHelper
     private final PoseStack renderPoseStack = new PoseStack();
 
     public final void submitRevealName(PoseStack ignored, EntityRenderState renderState,
-                                       SubmitNodeCollector collector, CameraRenderState cameraRenderState,
-                                       ProfilerFiller profilerFiller)
+                                       SubmitNodeCollector collector, CameraRenderState cameraRenderState)
     {
         if (!doRenderRealName) return;
         if (!(renderState instanceof IDisguiseRenderState disguiseRenderState)) return;
