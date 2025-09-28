@@ -78,6 +78,7 @@ public class PropertyHandlers
         register(EntityType.GUARDIAN, new GuardianPropertyHandler());
 
         register(EntityType.MANNEQUIN, new MannequinPropertyHandler());
+        register(EntityType.COPPER_GOLEM, new CopperGolemPropertyHandler());
     }
 
     public FallbackPropertyHandler fallbackHandler()
