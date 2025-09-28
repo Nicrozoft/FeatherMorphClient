@@ -11,6 +11,8 @@ import xiamomc.pluginbase.Annotations.Resolved;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.world.entity.Entity;
@@ -155,7 +157,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
     //region Syncer Tracking
 
     // PlayerID <-> Syncer
-    private final Map<Integer, DisguiseSyncer> idSyncerMap = new Object2ObjectArrayMap<>();
+    private final Map<Integer, DisguiseSyncer> idSyncerMap = new ConcurrentHashMap<>();
 
     public List<DisguiseSyncer> getAllSyncer()
     {
