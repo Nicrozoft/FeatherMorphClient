@@ -2,7 +2,7 @@
   "category.morphclient.config_toasts": "弹窗",
   "category.morphclient.debug": "调试",
   "category.morphclient.debug.description": "调试设置，使用时务必小心！",
-  "category.morphclient.keybind": "FeatherMorph",
+  "key.category.morphclient.keybind": "FeatherMorph",
   "emote.morphclient.appear": "出现",
   "emote.morphclient.crawl": "趴下",
   "emote.morphclient.dance": "跳舞",

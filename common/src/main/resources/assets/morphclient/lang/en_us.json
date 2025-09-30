@@ -2,7 +2,7 @@
   "category.morphclient.config_toasts": "Toasts",
   "category.morphclient.debug": "Debug",
   "category.morphclient.debug.description": "Debug settings, be careful!",
-  "category.morphclient.keybind": "FeatherMorph",
+  "key.category.morphclient.keybind": "FeatherMorph",
   "emote.morphclient.appear": "Appear",
   "emote.morphclient.crawl": "Crawl",
   "emote.morphclient.dance": "Dance",
