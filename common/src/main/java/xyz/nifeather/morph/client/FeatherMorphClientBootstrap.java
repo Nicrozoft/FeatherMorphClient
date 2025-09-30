@@ -127,8 +127,6 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
 
         enablePlugin();
 
-        Constants.initialize(false);
-
         this.registerKeys();
 
         dependencyManager.cache(this);

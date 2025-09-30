@@ -15,23 +15,18 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ResolvableProfile;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
 import xyz.nifeather.morph.client.properties.struct.MorphEquipmentStruct;
 import xyz.nifeather.morph.client.properties.struct.MorphResolvableProfileStruct;
-import xyz.nifeather.morph.client.utilties.ClientItemUtils;
 import xyz.nifeather.morph.client.utilties.NbtHelperCopy;
 import xyz.nifeather.morph.client.utilties.NbtUtils;
-import xyz.nifeather.morph.network.commands.S2C.set.S2CSetFakeEquipCommand;
-import xyz.nifeather.morph.network.utils.Asserts;
+import xyz.nifeather.morph.network.utils.ProtocolEquipmentSlot;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 public class CommonInputHandles
@@ -176,7 +171,7 @@ public class CommonInputHandles
 
         struct.equipmentData().forEach((slotName, snbt) ->
         {
-            var protocolSlot = S2CSetFakeEquipCommand.ProtocolEquipmentSlot.valueOf(slotName.toUpperCase());
+            var protocolSlot = ProtocolEquipmentSlot.valueOf(slotName.toUpperCase());
             var item = ClientSetEquipCommand.jsonToStack(snbt, dataVersion);
 
             EquipmentSlot slot = switch (protocolSlot)

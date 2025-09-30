@@ -6,6 +6,7 @@ import xyz.nifeather.fmccl.network.commands.S2C.set.NetheriteS2CSetFakeEquipComm
 import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
 import xyz.nifeather.morph.network.commands.S2C.S2CCommandNames;
 import xyz.nifeather.morph.network.commands.S2C.set.S2CSetFakeEquipCommand;
+import xyz.nifeather.morph.network.utils.ProtocolEquipmentSlot;
 
 public class ClientS2CCommandConverter extends S2CCommandConverter
 {
@@ -16,14 +17,14 @@ public class ClientS2CCommandConverter extends S2CCommandConverter
         {
             var netheriteSlot = cmd.getSlot();
 
-            S2CSetFakeEquipCommand.ProtocolEquipmentSlot modernSlot = switch (netheriteSlot)
+            ProtocolEquipmentSlot modernSlot = switch (netheriteSlot)
             {
-                case MAINHAND -> S2CSetFakeEquipCommand.ProtocolEquipmentSlot.MAINHAND;
-                case OFF_HAND -> S2CSetFakeEquipCommand.ProtocolEquipmentSlot.OFF_HAND;
-                case HELMET -> S2CSetFakeEquipCommand.ProtocolEquipmentSlot.HELMET;
-                case CHESTPLATE -> S2CSetFakeEquipCommand.ProtocolEquipmentSlot.CHESTPLATE;
-                case LEGGINGS -> S2CSetFakeEquipCommand.ProtocolEquipmentSlot.LEGGINGS;
-                case BOOTS -> S2CSetFakeEquipCommand.ProtocolEquipmentSlot.BOOTS;
+                case MAINHAND -> ProtocolEquipmentSlot.MAINHAND;
+                case OFF_HAND -> ProtocolEquipmentSlot.OFF_HAND;
+                case HELMET -> ProtocolEquipmentSlot.HELMET;
+                case CHESTPLATE -> ProtocolEquipmentSlot.CHESTPLATE;
+                case LEGGINGS -> ProtocolEquipmentSlot.LEGGINGS;
+                case BOOTS -> ProtocolEquipmentSlot.BOOTS;
             };
 
             return new ClientSetEquipCommand(cmd.getItemStack(), modernSlot);

@@ -15,10 +15,12 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.utilties.NbtUtils;
 import xyz.nifeather.morph.network.commands.S2C.set.S2CSetFakeEquipCommand;
 import xyz.nifeather.morph.network.utils.Asserts;
+import xyz.nifeather.morph.network.utils.ProtocolEquipmentSlot;
 
 import java.util.Map;
 import java.util.Objects;
 
+@SuppressWarnings("removal")
 public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack>
 {
     public ClientSetEquipCommand(ItemStack item, ProtocolEquipmentSlot slot)

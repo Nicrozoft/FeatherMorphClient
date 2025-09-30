@@ -200,7 +200,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Override
     public int getImplmentingApiVersion()
     {
-        return 16; //Constants.PROTOCOL_VERSION;
+        return Constants.PROTOCOL_VERSION;
     }
 
     public final Bindable<Boolean> serverReady = new Bindable<>(false);
@@ -403,7 +403,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Override
     public void onSetFakeEquipCommand(S2CSetFakeEquipCommand<?> s2CSetEquipCommand)
     {
-        if (serverVersion >= 16)
+        if (serverVersion >= Constants.ApiLevel.EQUIPMENT_AND_SKIN_ARE_NOW_PROPERTY.protocolVersion)
         {
             logger.info("Ignoring %s as the server support a newer protocol".formatted(s2CSetEquipCommand.getClass().getSimpleName()));
             return;
@@ -426,7 +426,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Override
     public void onSetDisplayingFakeEquipCommand(S2CSetDisplayingFakeEquipCommand s2CSetFakeEquipCommand)
     {
-        if (serverVersion >= 16)
+        if (serverVersion >= Constants.ApiLevel.EQUIPMENT_AND_SKIN_ARE_NOW_PROPERTY.protocolVersion)
         {
             logger.info("Ignoring %s as the server support a newer protocol".formatted(s2CSetFakeEquipCommand.getClass().getSimpleName()));
             return;
@@ -448,7 +448,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Override
     public void onSetProfileCommand(S2CSetProfileCommand s2CSetProfileCommand)
     {
-        if (serverVersion >= 16)
+        if (serverVersion >= Constants.ApiLevel.EQUIPMENT_AND_SKIN_ARE_NOW_PROPERTY.protocolVersion)
         {
             logger.info("Ignoring %s as the server support a newer protocol".formatted(s2CSetProfileCommand.getClass().getSimpleName()));
             return;
