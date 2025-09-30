@@ -145,7 +145,7 @@ public class EntityRendererHelper
             renderPoseStack.scale(scale, scale, scale);
         }
 
-        collector.submitNameTag(renderPoseStack, Vec3.ZERO, 0, Component.literal(revealName).withColor(textColor), false, LightTexture.FULL_BRIGHT, 0, cameraRenderState);
+        collector.submitNameTag(renderPoseStack, Vec3.ZERO, 0, Component.literal(revealName).withColor(textColor), true, LightTexture.FULL_BRIGHT, 0, cameraRenderState);
         renderPoseStack.popPose();
     }
 }
