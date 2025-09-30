@@ -5,11 +5,11 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import xiamomc.pluginbase.Annotations.Resolved;
+import xyz.nifeather.morph.server.commands.IServerBrigadierCommand;
 import xyz.nifeather.morph.server.morphs.MorphManager;
 import xyz.nifeather.morph.server.ServerPluginObject;
-import xyz.nifeather.morph.server.commands.IBrigadierCommand;
 
-public class UnMorphCommand extends ServerPluginObject implements IBrigadierCommand
+public class UnMorphCommand extends ServerPluginObject implements IServerBrigadierCommand
 {
     @Resolved(shouldSolveImmediately = true)
     private MorphManager morphManager;

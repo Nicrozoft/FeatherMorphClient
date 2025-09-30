@@ -2,7 +2,7 @@ package xyz.nifeather.morph.server.commands.impl.plugin;
 
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import xyz.nifeather.morph.server.commands.BrigadierCommand;
-import xyz.nifeather.morph.server.commands.IBrigadierCommand;
+import xyz.nifeather.morph.server.commands.IServerBrigadierCommand;
 import xyz.nifeather.morph.server.commands.impl.plugin.managements.ManageGrantCommand;
 import xyz.nifeather.morph.server.commands.impl.plugin.managements.ManageMorphCommand;
 import xyz.nifeather.morph.server.commands.impl.plugin.managements.ManageRevokeCommand;
@@ -24,7 +24,7 @@ public class ManagementCommand extends BrigadierCommand
         );
     }
 
-    private final List<IBrigadierCommand> subCommands;
+    private final List<IServerBrigadierCommand> subCommands;
 
     @Override
     public void registerAsChild(ArgumentBuilder<CommandSourceStack, ?> parentBuilder)

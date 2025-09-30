@@ -1,5 +1,7 @@
 package xyz.nifeather.morph.client.properties;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -22,6 +24,13 @@ public class ClientProperty<X>
     public Optional<X> handleInput(String input)
     {
         return inputHandle.apply(input);
+    }
+
+    @NotNull
+    public String handleOutput(X value) throws Exception
+    {
+        // todo
+        return "";
     }
 
     public static <T> ClientProperty<T> of(String id, Function<String, Optional<T>> inputHandle)

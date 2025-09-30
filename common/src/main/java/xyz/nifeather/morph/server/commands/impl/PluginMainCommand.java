@@ -2,7 +2,7 @@ package xyz.nifeather.morph.server.commands.impl;
 
 import com.mojang.brigadier.CommandDispatcher;
 import xyz.nifeather.morph.server.commands.BrigadierCommand;
-import xyz.nifeather.morph.server.commands.IBrigadierCommand;
+import xyz.nifeather.morph.server.commands.IServerBrigadierCommand;
 import xyz.nifeather.morph.server.commands.impl.plugin.ManagementCommand;
 
 import java.util.List;
@@ -18,7 +18,7 @@ public class PluginMainCommand extends BrigadierCommand
         );
     }
 
-    private final List<IBrigadierCommand> subCommands;
+    private final List<IServerBrigadierCommand> subCommands;
 
     @Override
     public void register(CommandDispatcher<CommandSourceStack> dispatcher)

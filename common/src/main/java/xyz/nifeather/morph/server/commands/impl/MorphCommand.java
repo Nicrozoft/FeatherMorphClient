@@ -6,13 +6,13 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import xiamomc.pluginbase.Annotations.Resolved;
+import xyz.nifeather.morph.server.commands.IServerBrigadierCommand;
 import xyz.nifeather.morph.server.commands.arguments.DisguiseIdentifierSuggestions;
 import xyz.nifeather.morph.shared.commands.arguments.RelaxedStringArgumentType;
 import xyz.nifeather.morph.server.morphs.MorphManager;
 import xyz.nifeather.morph.server.ServerPluginObject;
-import xyz.nifeather.morph.server.commands.IBrigadierCommand;
 
-public class MorphCommand extends ServerPluginObject implements IBrigadierCommand
+public class MorphCommand extends ServerPluginObject implements IServerBrigadierCommand
 {
     @Resolved(shouldSolveImmediately = true)
     private MorphManager morphManager;

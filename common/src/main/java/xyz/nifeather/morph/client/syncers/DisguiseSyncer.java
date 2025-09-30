@@ -1,5 +1,6 @@
 package xyz.nifeather.morph.client.syncers;
 
+import com.google.common.collect.ImmutableMap;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.LoggerFactory;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xyz.nifeather.morph.client.ConvertedMeta;
@@ -32,10 +34,13 @@ import xyz.nifeather.morph.client.entities.*;
 import xyz.nifeather.morph.client.mixin.accessors.AbstractHorseEntityMixin;
 import xyz.nifeather.morph.client.mixin.accessors.EntityAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LimbAnimatorAccessor;
+import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 import xyz.nifeather.morph.client.utilties.ClientItemUtils;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class DisguiseSyncer extends MorphClientObject
@@ -68,6 +73,10 @@ public abstract class DisguiseSyncer extends MorphClientObject
     }
 
     protected final String disguiseId;
+    public String disguiseIdentifier()
+    {
+        return disguiseId;
+    }
 
     protected final int bindingNetworkId;
 
@@ -76,6 +85,14 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     @NotNull
     protected abstract EntityCache getEntityCache();
+
+    protected final Map<ClientProperty<?>, Object> propertyMap = new ConcurrentHashMap<>();
+
+    @Unmodifiable
+    public Map<ClientProperty<?>, Object> getProperties()
+    {
+        return ImmutableMap.copyOf(propertyMap);
+    }
 
     @NotNull
     public AbstractClientPlayer getBindingPlayer()

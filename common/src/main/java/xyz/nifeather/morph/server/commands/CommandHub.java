@@ -17,7 +17,7 @@ public class CommandHub
         );
     }
 
-    private final List<IBrigadierCommand> commands;
+    private final List<IServerBrigadierCommand> commands;
 
     public void registerCommands(CommandRegistrationContext context)
     {

@@ -4,7 +4,7 @@ import net.minecraft.server.MinecraftServer;
 import xyz.nifeather.morph.server.MorphServerLoader;
 import xyz.nifeather.morph.server.ServerPluginObject;
 
-public abstract class BrigadierCommand extends ServerPluginObject implements IBrigadierCommand
+public abstract class BrigadierCommand extends ServerPluginObject implements IServerBrigadierCommand
 {
     protected final MinecraftServer server;
 
