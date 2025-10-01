@@ -617,11 +617,15 @@ public abstract class DisguiseSyncer extends MorphClientObject
             scaleAttribute.setBaseValue(bindingPlayer.getAttributeValue(Attributes.SCALE));
 
         // Hand Swing
-        entity.swinging = bindingPlayer.swinging;
-        entity.attackAnim = bindingPlayer.attackAnim;
-        entity.oAttackAnim = bindingPlayer.oAttackAnim;
-        entity.swingTime = bindingPlayer.swingTime;
-        entity.swingingArm = bindingPlayer.swingingArm;
+        // Mannequin don't have swing animation
+        if (entity.getType() != EntityType.MANNEQUIN)
+        {
+            entity.swinging = bindingPlayer.swinging;
+            entity.attackAnim = bindingPlayer.attackAnim;
+            entity.oAttackAnim = bindingPlayer.oAttackAnim;
+            entity.swingTime = bindingPlayer.swingTime;
+            entity.swingingArm = bindingPlayer.swingingArm;
+        }
 
         // Hand and sneaking
         entity.setShiftKeyDown(bindingPlayer.isShiftKeyDown());
