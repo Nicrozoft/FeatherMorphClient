@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.entity.state.GuardianRenderState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.Horse;
@@ -32,6 +33,7 @@ import xyz.nifeather.morph.client.entities.*;
 import xyz.nifeather.morph.client.mixin.accessors.AbstractHorseEntityMixin;
 import xyz.nifeather.morph.client.mixin.accessors.EntityAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LimbAnimatorAccessor;
+import xyz.nifeather.morph.client.mixin.accessors.LivingEntityAccessor;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 import xyz.nifeather.morph.client.utilties.ClientItemUtils;
 
@@ -653,8 +655,12 @@ public abstract class DisguiseSyncer extends MorphClientObject
         entity.setPose(bindingPlayer.getPose());
         entity.setSwimming(bindingPlayer.isSwimming());
 
-        entity.isUsingItem();
-        entity.releaseUsingItem();
+        if (entity.isUsingItem() != bindingPlayer.isUsingItem())
+        {
+            entity.startUsingItem(bindingPlayer.getUsedItemHand());
+            ((LivingEntityAccessor)entity).callSetLivingEntityFlag(1, bindingPlayer.isUsingItem());
+            ((LivingEntityAccessor)entity).callSetLivingEntityFlag(2, bindingPlayer.getUsedItemHand() == InteractionHand.OFF_HAND);
+        }
 
         if (bindingPlayer.isPassenger() && entity.getVehicle() != bindingPlayer)
         {

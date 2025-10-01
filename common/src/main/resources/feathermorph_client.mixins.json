@@ -20,6 +20,7 @@
     "accessors.GoatAccessor",
     "accessors.GuardianAccessor",
     "accessors.HorseAccessor",
+    "accessors.LivingEntityAccessor",
     "accessors.LlamaAccessor",
     "accessors.MannequinAccessor",
     "accessors.MushroomCowAccessor",

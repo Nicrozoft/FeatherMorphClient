@@ -256,30 +256,6 @@ public class MorphLocalPlayer extends RemotePlayer
     }
 
     @Override
-    public @NotNull ItemStack getUseItem()
-    {
-        return bindingPlayer == null ? super.getUseItem() : bindingPlayer.getUseItem();
-    }
-
-    @Override
-    public boolean isUsingItem()
-    {
-        return bindingPlayer == null ? super.isUsingItem() : bindingPlayer.isUsingItem();
-    }
-
-    @Override
-    public int getTicksUsingItem()
-    {
-        return bindingPlayer == null ? super.getTicksUsingItem() : bindingPlayer.getTicksUsingItem();
-    }
-
-    @Override
-    public int getUseItemRemainingTicks()
-    {
-        return bindingPlayer == null ? super.getUseItemRemainingTicks() : bindingPlayer.getUseItemRemainingTicks();
-    }
-
-    @Override
     public boolean isAutoSpinAttack()
     {
         return bindingPlayer == null ? super.isAutoSpinAttack() : bindingPlayer.isAutoSpinAttack();
