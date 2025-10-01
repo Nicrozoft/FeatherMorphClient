@@ -25,6 +25,7 @@ import xyz.nifeather.morph.client.utilties.NbtUtils;
 import xyz.nifeather.morph.network.utils.ProtocolEquipmentSlot;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -162,12 +163,12 @@ public class CommonInputHandles
         return Optional.ofNullable(compound == null ? null : NbtHelperCopy.toGameProfile(compound));
     }
 
-    public static Optional<EntityEquipment> equipment(String input)
+    public static Optional<DisguiseEquipment> equipment(String input)
     {
         var struct = gson.fromJson(input, MorphEquipmentStruct.class);
         int dataVersion = struct.dataVersion();
 
-        var equipment = new EntityEquipment();
+        var builder = DisguiseEquipment.builder(Map.of());
 
         struct.equipmentData().forEach((slotName, snbt) ->
         {
@@ -186,9 +187,9 @@ public class CommonInputHandles
             };
 
             if (item != null)
-                equipment.set(slot, item);
+                builder.forSlot(slot, item);
         });
 
-        return Optional.of(equipment);
+        return Optional.of(builder.build());
     }
 }

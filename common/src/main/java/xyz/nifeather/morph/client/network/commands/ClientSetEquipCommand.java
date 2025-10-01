@@ -11,6 +11,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.utilties.NbtUtils;
 import xyz.nifeather.morph.network.commands.S2C.set.S2CSetFakeEquipCommand;
@@ -71,6 +72,8 @@ public class ClientSetEquipCommand extends S2CSetFakeEquipCommand<ItemStack>
         var registry = Minecraft.getInstance().level.registryAccess();
 
         CompoundTag tag = NbtUtils.parseSNbt(rawJson);
+        if (tag != null && tag.getStringOr("id", "no").equals("minecraft:air"))
+            return new ItemStack(Items.AIR, 1);
 
         var ops = registry.createSerializationContext(NbtOps.INSTANCE);
         int currentDataVersion = SharedConstants.getCurrentVersion().dataVersion().version();
