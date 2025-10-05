@@ -15,7 +15,7 @@ import java.util.Optional;
 public class MannequinPropertyHandler extends EntityPropertyHandler<Mannequin>
 {
     public final ClientProperty<Component> DESCRIPTION = ClientProperty.of(PropertyNames.MANNEQUIN_NPC_DESCRIPTION, CommonInputHandles::component);
-    public final ClientProperty<ResolvableProfile> SKIN = ClientProperty.of(PropertyNames.MANNEQUIN_SKIN_INTERNAL, CommonInputHandles::resolvableProfile);
+    public final ClientProperty<ResolvableProfile> SKIN = ClientProperty.of(PropertyNames.MANNEQUIN_SKIN, CommonInputHandles::resolvableProfile);
     public final ClientProperty<Boolean> HIDE_DESCRIPTION = ClientProperty.of(PropertyNames.MANNEQUIN_HIDE_DESCRIPTION, CommonInputHandles.BOOLEAN);
     public final ClientProperty<Boolean> IMMOVABLE = ClientProperty.of(PropertyNames.MANNEQUIN_IMMOVABLE, CommonInputHandles.BOOLEAN);
 
