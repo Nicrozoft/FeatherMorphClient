@@ -1,9 +1,13 @@
 package xyz.nifeather.morph.client.properties;
 
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.MultimapBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
@@ -19,6 +23,7 @@ import net.minecraft.world.item.component.ResolvableProfile;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
 import xyz.nifeather.morph.client.properties.struct.MorphEquipmentStruct;
+import xyz.nifeather.morph.client.properties.struct.MorphProfileProperty;
 import xyz.nifeather.morph.client.properties.struct.MorphResolvableProfileStruct;
 import xyz.nifeather.morph.client.utilties.NbtHelperCopy;
 import xyz.nifeather.morph.client.utilties.NbtUtils;
@@ -128,15 +133,15 @@ public class CommonInputHandles
     public static Optional<ResolvableProfile> resolvableProfile(String input)
     {
         var record = gson.fromJson(input, MorphResolvableProfileStruct.class);
-        return record.isDynamic()
+        return record.dynamic()
                ? resolvableProfileDynamic(record)
                : resolvableProfileStatic(record);
     }
 
     public static Optional<ResolvableProfile> resolvableProfileDynamic(MorphResolvableProfileStruct record)
     {
-        if (record.uuid() != null)
-            return Optional.of(ResolvableProfile.createUnresolved(record.uuid()));
+        if (record.id() != null)
+            return Optional.of(ResolvableProfile.createUnresolved(record.id()));
         else if (record.name() != null)
             return Optional.of(ResolvableProfile.createUnresolved(record.name()));
 
@@ -147,14 +152,21 @@ public class CommonInputHandles
 
     public static Optional<ResolvableProfile> resolvableProfileStatic(MorphResolvableProfileStruct record)
     {
-        var profile = gameProfile(record.data());
-        if (profile.isEmpty())
+        if (record.name() == null || record.id() == null)
         {
-            FeatherMorphClientBootstrap.LOGGER.error("Unable to create static ResolvableProfile, not a valid profile string");
+            FeatherMorphClientBootstrap.LOGGER.error("Unable to create static ResolvableProfile, UUID or Name is NULL");
             return Optional.empty();
         }
 
-        return Optional.of(ResolvableProfile.createResolved(profile.get()));
+        ImmutableMultimap.Builder<String, Property> propertiesBuilder = ImmutableMultimap.builder();
+        for (String propertyJson : record.properties())
+        {
+            var struct = gson.fromJson(propertyJson, MorphProfileProperty.class);
+            propertiesBuilder.put(struct.name(), new Property(struct.name(), struct.value(), struct.signature()));
+        }
+
+        var profile = new GameProfile(record.id(), record.name(), new PropertyMap(propertiesBuilder.build()));
+        return Optional.of(ResolvableProfile.createResolved(profile));
     }
 
     public static Optional<GameProfile> gameProfile(String input)
