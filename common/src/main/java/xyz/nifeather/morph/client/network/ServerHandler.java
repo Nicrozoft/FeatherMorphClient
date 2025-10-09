@@ -51,6 +51,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
 
     private final LegacyServerHandler legacyServerHandler = new LegacyServerHandler(this);
 
+    @SuppressWarnings("removal")
     public ServerHandler(FeatherMorphClientBootstrap client)
     {
         this.client = client;
@@ -400,6 +401,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         }
     }
 
+    @SuppressWarnings("removal")
     @Override
     public void onSetFakeEquipCommand(S2CSetFakeEquipCommand<?> s2CSetEquipCommand)
     {
@@ -423,6 +425,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         }
     }
 
+    @SuppressWarnings("removal")
     @Override
     public void onSetDisplayingFakeEquipCommand(S2CSetDisplayingFakeEquipCommand s2CSetFakeEquipCommand)
     {
@@ -445,6 +448,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         morphManager.currentNbtCompound.set(nbt);
     }
 
+    @SuppressWarnings("removal")
     @Override
     public void onSetProfileCommand(S2CSetProfileCommand s2CSetProfileCommand)
     {
