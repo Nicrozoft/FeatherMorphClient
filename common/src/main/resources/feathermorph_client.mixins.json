@@ -39,6 +39,7 @@
     "ClientPlayerInteractionManagerMixin",
     "ClientWorldMixin",
     "CreativeInventoryMixin",
+    "EntityRenderDispatcherMixin",
     "EntityRendererMixin",
     "EntityRenderStateMixin",
     "InventoryScreenMixin",

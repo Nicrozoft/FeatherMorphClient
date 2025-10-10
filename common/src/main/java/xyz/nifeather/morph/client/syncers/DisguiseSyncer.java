@@ -30,12 +30,14 @@ import xyz.nifeather.morph.client.EntityCache;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.MorphClientObject;
 import xyz.nifeather.morph.client.entities.*;
+import xyz.nifeather.morph.client.graphics.PlayerRenderHelper;
 import xyz.nifeather.morph.client.mixin.accessors.AbstractHorseEntityMixin;
 import xyz.nifeather.morph.client.mixin.accessors.EntityAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LimbAnimatorAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LivingEntityAccessor;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 import xyz.nifeather.morph.client.utilties.ClientItemUtils;
+import xyz.nifeather.morph.network.Constants;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -366,8 +368,26 @@ public abstract class DisguiseSyncer extends MorphClientObject
     {
         if (!allowTick || disguiseInstance == null) return;
 
-        disguiseInstance.snapTo(bindingPlayer.position(), bindingPlayer.getYRot(), bindingPlayer.getXRot());
-        disguiseInstance.setOldPosAndRot(bindingPlayer.oldPosition(), bindingPlayer.yRotO, bindingPlayer.xRotO);
+        var xRot = bindingPlayer.getXRot();
+        var xRotO = bindingPlayer.xRotO;
+
+        if (disguiseInstance.getType() == EntityType.PHANTOM)
+        {
+            xRot = -xRot;
+            xRotO = -xRotO;
+        }
+
+        var yRot = bindingPlayer.getYRot();
+        var yRotO = bindingPlayer.yRotO;
+
+        if (disguiseInstance.getType() == EntityType.ENDER_DRAGON)
+        {
+            yRot = 180 + yRot;
+            yRotO = 180 + yRotO;
+        }
+
+        disguiseInstance.snapTo(bindingPlayer.position(), yRot, xRot);
+        disguiseInstance.setOldPosAndRot(bindingPlayer.oldPosition(), yRotO, xRotO);
 
     }
 

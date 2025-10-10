@@ -1,5 +1,6 @@
 package xyz.nifeather.morph.client.graphics;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.client.Camera;
@@ -20,6 +21,7 @@ import net.minecraft.client.renderer.entity.EnderDragonRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
@@ -32,12 +34,14 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
+import org.spongepowered.asm.mixin.Unique;
 import xiamomc.pluginbase.Annotations.Initializer;
 import xiamomc.pluginbase.Exceptions.NullDependencyException;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
 import xyz.nifeather.morph.client.MorphClientObject;
 import xyz.nifeather.morph.client.Vec3dUtils;
+import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.mixin.accessors.DragonEntityRendererAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LivingRendererAccessor;
 import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
@@ -45,6 +49,7 @@ import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class PlayerRenderHelper extends MorphClientObject
 {
@@ -72,12 +77,47 @@ public class PlayerRenderHelper extends MorphClientObject
 
     private final DisguiseInstanceTracker instanceTracker = DisguiseInstanceTracker.getInstance();
 
-    public boolean shouldHideLabel(@Nullable AbstractClientPlayer player)
-    {
-        if (player == null) return false;
+    private boolean doingRender = false;
 
-        var localSyncer = ClientDisguiseSyncer.getCurrentInstance();
-        return localSyncer != null && player == localSyncer.getDisguiseInstance();
+    public EntityRenderState getState(Entity entity, float f, Operation<EntityRenderState> original)
+    {
+        Objects.requireNonNull(entity, "Null entity!");
+
+        if (doingRender)
+            return original.call(entity, f);
+
+        try
+        {
+            if (PlayerRenderHelper.instance().skipRender)
+                return original.call(entity, f);
+
+            if (!(entity instanceof IMorphClientEntity iMorphClientEntity))
+                return original.call(entity, f);
+
+            if (iMorphClientEntity.featherMorph$bypassesDispatcherRedirect())
+                return original.call(entity, f);
+
+            var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(entity);
+            if (syncer == null)
+                return original.call(entity, f);
+
+            var disguiseInstance = syncer.getDisguiseInstance();
+            if (disguiseInstance == null)
+                return original.call(entity, f);
+
+            doingRender = true;
+
+            syncer.preRenderStateSetup();
+            var state = original.call(disguiseInstance, f);
+            syncer.modifyRenderState(state);
+            syncer.postRenderStateSetup();
+
+            return state;
+        }
+        finally
+        {
+            doingRender = false;
+        }
     }
 
     private void onRenderException(Exception exception)

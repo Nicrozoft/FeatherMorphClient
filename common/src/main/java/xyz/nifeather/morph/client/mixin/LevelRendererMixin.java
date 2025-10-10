@@ -45,27 +45,6 @@ public class LevelRendererMixin
     @Inject(method = "extractEntity", at = @At("HEAD"), cancellable = true)
     public void morphclient$overrideEntityRenderState(Entity entity, float f, CallbackInfoReturnable<EntityRenderState> cir)
     {
-        if (PlayerRenderHelper.instance().skipRender)
-            return;
-
-        if (!(entity instanceof IMorphClientEntity iMorphClientEntity))
-            return;
-
-        if (iMorphClientEntity.featherMorph$bypassesDispatcherRedirect())
-            return;
-
-        var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(entity);
-        if (syncer == null) return;
-
-        var disguiseInstance = syncer.getDisguiseInstance();
-        if (disguiseInstance == null) return;
-
-        syncer.preRenderStateSetup();
-        var state = entityRenderDispatcher.extractEntity(disguiseInstance, f);
-        syncer.modifyRenderState(state);
-        syncer.postRenderStateSetup();
-
-        cir.setReturnValue(state);
     }
 
     @Inject(method = "submitEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;submit(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/client/renderer/state/CameraRenderState;DDDLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V"))
