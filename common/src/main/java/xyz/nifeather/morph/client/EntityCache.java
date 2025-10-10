@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import xiamomc.pluginbase.Bindables.Bindable;
+import xyz.nifeather.morph.client.entities.MorphLocalAvatar;
 import xyz.nifeather.morph.client.entities.MorphLocalPlayer;
 import xyz.nifeather.morph.client.utilties.EntityCacheUtils;
 
@@ -174,7 +175,7 @@ public class EntityCache
             {
                 if (world == null) return null;
 
-                var instance = type.create(world, EntitySpawnReason.COMMAND);
+                var instance = type == EntityType.MANNEQUIN ? new MorphLocalAvatar(world) : type.create(world, EntitySpawnReason.COMMAND);
 
                 if (!(instance instanceof LivingEntity le))
                 {
