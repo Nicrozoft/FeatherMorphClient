@@ -681,7 +681,8 @@ public abstract class DisguiseSyncer extends MorphClientObject
         }
 
         // Hand and sneaking
-        entity.setShiftKeyDown(bindingPlayer.isShiftKeyDown());
+        if (entity.getType() != EntityType.MANNEQUIN)
+            entity.setShiftKeyDown(bindingPlayer.isShiftKeyDown());
 
         // Hurt and death
         entity.hurtTime = bindingPlayer.hurtTime;
