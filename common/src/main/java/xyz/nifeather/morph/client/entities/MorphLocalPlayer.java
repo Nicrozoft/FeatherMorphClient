@@ -262,12 +262,6 @@ public class MorphLocalPlayer extends RemotePlayer
     }
 
     @Override
-    public @NotNull Vec3 position()
-    {
-        return bindingPlayer == null ? super.position() : bindingPlayer.position();
-    }
-
-    @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
         super.defineSynchedData(builder);

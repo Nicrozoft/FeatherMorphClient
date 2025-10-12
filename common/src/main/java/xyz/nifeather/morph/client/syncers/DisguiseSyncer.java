@@ -30,14 +30,12 @@ import xyz.nifeather.morph.client.EntityCache;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.MorphClientObject;
 import xyz.nifeather.morph.client.entities.*;
-import xyz.nifeather.morph.client.graphics.PlayerRenderHelper;
 import xyz.nifeather.morph.client.mixin.accessors.AbstractHorseEntityMixin;
 import xyz.nifeather.morph.client.mixin.accessors.EntityAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LimbAnimatorAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LivingEntityAccessor;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 import xyz.nifeather.morph.client.utilties.ClientItemUtils;
-import xyz.nifeather.morph.network.Constants;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -364,6 +362,32 @@ public abstract class DisguiseSyncer extends MorphClientObject
         }
     }
 
+    private record PositionRecord(
+            Vec3 pos, float xRot, float yRot,
+            Vec3 oldPos, float xRotOld, float yRotOld,
+            Vec3 motion
+    )
+    {
+        public static PositionRecord fromEntity(LivingEntity entity)
+        {
+            return new PositionRecord(
+                    entity.position(), entity.getXRot(), entity.getYRot(),
+                    entity.oldPosition(), entity.xRotO, entity.yRotO,
+                    entity.getDeltaMovement()
+            );
+        }
+
+        public void applyToEntity(LivingEntity entity)
+        {
+            entity.snapTo(pos, yRot, xRot);
+            entity.setOldPosAndRot(oldPos, yRotOld, xRotOld);
+            entity.setDeltaMovement(motion);
+        }
+    }
+
+    @Nullable
+    private PositionRecord disguiseLastPositionSaving;
+
     public void preRenderStateSetup()
     {
         if (!allowTick || disguiseInstance == null) return;
@@ -386,9 +410,11 @@ public abstract class DisguiseSyncer extends MorphClientObject
             yRotO = 180 + yRotO;
         }
 
+        disguiseLastPositionSaving = PositionRecord.fromEntity(disguiseInstance);
+
         disguiseInstance.snapTo(bindingPlayer.position(), yRot, xRot);
         disguiseInstance.setOldPosAndRot(bindingPlayer.oldPosition(), yRotO, xRotO);
-
+        disguiseInstance.setDeltaMovement(bindingPlayer.getDeltaMovement());
     }
 
     public void modifyRenderState(EntityRenderState renderState)
@@ -422,7 +448,12 @@ public abstract class DisguiseSyncer extends MorphClientObject
     {
         if (!allowTick || disguiseInstance == null) return;
 
-        disguiseInstance.snapTo(disguiseInstance.position().add(0, -4096, 0));
+        if (disguiseLastPositionSaving != null)
+        {
+            disguiseLastPositionSaving.applyToEntity(disguiseInstance);
+            disguiseLastPositionSaving = null;
+        }
+        //disguiseInstance.snapTo(disguiseInstance.position().add(0, -4096, 0));
     }
 
     public void postRenderSubmit()
