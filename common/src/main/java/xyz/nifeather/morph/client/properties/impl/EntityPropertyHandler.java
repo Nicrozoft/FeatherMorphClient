@@ -14,17 +14,14 @@ import net.minecraft.world.entity.EquipmentSlot;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
-import xyz.nifeather.morph.client.properties.AbstractPropertyHandler;
-import xyz.nifeather.morph.client.properties.ClientProperty;
-import xyz.nifeather.morph.client.properties.CommonInputHandles;
-import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.properties.*;
 import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
 
 public abstract class EntityPropertyHandler<E extends Entity> extends AbstractPropertyHandler<E>
 {
     public final ClientProperty<Component> CUSTOM_NAME = ClientProperty.of(PropertyNames.ENTITY_CUSTOM_NAME, CommonInputHandles::component);
     public final ClientProperty<Boolean> CUSTOM_NAME_VISIBLE = ClientProperty.of(PropertyNames.ENTITY_CUSTOM_NAME_VISIBLE, CommonInputHandles.BOOLEAN);
-    public final ClientProperty<EntityEquipment> EQUIPMENT = ClientProperty.of(PropertyNames.ENTITY_EQUIPMENT, CommonInputHandles::equipment);
+    public final ClientProperty<DisguiseEquipment> EQUIPMENT = ClientProperty.of(PropertyNames.ENTITY_EQUIPMENT, CommonInputHandles::equipment);
     public final ClientProperty<Boolean> DISPLAY_DISGUISE_EQUIPMENT = ClientProperty.of(PropertyNames.ENTITY_DISPLAY_DISGUISE_EQUIPMENT, CommonInputHandles.BOOLEAN);
 
     public EntityPropertyHandler()
@@ -49,7 +46,7 @@ public abstract class EntityPropertyHandler<E extends Entity> extends AbstractPr
         {
             if (!(entity instanceof IMorphClientEntity morphClientEntity) || !morphClientEntity.featherMorph$isDisguiseEntity()) return;
 
-            var equipment = (EntityEquipment) value;
+            var equipment = (DisguiseEquipment) value;
             var masterId = morphClientEntity.featherMorph$getMasterEntityId();
             var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(masterId);
 
@@ -59,7 +56,10 @@ public abstract class EntityPropertyHandler<E extends Entity> extends AbstractPr
             {
                 if (slot == EquipmentSlot.BODY || slot == EquipmentSlot.SADDLE) continue;
 
-                FeatherMorphClientBootstrap.getInstance().morphManager.setEquip(slot, equipment.get(slot));
+                var item = equipment.getItemOrNull(slot);
+
+                if (item != null)
+                    FeatherMorphClientBootstrap.getInstance().morphManager.setEquip(slot, item);
             }
         }
         else if (property.equals(DISPLAY_DISGUISE_EQUIPMENT))

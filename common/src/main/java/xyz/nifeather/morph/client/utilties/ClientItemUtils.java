@@ -49,5 +49,5 @@ public class ClientItemUtils
         return stack.getItemHolder().is(ResourceLocation.fromNamespaceAndPath("minecraft", "air"));
     }
 
-    private static final ItemStack air = new ItemStack(BuiltInRegistries.ITEM.getValue(ResourceLocation.fromNamespaceAndPath("minecraft", "air")));
+    public static final ItemStack air = new ItemStack(BuiltInRegistries.ITEM.getValue(ResourceLocation.fromNamespaceAndPath("minecraft", "air")));
 }

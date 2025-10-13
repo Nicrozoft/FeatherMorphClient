@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.network.chat.Component;
@@ -11,6 +12,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
@@ -127,12 +129,7 @@ public class EntityRendererHelper
 
         // apply position relative to the camera
         // Nametag offset
-        var labelOffset = renderState.nameTagAttachment != null
-                          ? renderState.nameTagAttachment
-                          : new Vec3(0, renderState.boundingBoxHeight, 0);
-
-        if (renderState.nameTag != null)
-            labelOffset = labelOffset.add(0, 0.3, 0);
+        var labelOffset = getLabelOffset(renderState);
 
         var positionDiff = anchorPosition.subtract(camera.position()).add(labelOffset);
         renderPoseStack.translate(positionDiff);
@@ -147,5 +144,24 @@ public class EntityRendererHelper
 
         collector.submitNameTag(renderPoseStack, Vec3.ZERO, 0, Component.literal(revealName).withColor(textColor), true, LightTexture.FULL_BRIGHT, 0, cameraRenderState);
         renderPoseStack.popPose();
+    }
+
+    private static @NotNull Vec3 getLabelOffset(EntityRenderState renderState)
+    {
+        var labelOffset = renderState.nameTagAttachment != null
+                          ? renderState.nameTagAttachment
+                          : new Vec3(0, renderState.boundingBoxHeight, 0);
+
+        if (renderState.nameTag != null)
+            labelOffset = labelOffset.add(0, 0.25, 0);
+
+        if (renderState instanceof AvatarRenderState avatarRenderState
+                && avatarRenderState.scoreText != null
+                && renderState.nameTagAttachment != null)
+        {
+            labelOffset = labelOffset.add(0, 9.0F * 1.15F * 0.025F, 0);
+        }
+
+        return labelOffset;
     }
 }

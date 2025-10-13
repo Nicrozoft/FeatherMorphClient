@@ -28,6 +28,7 @@ public class AnimHandlerIndex
         register(EntityType.WOLF, new WolfAnimationHandler());
         register(EntityType.PLAYER, new PlayerAnimationHandler());
         register(EntityType.CREAKING, new CreakingAnimationHandler());
+        register(EntityType.MANNEQUIN, new MannequinAnimationHandler());
     }
 
     public void register(EntityType<?> type, AnimationHandler handler)

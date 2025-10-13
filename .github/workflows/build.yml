@@ -21,8 +21,13 @@ jobs:
           cache: 'gradle'
       - name: Build with Gradle
         run: ./gradlew build
-      - name: Upload artifact
+      - name: Upload artifact (fabric)
         uses: actions/upload-artifact@v4
         with:
-          name: Artifact
-          path: build/libs/*.jar
+          name: fabric
+          path: fabric/build/libs
+      - name: Upload artifact (neoforge)
+        uses: actions/upload-artifact@v4
+        with:
+          name: neoforge
+          path: neoforge/build/libs

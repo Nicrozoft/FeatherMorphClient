@@ -19,8 +19,13 @@ jobs:
           cache: 'gradle'
       - name: Build with Gradle
         run: ./gradlew build
-      - name: Upload artifact
+      - name: Upload artifact (fabric)
         uses: AButler/upload-release-assets@v3.0
         with:
-          files: 'build/libs/*.jar'
+          files: 'fabric/build/libs/*.jar'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload artifact (neoforge)
+        uses: AButler/upload-release-assets@v3.0
+        with:
+          files: 'neoforge/build/libs/*.jar'
           repo-token: ${{ secrets.GITHUB_TOKEN }}

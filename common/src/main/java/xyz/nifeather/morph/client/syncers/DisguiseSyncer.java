@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.entity.state.GuardianRenderState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.Horse;
@@ -35,6 +36,7 @@ import xyz.nifeather.morph.client.mixin.accessors.AbstractHorseEntityMixin;
 import xyz.nifeather.morph.client.mixin.accessors.EntityAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LimbAnimatorAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
+import xyz.nifeather.morph.client.mixin.accessors.LivingEntityAccessor;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 import xyz.nifeather.morph.client.utilties.ClientItemUtils;
 
@@ -377,13 +379,59 @@ public abstract class DisguiseSyncer extends MorphClientObject
         }
     }
 
+    private record PositionRecord(
+            Vec3 pos, float xRot, float yRot,
+            Vec3 oldPos, float xRotOld, float yRotOld,
+            Vec3 motion
+    )
+    {
+        public static PositionRecord fromEntity(LivingEntity entity)
+        {
+            return new PositionRecord(
+                    entity.position(), entity.getXRot(), entity.getYRot(),
+                    entity.oldPosition(), entity.xRotO, entity.yRotO,
+                    entity.getDeltaMovement()
+            );
+        }
+
+        public void applyToEntity(LivingEntity entity)
+        {
+            entity.snapTo(pos, yRot, xRot);
+            entity.setOldPosAndRot(oldPos, yRotOld, xRotOld);
+            entity.setDeltaMovement(motion);
+        }
+    }
+
+    @Nullable
+    private PositionRecord disguiseLastPositionSaving;
+
     public void preRenderStateSetup()
     {
         if (!allowTick || disguiseInstance == null) return;
 
-        disguiseInstance.snapTo(bindingPlayer.position(), bindingPlayer.getYRot(), bindingPlayer.getXRot());
-        disguiseInstance.setOldPosAndRot(bindingPlayer.oldPosition(), bindingPlayer.yRotO, bindingPlayer.xRotO);
+        var xRot = bindingPlayer.getXRot();
+        var xRotO = bindingPlayer.xRotO;
 
+        if (disguiseInstance.getType() == EntityType.PHANTOM)
+        {
+            xRot = -xRot;
+            xRotO = -xRotO;
+        }
+
+        var yRot = bindingPlayer.getYRot();
+        var yRotO = bindingPlayer.yRotO;
+
+        if (disguiseInstance.getType() == EntityType.ENDER_DRAGON)
+        {
+            yRot = 180 + yRot;
+            yRotO = 180 + yRotO;
+        }
+
+        disguiseLastPositionSaving = PositionRecord.fromEntity(disguiseInstance);
+
+        disguiseInstance.snapTo(bindingPlayer.position(), yRot, xRot);
+        disguiseInstance.setOldPosAndRot(bindingPlayer.oldPosition(), yRotO, xRotO);
+        disguiseInstance.setDeltaMovement(bindingPlayer.getDeltaMovement());
     }
 
     public void modifyRenderState(EntityRenderState renderState)
@@ -417,7 +465,12 @@ public abstract class DisguiseSyncer extends MorphClientObject
     {
         if (!allowTick || disguiseInstance == null) return;
 
-        disguiseInstance.snapTo(disguiseInstance.position().add(0, -4096, 0));
+        if (disguiseLastPositionSaving != null)
+        {
+            disguiseLastPositionSaving.applyToEntity(disguiseInstance);
+            disguiseLastPositionSaving = null;
+        }
+        //disguiseInstance.snapTo(disguiseInstance.position().add(0, -4096, 0));
     }
 
     public void postRenderSubmit()
@@ -634,14 +687,19 @@ public abstract class DisguiseSyncer extends MorphClientObject
             scaleAttribute.setBaseValue(bindingPlayer.getAttributeValue(Attributes.SCALE));
 
         // Hand Swing
-        entity.swinging = bindingPlayer.swinging;
-        entity.attackAnim = bindingPlayer.attackAnim;
-        entity.oAttackAnim = bindingPlayer.oAttackAnim;
-        entity.swingTime = bindingPlayer.swingTime;
-        entity.swingingArm = bindingPlayer.swingingArm;
+        // Mannequin don't have swing animation
+        if (entity.getType() != EntityType.MANNEQUIN)
+        {
+            entity.swinging = bindingPlayer.swinging;
+            entity.attackAnim = bindingPlayer.attackAnim;
+            entity.oAttackAnim = bindingPlayer.oAttackAnim;
+            entity.swingTime = bindingPlayer.swingTime;
+            entity.swingingArm = bindingPlayer.swingingArm;
+        }
 
         // Hand and sneaking
-        entity.setShiftKeyDown(bindingPlayer.isShiftKeyDown());
+        if (entity.getType() != EntityType.MANNEQUIN)
+            entity.setShiftKeyDown(bindingPlayer.isShiftKeyDown());
 
         // Hurt and death
         entity.hurtTime = bindingPlayer.hurtTime;
@@ -666,8 +724,12 @@ public abstract class DisguiseSyncer extends MorphClientObject
         entity.setPose(bindingPlayer.getPose());
         entity.setSwimming(bindingPlayer.isSwimming());
 
-        entity.isUsingItem();
-        entity.releaseUsingItem();
+        if (entity.isUsingItem() != bindingPlayer.isUsingItem())
+        {
+            entity.startUsingItem(bindingPlayer.getUsedItemHand());
+            ((LivingEntityAccessor)entity).callSetLivingEntityFlag(1, bindingPlayer.isUsingItem());
+            ((LivingEntityAccessor)entity).callSetLivingEntityFlag(2, bindingPlayer.getUsedItemHand() == InteractionHand.OFF_HAND);
+        }
 
         if (bindingPlayer.isPassenger() && entity.getVehicle() != bindingPlayer)
         {

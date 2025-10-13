@@ -1,9 +1,5 @@
 package xyz.nifeather.morph.client;
 
-public class ModMenuApiImpl
-{
-}
-/*
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 
@@ -15,4 +11,3 @@ public class ModMenuApiImpl implements ModMenuApi
         return parent -> FeatherMorphClientBootstrap.getInstance().getFactory(parent).build();
     }
 }
-*/
