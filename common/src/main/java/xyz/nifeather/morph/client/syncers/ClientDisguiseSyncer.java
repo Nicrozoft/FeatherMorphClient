@@ -9,6 +9,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.EntityCache;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
@@ -16,6 +17,9 @@ import xyz.nifeather.morph.client.network.ServerHandler;
 import xiamomc.pluginbase.Annotations.Initializer;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xiamomc.pluginbase.Bindables.Bindable;
+import xyz.nifeather.morph.client.properties.ClientProperty;
+
+import java.util.Map;
 
 public class ClientDisguiseSyncer extends DisguiseSyncer
 {

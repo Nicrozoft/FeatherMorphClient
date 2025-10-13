@@ -35,7 +35,6 @@ import xyz.nifeather.morph.client.entities.*;
 import xyz.nifeather.morph.client.mixin.accessors.AbstractHorseEntityMixin;
 import xyz.nifeather.morph.client.mixin.accessors.EntityAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LimbAnimatorAccessor;
-import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.mixin.accessors.LivingEntityAccessor;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 import xyz.nifeather.morph.client.utilties.ClientItemUtils;
@@ -88,12 +87,23 @@ public abstract class DisguiseSyncer extends MorphClientObject
     @NotNull
     protected abstract EntityCache getEntityCache();
 
-    protected final Map<ClientProperty<?>, Object> propertyMap = new ConcurrentHashMap<>();
+    protected final Map<String, String> cachedProperties = new ConcurrentHashMap<>();
+
+    public void mergeNetworkProperties(Map<String, String> map)
+    {
+        cachedProperties.putAll(map);
+    }
+
+    public void setCachedNetworkProperties(Map<String, String> map)
+    {
+        cachedProperties.clear();
+        cachedProperties.putAll(map);
+    }
 
     @Unmodifiable
-    public Map<ClientProperty<?>, Object> getProperties()
+    public Map<String, String> cachedNetworkProperties()
     {
-        return ImmutableMap.copyOf(propertyMap);
+        return ImmutableMap.copyOf(cachedProperties);
     }
 
     @NotNull
@@ -802,6 +812,8 @@ public abstract class DisguiseSyncer extends MorphClientObject
         world = null;
         prevWorld = null;
         disposed.set(true);
+
+        cachedProperties.clear();
 
         bindingPlayer.refreshDimensions();
 

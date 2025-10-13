@@ -2,7 +2,6 @@ package xyz.nifeather.morph.client.properties;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import xyz.nifeather.morph.client.properties.impl.*;
 
 import java.util.Map;
@@ -24,7 +23,7 @@ public class PropertyHandlers
         // yes this is empty
     }
 
-    private final Map<EntityType<?>, AbstractPropertyHandler<?>> handlerMap = new ConcurrentHashMap<>();
+    private final Map<EntityType<?>, AbstractProperties<?>> handlerMap = new ConcurrentHashMap<>();
 
     private final FallbackPropertyHandler fallbackPropertyHandler = new FallbackPropertyHandler();
 
@@ -86,14 +85,14 @@ public class PropertyHandlers
         return fallbackPropertyHandler;
     }
 
-    public <E extends Entity> Optional<AbstractPropertyHandler<E>> getHandler(E entity)
+    public <E extends Entity> Optional<AbstractProperties<E>> getHandler(E entity)
     {
         var match = handlerMap.getOrDefault(entity.getType(), null);
 
-        return Optional.of((AbstractPropertyHandler<E>) Objects.requireNonNullElse(match, fallbackPropertyHandler));
+        return Optional.of((AbstractProperties<E>) Objects.requireNonNullElse(match, fallbackPropertyHandler));
     }
 
-    public <E extends Entity> void register(EntityType<E> entityType, AbstractPropertyHandler<E> handler)
+    public <E extends Entity> void register(EntityType<E> entityType, AbstractProperties<E> handler)
     {
         handlerMap.put(entityType, handler);
     }

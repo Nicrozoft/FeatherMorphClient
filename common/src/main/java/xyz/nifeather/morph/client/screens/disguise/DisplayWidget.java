@@ -10,7 +10,6 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.model.geom.builders.UVPair;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -29,6 +28,8 @@ import xyz.nifeather.morph.client.graphics.DrawableSprite;
 import xyz.nifeather.morph.client.graphics.EntityDisplay;
 import xyz.nifeather.morph.client.graphics.container.Container;
 import xyz.nifeather.morph.client.graphics.transforms.easings.Easing;
+
+import java.util.Map;
 
 public class DisplayWidget extends MorphClientObject implements NarratableEntry, Renderable, GuiEventListener
 {
@@ -334,7 +335,7 @@ public class DisplayWidget extends MorphClientObject implements NarratableEntry,
                             ? ActivationState.NONE
                             : ActivationState.WAITING);
 
-                    FeatherMorphClientBootstrap.getInstance().sendMorphCommand(this.identifier);
+                    FeatherMorphClientBootstrap.getInstance().requestDisguise(this.identifier, Map.of());
                     playClickSound();
                 }
 
@@ -363,7 +364,7 @@ public class DisplayWidget extends MorphClientObject implements NarratableEntry,
             else if (actState == ActivationState.CURRENT && !isPlayerItSelf)
             {
                 activationState.set(ActivationState.WAITING);
-                FeatherMorphClientBootstrap.getInstance().sendMorphCommand(null);
+                FeatherMorphClientBootstrap.getInstance().requestDisguise(null, Map.of());
                 playClickSound();
             }
         }

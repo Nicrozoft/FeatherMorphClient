@@ -5,21 +5,26 @@ import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.network.chat.Component;
+import xyz.nifeather.morph.client.commands.subCommands.SaveDisguiseSubCommand;
 import xyz.nifeather.morph.shared.commands.IBrigadierCommand;
 
 import java.util.List;
 
 public class FabricClientCommand implements IBrigadierCommand<FabricClientCommandSource>
 {
-    private final List<IBrigadierCommand<FabricClientCommandSource>> subCommands = List.of();
+    private final List<IBrigadierCommand<FabricClientCommandSource>> subCommands = List.of(
+            new SaveDisguiseSubCommand()
+    );
 
     @Override
     public void register(CommandDispatcher<FabricClientCommandSource> dispatcher)
     {
-        dispatcher.register(
-                ClientCommandManager.literal("morphclient")
-                        .executes(this::executeNoArgs)
-        );
+        var cmd = ClientCommandManager.literal("morphclient")
+                .executes(this::executeNoArgs);
+
+        subCommands.forEach(child -> child.registerAsChild(cmd));
+
+        dispatcher.register(cmd);
     }
 
     private int executeNoArgs(CommandContext<FabricClientCommandSource> context)

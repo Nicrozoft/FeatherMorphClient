@@ -1,10 +1,12 @@
 package xyz.nifeather.morph.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.Util;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -28,25 +30,22 @@ import xyz.nifeather.morph.client.graphics.hud.HudRenderHelper;
 import xyz.nifeather.morph.client.graphics.toasts.DisguiseEntryToast;
 import xyz.nifeather.morph.client.graphics.toasts.RequestToast;
 import xyz.nifeather.morph.client.network.ServerHandler;
+import xyz.nifeather.morph.client.network.commands.frog.C2SFrogMorphCommand;
 import xyz.nifeather.morph.client.properties.PropertyHandlers;
 import xyz.nifeather.morph.client.screens.WaitingForServerScreen;
 import xyz.nifeather.morph.client.screens.disguise.DisguiseScreen;
 import xyz.nifeather.morph.client.screens.emote.EmoteScreen;
+import xyz.nifeather.morph.client.storage.SavedDisguiseStorage;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 import xyz.nifeather.morph.client.syncers.animations.AnimHandlerIndex;
-import xyz.nifeather.morph.network.Constants;
-import xyz.nifeather.morph.network.commands.C2S.C2SActivateSkillCommand;
-import xyz.nifeather.morph.network.commands.C2S.C2SMorphCommand;
-import xyz.nifeather.morph.network.commands.C2S.C2SSetSingleOptionCommand;
-import xyz.nifeather.morph.network.commands.C2S.C2SToggleSelfCommand;
-import xyz.nifeather.morph.network.commands.C2S.C2SUnmorphCommand;
+import xyz.nifeather.morph.network.commands.C2S.*;
 import xyz.nifeather.morph.network.commands.S2C.S2CUpdateRequestStatusCommand;
 import xyz.nifeather.morph.shared.SharedValues;
 import xyz.nifeather.morph.shared.platform.Services;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
@@ -113,6 +112,7 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
     public ServerHandler serverHandler;
     private ClientSkillHandler skillHandler;
     private DisguiseInstanceTracker disguiseTracker;
+    public SavedDisguiseStorage savedDisguiseStorage;
 
     private final AnimHandlerIndex animHandlerIndex = new AnimHandlerIndex();
 
@@ -145,8 +145,10 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
         Services.PLATFORM.registerHudRenderEvent(hudRenderHelper::onRender);
 
         modelWorkarounds = ModelWorkarounds.getInstance();
+        savedDisguiseStorage = new SavedDisguiseStorage();
 
         PropertyHandlers.init();
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> savedDisguiseStorage.clearCache());
     }
 
     private final HudRenderHelper hudRenderHelper = new HudRenderHelper();
@@ -349,14 +351,14 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
         getModConfigData().allowClientView = clientViewEnabled;
     }
 
-    public void sendMorphCommand(String id)
+    public void requestDisguise(String id, Map<String, String> properties)
     {
         if (id == null) id = UNMORPH_STIRNG;
 
         if (UNMORPH_STIRNG.equals(id))
             serverHandler.sendCommand(new C2SUnmorphCommand());
         else
-            serverHandler.sendCommand(new C2SMorphCommand(id));
+            serverHandler.sendCommand(new C2SFrogMorphCommand(id, properties));
     }
 
     //region Config

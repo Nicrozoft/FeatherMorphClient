@@ -154,7 +154,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         }
         catch (Throwable t)
         {
-            logger.error("Failed to send command: " + t.getMessage());
+            logger.error("Failed to send command", t);
         }
 
         return true;
