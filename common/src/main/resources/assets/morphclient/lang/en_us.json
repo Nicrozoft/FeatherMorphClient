@@ -98,6 +98,7 @@
   "text.morphclient.not_disguising": "You're not disguising!",
   "text.morphclient.save_morph_success": "Successfully saved current morph as %s!",
   "text.morphclient.save_morph_failed": "Can't save disguise, see log for more info",
+  "text.morphclient.refresh_cache": "Cache refresh success",
   "title.morphclient.config": "FeatherMorph client settings",
   "url.morphclient.circles": "%s, do you speak *click the circles*?",
   "url.morphclient.owc2024": "The Zenithfall",

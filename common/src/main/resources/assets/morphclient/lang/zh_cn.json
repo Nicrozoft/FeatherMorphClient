@@ -100,6 +100,7 @@
   "text.morphclient.save_morph_success": "成功保存当前形态为 %s!",
   "text.morphclient.save_morph_failed": "未能保存形态，请查看日志获取更多信息",
   "url.morphclient.circles": "%s, 你会说 *click the circles* 吗?",
+  "text.morphclient.refresh_cache": "成功刷新缓存",
   "url.morphclient.owc2024": "盛极而衰",
   "url.morphclient.starrail": "♫ 无愧 无悔 ♫",
   "url.morphclient.starrail2": "♫ 为何不配？为何要跪？ ♫",

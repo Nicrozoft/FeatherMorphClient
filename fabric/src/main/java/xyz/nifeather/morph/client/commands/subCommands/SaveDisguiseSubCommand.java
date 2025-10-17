@@ -46,7 +46,18 @@ public class SaveDisguiseSubCommand implements IBrigadierCommand<FabricClientCom
                                                         .executes(this::runSelectDisguise)
                                         )
                         )
+                        .then(
+                                ClientCommandManager.literal("refresh")
+                                        .executes(this::refreshStorage)
+                        )
         );
+    }
+
+    private int refreshStorage(CommandContext<FabricClientCommandSource> context)
+    {
+        savedDisguiseStorage().refresh();
+        context.getSource().sendFeedback(Component.translatable("text.morphclient.refresh_cache"));
+        return 1;
     }
 
     private SavedDisguiseStorage savedDisguiseStorage()

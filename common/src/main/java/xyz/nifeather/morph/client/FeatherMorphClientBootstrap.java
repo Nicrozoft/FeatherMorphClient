@@ -30,7 +30,6 @@ import xyz.nifeather.morph.client.graphics.hud.HudRenderHelper;
 import xyz.nifeather.morph.client.graphics.toasts.DisguiseEntryToast;
 import xyz.nifeather.morph.client.graphics.toasts.RequestToast;
 import xyz.nifeather.morph.client.network.ServerHandler;
-import xyz.nifeather.morph.client.network.commands.frog.C2SFrogMorphCommand;
 import xyz.nifeather.morph.client.properties.PropertyHandlers;
 import xyz.nifeather.morph.client.screens.WaitingForServerScreen;
 import xyz.nifeather.morph.client.screens.disguise.DisguiseScreen;
@@ -45,6 +44,7 @@ import xyz.nifeather.morph.shared.platform.Services;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -146,6 +146,7 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
 
         modelWorkarounds = ModelWorkarounds.getInstance();
         savedDisguiseStorage = new SavedDisguiseStorage();
+        savedDisguiseStorage.refresh();
 
         PropertyHandlers.init();
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> savedDisguiseStorage.clearCache());
@@ -317,7 +318,7 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
 
             if (player != null && player.input != null && player.input.keyPresses.shift())
             {
-                serverHandler.sendCommand(new C2SMorphCommand(null));
+                serverHandler.sendCommand(new C2SMorphCommand(null, Collections.emptyMap()));
             }
             else if (client.screen == null)
             {
@@ -358,7 +359,7 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
         if (UNMORPH_STIRNG.equals(id))
             serverHandler.sendCommand(new C2SUnmorphCommand());
         else
-            serverHandler.sendCommand(new C2SFrogMorphCommand(id, properties));
+            serverHandler.sendCommand(new C2SMorphCommand(id, properties));
     }
 
     //region Config
