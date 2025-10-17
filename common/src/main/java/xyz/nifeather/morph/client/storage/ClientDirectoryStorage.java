@@ -181,12 +181,15 @@ public class ClientDirectoryStorage extends MorphClientObject
             }
             catch (Throwable t)
             {
-                logger.error("Unable to create file '%s': %s".formatted(fileName, t.getLocalizedMessage()));
-                t.printStackTrace();
+                logger.error("Unable to create file '%s'".formatted(fileName), t);
             }
         }
 
-        if (!file.isFile()) return null;
+        if (!file.isFile())
+        {
+            logger.error("The given file is a directory");
+            return null;
+        }
 
         return file;
     }

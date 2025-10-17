@@ -166,6 +166,11 @@ public abstract class ClientDirectoryJsonBasedStorage<T> extends MorphClientObje
         return obj == null ? null : (T) obj;
     }
 
+    public File getFile(String key)
+    {
+        return clientDirectoryStorage.getFile(key + ".json", false);
+    }
+
     /**
      * @param key The file name
      * @return NULL if the file does not exist or cannot be read, or there's an error during convert
@@ -178,7 +183,7 @@ public abstract class ClientDirectoryJsonBasedStorage<T> extends MorphClientObje
         var cached = instancesMap.getOrDefault(key, null);
         if (cached != null) return cached == getDefault() ? null : (T) cached;
 
-        var file = clientDirectoryStorage.getFile(key + ".json", false);
+        var file = getFile(key);
         var obj = loadFrom(file);
 
         if (obj == null)

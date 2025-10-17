@@ -28,7 +28,7 @@ public class SavedDisguiseStorage extends ClientDirectoryJsonBasedStorage<SavedD
         var file = this.clientDirectoryStorage.getFile(path, true);
         if (file == null)
         {
-            logger.error("Can't create storage file at '%s'".formatted(path));
+            logger.error("Can't create storage file at '%s' for unknown reason".formatted(path));
             return false;
         }
 
@@ -42,6 +42,14 @@ public class SavedDisguiseStorage extends ClientDirectoryJsonBasedStorage<SavedD
             logger.error("Can't write content to file", t);
             return false;
         }
+    }
+
+    public boolean drop(String id)
+    {
+        var file = getFile(id);
+        if (!file.exists()) return false;
+
+        return file.delete();
     }
 
     public List<String> listAll()

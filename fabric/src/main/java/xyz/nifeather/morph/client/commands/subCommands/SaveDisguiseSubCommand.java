@@ -70,7 +70,13 @@ public class SaveDisguiseSubCommand implements IBrigadierCommand<FabricClientCom
     private int runDropDisguise(CommandContext<FabricClientCommandSource> context)
     {
         var saveName = StringArgumentType.getString(context, "name");
-        context.getSource().sendFeedback(Component.literal("Dropped %s!".formatted(saveName)));
+
+        Component message = savedDisguiseStorage().drop(saveName)
+                ? Component.translatable("text.morphclient.drop_morph_success", saveName)
+                : Component.translatable("text.morphclient.drop_morph_failed",saveName);
+
+        context.getSource().sendFeedback(message);
+
         return 1;
     }
 
@@ -81,7 +87,7 @@ public class SaveDisguiseSubCommand implements IBrigadierCommand<FabricClientCom
 
         if (saved == null || saved.equals(savedDisguiseStorage().getDefault()))
         {
-            context.getSource().sendFeedback(Component.literal("Not found!"));
+            context.getSource().sendFeedback(Component.translatable("text.morphclient.saved_morph_not_found"));
             return 0;
         }
 
@@ -94,7 +100,7 @@ public class SaveDisguiseSubCommand implements IBrigadierCommand<FabricClientCom
     {
         if (ClientDisguiseSyncer.getCurrentInstance() == null || ClientDisguiseSyncer.getCurrentInstance().disposed())
         {
-            context.getSource().sendFeedback(Component.literal("Not disguising!"));
+            context.getSource().sendFeedback(Component.translatable("text.morphclient.not_disguising"));
             return 0;
         }
 
@@ -102,9 +108,9 @@ public class SaveDisguiseSubCommand implements IBrigadierCommand<FabricClientCom
         var savedDisguise = SavedDisguise.fromSyncer(ClientDisguiseSyncer.getCurrentInstance());
 
         if (savedDisguiseStorage().save(savedDisguise, saveName))
-            context.getSource().sendFeedback(Component.literal("Saved as %s!".formatted(saveName)));
+            context.getSource().sendFeedback(Component.translatable("text.morphclient.save_morph_success", saveName));
         else
-            context.getSource().sendFeedback(Component.literal("未能保存当前形态"));
+            context.getSource().sendFeedback(Component.translatable("text.morphclient.save_morph_failed"));
         return 1;
     }
 }
