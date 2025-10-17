@@ -21,7 +21,7 @@ import xiamomc.pluginbase.Bindables.Bindable;
 import xiamomc.pluginbase.Exceptions.NullDependencyException;
 import xyz.nifeather.morph.client.graphics.toasts.DisguiseEntryToast;
 import xyz.nifeather.morph.client.graphics.toasts.NewDisguiseSetToast;
-import xyz.nifeather.morph.client.properties.AbstractProperties;
+import xyz.nifeather.morph.client.properties.AbstractPropertyHandler;
 import xyz.nifeather.morph.client.properties.PropertyHandlers;
 import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
@@ -421,7 +421,7 @@ public class ClientMorphManager extends MorphClientObject
     }
 
     @Nullable
-    private AbstractProperties<?> propertyHandler;
+    private AbstractPropertyHandler<?> propertyHandler;
 
     public void handlePropertiesUpdate(Map<String, String> input)
     {
@@ -434,7 +434,7 @@ public class ClientMorphManager extends MorphClientObject
         if (entity == null)
             return;
 
-        var propertyHandler = (AbstractProperties<Entity>) propertyHandler();
+        var propertyHandler = (AbstractPropertyHandler<Entity>) propertyHandler();
         if (propertyHandler == null)
             return;
 
@@ -442,7 +442,7 @@ public class ClientMorphManager extends MorphClientObject
     }
 
     @Nullable
-    public AbstractProperties<?> propertyHandler()
+    public AbstractPropertyHandler<?> propertyHandler()
     {
         return this.propertyHandler;
     }
