@@ -63,15 +63,4 @@ public class EntityRenderStateMixin implements IDisguiseRenderState
     @Unique
     private boolean morphclient$isClientPlayer;
 
-    @Override
-    public boolean morphclient$isClientPlayer()
-    {
-        return morphclient$isClientPlayer;
-    }
-
-    @Override
-    public void morphclient$setClientPlayer(boolean isClientPlayer)
-    {
-        this.morphclient$isClientPlayer = isClientPlayer;
-    }
 }

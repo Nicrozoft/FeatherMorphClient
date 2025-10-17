@@ -18,7 +18,4 @@ public interface IDisguiseRenderState
     @Nullable
     DisguiseSyncer morphclient$getDisguiseSyncer();
     void morphclient$setDisguiseSyncer(@Nullable DisguiseSyncer syncer);
-
-    boolean morphclient$isClientPlayer();
-    void morphclient$setClientPlayer(boolean isClientPlayer);
 }

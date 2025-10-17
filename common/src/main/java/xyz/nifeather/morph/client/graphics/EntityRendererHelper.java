@@ -14,6 +14,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.entities.IDisguiseRenderState;
@@ -26,6 +28,8 @@ import java.util.Map;
 
 public class EntityRendererHelper
 {
+    private static final Logger log = LoggerFactory.getLogger(EntityRendererHelper.class);
+
     public EntityRendererHelper()
     {
         instance = this;
@@ -49,7 +53,6 @@ public class EntityRendererHelper
     public final void setupEntityState(Entity renderingEntity, IDisguiseRenderState renderState)
     {
         // Reset render state
-        renderState.morphclient$setClientPlayer(false);
         renderState.morphclient$setRevealName(null);
         renderState.morphclient$setMasterPosition(null);
         renderState.morphclient$setDisguiseSyncer(null);
@@ -95,7 +98,6 @@ public class EntityRendererHelper
         String text = "%s(%s)".formatted(disguiseEntityName, revealName);
 
         renderState.morphclient$setRevealName(text);
-        renderState.morphclient$setClientPlayer(renderingEntity == Minecraft.getInstance().player);
     }
 
     private final PoseStack renderPoseStack = new PoseStack();
@@ -104,15 +106,18 @@ public class EntityRendererHelper
                                        SubmitNodeCollector collector, CameraRenderState cameraRenderState)
     {
         if (!doRenderRealName) return;
-        if (!(renderState instanceof IDisguiseRenderState disguiseRenderState)) return;
+        if (!(renderState instanceof IDisguiseRenderState disguiseRenderState))
+            throw new RuntimeException("Given render state is not an instance of IDisguiseRenderState");
 
-        var syncer = disguiseRenderState.morphclient$getDisguiseSyncer();
-        if (syncer == null) return;
+        // Don't render if reveal name is null
+        var revealName = disguiseRenderState.morphclient$getRevealName();
+        if (revealName == null)
+            return;
 
         // apply rotation
         var camera = Minecraft.getInstance().getEntityRenderDispatcher().camera;
         if (camera == null)
-            return;
+            throw new RuntimeException("Camera is NULL!");
 
         float tickDelta = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
 
@@ -121,11 +126,13 @@ public class EntityRendererHelper
 
         renderPoseStack.pushPose();
 
-        var revealName = disguiseRenderState.morphclient$getRevealName();
-        if (revealName == null) revealName = "<client unknown>(%s)".formatted(syncer.getBindingPlayer().getPlainTextName());
-
-        var bindingPlayer = syncer.getBindingPlayer();
-        var anchorPosition = Mth.lerp(tickDelta, bindingPlayer.oldPosition(), bindingPlayer.position());
+        Vec3 anchorPosition = ((IDisguiseRenderState) renderState).morphclient$masterPosition();
+        var syncer = disguiseRenderState.morphclient$getDisguiseSyncer();
+        if (syncer != null)
+        {
+            var bindingPlayer = syncer.getBindingPlayer();
+            anchorPosition = Mth.lerp(tickDelta, bindingPlayer.oldPosition(), bindingPlayer.position());
+        }
 
         // apply position relative to the camera
         // Nametag offset
@@ -142,6 +149,7 @@ public class EntityRendererHelper
             renderPoseStack.scale(scale, scale, scale);
         }
 
+        //System.out.println("Submit! For name " + revealName);
         collector.submitNameTag(renderPoseStack, Vec3.ZERO, 0, Component.literal(revealName).withColor(textColor), true, LightTexture.FULL_BRIGHT, 0, cameraRenderState);
         renderPoseStack.popPose();
     }
