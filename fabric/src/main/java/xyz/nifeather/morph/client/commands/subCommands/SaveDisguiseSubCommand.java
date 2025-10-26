@@ -9,9 +9,14 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.network.chat.Component;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
+import xyz.nifeather.morph.client.graphics.color.MaterialColors;
+import xyz.nifeather.morph.client.network.handlers.V3ProtocolHandler;
+import xyz.nifeather.morph.client.properties.struct.MorphEquipmentStruct;
 import xyz.nifeather.morph.client.storage.SavedDisguiseStorage;
 import xyz.nifeather.morph.client.storage.struct.SavedDisguise;
 import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
+import xyz.nifeather.morph.network.Constants;
+import xyz.nifeather.morph.network.utils.ProtocolEquipmentSlot;
 import xyz.nifeather.morph.shared.commands.IBrigadierCommand;
 
 import java.util.concurrent.CompletableFuture;
@@ -122,6 +127,12 @@ public class SaveDisguiseSubCommand implements IBrigadierCommand<FabricClientCom
             context.getSource().sendFeedback(Component.translatable("text.morphclient.save_morph_success", saveName));
         else
             context.getSource().sendFeedback(Component.translatable("text.morphclient.save_morph_failed"));
+
+        var serverHandler = FeatherMorphClientBootstrap.getInstance().serverHandler;
+        var requiredApiLevel = Constants.ApiLevel.NETWORK_DISGUISE_PROPERTIES.protocolVersion;
+        if (!(serverHandler.protocolHandler() instanceof V3ProtocolHandler) || serverHandler.getServerApiVersion() < requiredApiLevel)
+            context.getSource().sendFeedback(Component.translatable("text.morphclient.saving_not_supported").withColor(MaterialColors.Amber500.getColor()));
+
         return 1;
     }
 }
