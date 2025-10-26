@@ -32,7 +32,9 @@ public class SavedDisguiseStorage extends ClientDirectoryJsonBasedStorage<SavedD
         for (File file : this.clientDirectoryStorage.getFiles())
         {
             var key = this.getKeyFromFile(file);
-            cachedIDs.add(key);
+
+            if (key != null)
+                cachedIDs.add(key);
         }
     }
 
