@@ -1,6 +1,7 @@
 package xyz.nifeather.morph.client.storage;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import org.apache.commons.io.FileUtils;
 import xyz.nifeather.morph.client.storage.struct.SavedDisguise;
 
@@ -15,6 +16,8 @@ public class SavedDisguiseStorage extends ClientDirectoryJsonBasedStorage<SavedD
     public SavedDisguiseStorage()
     {
         super("saved_disguises");
+
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> refresh());
     }
 
     @Override

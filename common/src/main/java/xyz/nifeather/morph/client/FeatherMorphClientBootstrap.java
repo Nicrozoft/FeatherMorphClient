@@ -146,7 +146,6 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
 
         modelWorkarounds = ModelWorkarounds.getInstance();
         savedDisguiseStorage = new SavedDisguiseStorage();
-        savedDisguiseStorage.refresh();
 
         PropertyHandlers.init();
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> savedDisguiseStorage.clearCache());
