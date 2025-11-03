@@ -139,20 +139,7 @@ public class CommonInputHandles
     }
 
     public static Optional<ResolvableProfile> resolvableProfile(String input)
-    {/*
-        switch (ResolvableProfile.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(input)))
-        {
-            case DataResult.Error<ResolvableProfile> v ->
-            {
-                return Optional.empty();
-            }
-            case DataResult.Success<ResolvableProfile> v ->
-            {
-                return Optional.of(v.value());
-            }
-        }*/
-
-
+    {
         var record = gson.fromJson(input, MorphResolvableProfileStruct.class);
         return record.dynamic()
                ? resolvableProfileDynamic(record)
