@@ -5,11 +5,15 @@ import com.google.common.collect.MultimapBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.ClientAsset;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
@@ -18,9 +22,13 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.PlayerModelType;
+import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.component.ResolvableProfile;
+import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
+import xyz.nifeather.morph.client.mixin.accessors.ResolvableProfileAccessor;
 import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
 import xyz.nifeather.morph.client.properties.struct.MorphEquipmentStruct;
 import xyz.nifeather.morph.client.properties.struct.MorphProfileProperty;
@@ -131,7 +139,20 @@ public class CommonInputHandles
     }
 
     public static Optional<ResolvableProfile> resolvableProfile(String input)
-    {
+    {/*
+        switch (ResolvableProfile.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(input)))
+        {
+            case DataResult.Error<ResolvableProfile> v ->
+            {
+                return Optional.empty();
+            }
+            case DataResult.Success<ResolvableProfile> v ->
+            {
+                return Optional.of(v.value());
+            }
+        }*/
+
+
         var record = gson.fromJson(input, MorphResolvableProfileStruct.class);
         return record.dynamic()
                ? resolvableProfileDynamic(record)
@@ -158,6 +179,7 @@ public class CommonInputHandles
             return Optional.empty();
         }
 
+        // properties
         ImmutableMultimap.Builder<String, Property> propertiesBuilder = ImmutableMultimap.builder();
         for (String propertyJson : record.properties())
         {
@@ -166,7 +188,28 @@ public class CommonInputHandles
         }
 
         var profile = new GameProfile(record.id(), record.name(), new PropertyMap(propertiesBuilder.build()));
-        return Optional.of(ResolvableProfile.createResolved(profile));
+        var skinPatch = new PlayerSkin.Patch(
+                readNullableResourceTexture(record.bodyTexture()),
+                readNullableResourceTexture(record.cape()),
+                readNullableResourceTexture(record.elytra()),
+                readEnum(PlayerModelType.values(), record.model())
+        );
+
+        // we have no way but doing this, or we have to use NMS on both side!
+        ResolvableProfile resolvableProfile = ResolvableProfile.createResolved(profile);
+        ((ResolvableProfileAccessor)(Object)resolvableProfile).setSkinPatch(skinPatch);
+
+        return Optional.of(resolvableProfile);
+    }
+
+    private static Optional<ClientAsset.ResourceTexture> readNullableResourceTexture(@Nullable String input)
+    {
+        if (input == null) return Optional.empty();
+
+        ResourceLocation location = ResourceLocation.tryParse(input);
+        if (location == null) return Optional.empty();
+
+        return Optional.of(new ClientAsset.ResourceTexture(location));
     }
 
     public static Optional<GameProfile> gameProfile(String input)

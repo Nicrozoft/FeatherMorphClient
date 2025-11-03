@@ -28,6 +28,7 @@
     "accessors.PigAccessor",
     "accessors.PlayerAccessor",
     "accessors.RabbitAccessor",
+    "accessors.ResolvableProfileAccessor",
     "accessors.ShulkerAccessor",
     "accessors.ShulkerEntityAccessor",
     "accessors.TropicalFishAccessor",
