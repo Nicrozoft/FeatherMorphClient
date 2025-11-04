@@ -18,6 +18,6 @@ public class ClientWorldMixin
         EntityCacheUtils.onEntityAdd(entity);
 
         var fm$instanceTracker = DisguiseInstanceTracker.getInstance();
-        fm$instanceTracker.addSyncerIfNotExist(entity);
+        fm$instanceTracker.setupSyncerIfNotExist(entity);
     }
 }

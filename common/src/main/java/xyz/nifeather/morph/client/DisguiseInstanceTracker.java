@@ -53,7 +53,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
 
         var map = s2CRenderMapSyncCommand.getMap();
         trackingDisguises.putAll(map);
-        map.forEach(this::addSyncerIfNotExist);
+        map.forEach(this::setupSyncerIfNotExist);
     }
 
     public void onAddCommand(S2CCRRegisterCommand s2CRenderMapAddCommand)
@@ -73,7 +73,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
         if (prevSyncer != null)
             this.removeSyncer(prevSyncer);
 
-        addSyncerIfNotExist(networkId, s2CRenderMapAddCommand.getMobId());
+        setupSyncerIfNotExist(networkId, s2CRenderMapAddCommand.getMobId());
     }
 
     public void onRemoveCommand(S2CCRUnregisterCommand s2CRenderMapRemoveCommand)
@@ -213,7 +213,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
     public final Map<Integer, String> playerMap = new Object2ObjectArrayMap<>();
 
     @Nullable
-    public DisguiseSyncer addSyncerIfNotExist(int networkId, String did)
+    public DisguiseSyncer setupSyncerIfNotExist(int networkId, String did)
     {
         if (idSyncerMap.containsKey(networkId))
         {
@@ -235,28 +235,14 @@ public class DisguiseInstanceTracker extends MorphClientObject
         return syncer;
     }
 
-    @Nullable
-    public DisguiseSyncer setSyncer(Entity entity, String newId)
+    public void setSyncer(int networkID, DisguiseSyncer syncer)
     {
-        if (!(entity instanceof AbstractClientPlayer player)) return null;
-
-        var networkId = entity.getId();
-
-        // 移除之前的Syncer
-        var prevSyncer = idSyncerMap.getOrDefault(networkId, null);
-
-        if (prevSyncer != null)
-            this.removeSyncer(prevSyncer);
-
-        // 然后再添加新的
-        var syncer = manager.createSyncerFor(player, newId, player.getId());
-        idSyncerMap.put(networkId, syncer);
-
-        return syncer;
+        idSyncerMap.put(networkID, syncer);
+        trackingDisguises.put(networkID, syncer.disguiseIdentifier());
     }
 
     @Nullable
-    public DisguiseSyncer addSyncerIfNotExist(Entity entity)
+    public DisguiseSyncer setupSyncerIfNotExist(Entity entity)
     {
         var networkId = entity.getId();
         if (idSyncerMap.containsKey(networkId)) return idSyncerMap.get(networkId);

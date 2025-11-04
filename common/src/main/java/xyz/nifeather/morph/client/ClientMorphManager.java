@@ -12,8 +12,10 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xiamomc.pluginbase.Annotations.Initializer;
 import xiamomc.pluginbase.Annotations.Resolved;
@@ -31,8 +33,9 @@ import xyz.nifeather.morph.shared.AnimationNames;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedSet;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class ClientMorphManager extends MorphClientObject
@@ -58,8 +61,10 @@ public class ClientMorphManager extends MorphClientObject
 
     public final Bindable<String> currentIdentifier = new Bindable<>(null);
 
+    @Deprecated(forRemoval = true)
     public final Bindable<Boolean> equipOverriden = new Bindable<>(false);
 
+    @Deprecated(forRemoval = true)
     public final Bindable<CompoundTag> currentNbtCompound = new Bindable<>(null);
 
     public final Bindable<Float> revealingValue = new Bindable<>(0f);
@@ -149,14 +154,13 @@ public class ClientMorphManager extends MorphClientObject
         if (world != prevWorld)
             prevWorld = world;
 
+        // The whole ClientMorphManager is a TOTALLY mess
         var currentClientPlayer = Minecraft.getInstance().player;
-        if (currentClientPlayer != null && lastClientPlayer != currentClientPlayer && !syncerRefreshScheduled.get())
-        {
-            if (localPlayerSyncer != null && localPlayerSyncer.disposed())
-                localPlayerSyncer = null;
 
+        if (lastClientPlayer != null && lastClientPlayer != currentClientPlayer)
             refreshLocalSyncer(currentIdentifier.get());
-        }
+
+        if (currentClientPlayer == null || lastClientPlayer == currentClientPlayer) return;
 
         lastClientPlayer = currentClientPlayer;
     }
@@ -164,43 +168,70 @@ public class ClientMorphManager extends MorphClientObject
     @Nullable
     private Player lastClientPlayer;
 
-    private final AtomicBoolean syncerRefreshScheduled = new AtomicBoolean(false);
-
-    private void refreshLocalSyncer(String n)
+    private void setBindingClientSyncer(@NotNull DisguiseSyncer disguiseSyncer)
     {
-        logger.info("Refresh local syncer...");
-        syncerRefreshScheduled.set(false);
+        instanceTracker.setSyncer(Minecraft.getInstance().player.getId(), disguiseSyncer);
+        localPlayerSyncer = disguiseSyncer;
+    }
 
-        if (localPlayerSyncer != null)
-        {
-            logger.info("Removing previous syncer " + localPlayerSyncer);
-            instanceTracker.removeSyncer(localPlayerSyncer);
-            localPlayerSyncer.dispose();
-            localPlayerSyncer = null;
-        }
+    private void disposeExistingSyncerIfPresent()
+    {
+        if (this.localPlayerSyncer == null)
+            return;
 
-        this.propertyHandler = null;
+        logger.info("Removing previous syncer " + localPlayerSyncer);
+        instanceTracker.removeSyncer(localPlayerSyncer);
+        localPlayerSyncer.dispose();
+        localPlayerSyncer = null;
+    }
 
-        if (n == null || n.isEmpty()) return;
+    private Optional<DisguiseSyncer> setupSyncerFromIdentifier(String disguiseIdentifier,
+                                                               BiConsumer<LivingEntity, AbstractPropertyHandler<LivingEntity>> onEntitySetup)
+    {
+        disposeExistingSyncerIfPresent();
 
-        localPlayerSyncer = instanceTracker.setSyncer(Minecraft.getInstance().player, n);
+        var clientPlayer = Minecraft.getInstance().player;
+        assert clientPlayer != null;
 
-        if (localPlayerSyncer == null) return;
+        var newDisguiseSyncer = this.createSyncerFor(clientPlayer, disguiseIdentifier, clientPlayer.getId());
+        if (newDisguiseSyncer == null) return Optional.empty();
 
         if (lastEmote != null)
-            localPlayerSyncer.playAnimation(lastEmote);
+            newDisguiseSyncer.playAnimation(lastEmote);
 
         if (serverSkin != null)
-            localPlayerSyncer.updateSkin(serverSkin);
+            newDisguiseSyncer.updateSkin(serverSkin);
 
-        localPlayerSyncer.getEntityFuture().thenAccept(entity ->
+        newDisguiseSyncer.getEntityFuture().thenAccept(entity ->
         {
-            var newHandler = PropertyHandlers.INSTANCE.getHandler(entity).orElseThrow();
+            var nextPropertyHandler = PropertyHandlers.INSTANCE.getHandler(entity).orElseThrow();
+            this.propertyHandler = nextPropertyHandler;
 
-            newHandler.tryCast(entity)
-                    .ifPresent(living -> newHandler.handle(localPlayerSyncer.cachedNetworkProperties(), living));
+            onEntitySetup.accept(entity, nextPropertyHandler);
+        });
 
-            this.propertyHandler = newHandler;
+        return Optional.of(newDisguiseSyncer);
+    }
+
+    private void refreshLocalSyncer(String currentIdentifier)
+    {
+        var lastDisguiseSyncer = localPlayerSyncer;
+
+        // disposing previous syncer would make them clear their cached properties
+        // so we cache them here
+        Map<String, String> cachedProperty = lastDisguiseSyncer == null ? Map.of() : lastDisguiseSyncer.cachedNetworkProperties();
+
+        // Then we dispose the last syncer
+        disposeExistingSyncerIfPresent();
+
+        this.setupSyncerFromIdentifier(currentIdentifier, (entity, propertyHandler) ->
+        {
+            propertyHandler.tryCast(entity)
+                    .ifPresent(living -> propertyHandler.handle(cachedProperty, living));
+        }).ifPresent(syncer ->
+        {
+            syncer.mergeNetworkProperties(cachedProperty);
+            this.setBindingClientSyncer(syncer);
         });
     }
 
@@ -307,13 +338,16 @@ public class ClientMorphManager extends MorphClientObject
 
     //region Items
 
+    @Deprecated(forRemoval = true)
     private final Map<EquipmentSlot, ItemStack> equipmentSlotItemStackMap = new Object2ObjectOpenHashMap<>();
 
+    @Deprecated(forRemoval = true)
     public ItemStack getOverridedItemStackOn(EquipmentSlot slot)
     {
         return equipmentSlotItemStackMap.getOrDefault(slot, air);
     }
 
+    @Deprecated(forRemoval = true)
     public void swapHand()
     {
         var mainHand = equipmentSlotItemStackMap.getOrDefault(EquipmentSlot.MAINHAND, air);
@@ -322,6 +356,7 @@ public class ClientMorphManager extends MorphClientObject
         equipmentSlotItemStackMap.put(EquipmentSlot.OFFHAND, mainHand);
     }
 
+    @Deprecated(forRemoval = true)
     public void setEquip(EquipmentSlot slot, ItemStack item)
     {
         equipmentSlotItemStackMap.put(slot, item);
@@ -366,10 +401,7 @@ public class ClientMorphManager extends MorphClientObject
         emoteDisplayName = null;
         serverSkin = null;
 
-        String finalVal = val;
-        refreshLocalSyncer(finalVal);
-
-        syncerRefreshScheduled.set(true);
+        setupSyncerFromIdentifier(val, (a, b) -> {}).ifPresent(this::setBindingClientSyncer);
 
         if (val != null && val.isBlank())
             val = null;
@@ -403,8 +435,10 @@ public class ClientMorphManager extends MorphClientObject
     }
 
     @Nullable
+    @Deprecated(forRemoval = true)
     private GameProfile serverSkin;
 
+    @Deprecated(forRemoval = true)
     public void updateSkin(GameProfile profile)
     {
         serverSkin = profile;
