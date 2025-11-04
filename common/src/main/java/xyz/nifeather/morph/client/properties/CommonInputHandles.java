@@ -160,11 +160,9 @@ public class CommonInputHandles
 
     public static Optional<ResolvableProfile> resolvableProfileStatic(MorphResolvableProfileStruct record)
     {
-        if (record.name() == null || record.id() == null)
-        {
-            FeatherMorphClientBootstrap.LOGGER.error("Unable to create static ResolvableProfile, UUID or Name is NULL");
-            return Optional.empty();
-        }
+        // literally, Minecraft allows static ResolvableProfile with both ID and Name null
+        String skinName = record.name() == null ? "" : record.name();
+        UUID profileID = record.id() == null ? UUID.randomUUID() : record.id();
 
         // properties
         ImmutableMultimap.Builder<String, Property> propertiesBuilder = ImmutableMultimap.builder();
@@ -174,7 +172,7 @@ public class CommonInputHandles
             propertiesBuilder.put(struct.name(), new Property(struct.name(), struct.value(), struct.signature()));
         }
 
-        var profile = new GameProfile(record.id(), record.name(), new PropertyMap(propertiesBuilder.build()));
+        var profile = new GameProfile(profileID, skinName, new PropertyMap(propertiesBuilder.build()));
         var skinPatch = new PlayerSkin.Patch(
                 readNullableResourceTexture(record.bodyTexture()),
                 readNullableResourceTexture(record.cape()),
