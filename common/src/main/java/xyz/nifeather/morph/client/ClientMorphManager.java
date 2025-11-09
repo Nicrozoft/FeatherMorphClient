@@ -185,9 +185,12 @@ public class ClientMorphManager extends MorphClientObject
         localPlayerSyncer = null;
     }
 
-    private Optional<DisguiseSyncer> setupSyncerFromIdentifier(String disguiseIdentifier,
+    private Optional<DisguiseSyncer> setupSyncerFromIdentifier(@Nullable String disguiseIdentifier,
                                                                BiConsumer<LivingEntity, AbstractPropertyHandler<LivingEntity>> onEntitySetup)
     {
+        if (disguiseIdentifier == null || disguiseIdentifier.isBlank())
+            return Optional.empty();
+
         disposeExistingSyncerIfPresent();
 
         var clientPlayer = Minecraft.getInstance().player;
