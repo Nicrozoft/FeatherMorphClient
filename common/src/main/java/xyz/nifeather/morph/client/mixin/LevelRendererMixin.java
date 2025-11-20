@@ -54,13 +54,8 @@ public class LevelRendererMixin
         var profilerFiller = Profiler.get();
         profilerFiller.push("morphclient_post_submit");
 
-        if (entityRenderState instanceof IDisguiseRenderState asDisguiseRenderState)
+        if (entityRenderState instanceof IDisguiseRenderState)
         {
-            var syncer = asDisguiseRenderState.morphclient$getDisguiseSyncer();
-
-            if (syncer != null)
-                syncer.postRenderSubmit();
-
             profilerFiller.push("submit_reveal_name");
             EntityRendererHelper.instance.submitRevealName(poseStack, entityRenderState, this.submitNodeStorage, levelRenderState.cameraRenderState);
             profilerFiller.pop();

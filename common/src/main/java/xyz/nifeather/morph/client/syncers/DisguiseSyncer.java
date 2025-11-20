@@ -483,10 +483,6 @@ public abstract class DisguiseSyncer extends MorphClientObject
         //disguiseInstance.snapTo(disguiseInstance.position().add(0, -4096, 0));
     }
 
-    public void postRenderSubmit()
-    {
-    }
-
     public void updateSkin(GameProfile profile)
     {
         if (disposed.get())
