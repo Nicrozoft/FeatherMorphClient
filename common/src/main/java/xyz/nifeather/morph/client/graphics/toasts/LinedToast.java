@@ -242,18 +242,30 @@ public class LinedToast extends MorphClientObject implements Toast
                 lineWidth, this.height() - yPadding - 1,
                 lineColor.getColor());
 
-        context.submitOutline(xRightPadding + 1, yPadding + 1,
+        new OutlineBox(xRightPadding + 1, yPadding + 1,
                 this.width() - xLeftPadding - 2, this.height() - yPadding - 2,
-                lineColor.getColor());
+                lineColor.getColor()).render(context);
 
-        context.submitOutline(xRightPadding, yPadding,
+        new OutlineBox(xRightPadding, yPadding,
                 this.width() - xLeftPadding, this.height() - yPadding,
-                borderColor.getColor());
+                borderColor.getColor()).render(context);
 
         matrices.popMatrix();
 
         postDraw(context, startTime);
 
         context.disableScissor();
+    }
+
+    public record OutlineBox(int x, int y, int width, int height, int color)
+    {
+        public void render(GuiGraphics context)
+        {
+            context.fill(x, y, x + width, y + 1, color);
+            context.fill(x, y, x + 1, y + height - 1, color);
+
+            context.fill(x, y + height - 1, x + width, y + height + 1, color);
+            context.fill(x + width, y + height, x + width - 1, y, color);
+        }
     }
 }
