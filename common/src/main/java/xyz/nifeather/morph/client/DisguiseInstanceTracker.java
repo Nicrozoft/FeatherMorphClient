@@ -11,6 +11,7 @@ import xiamomc.pluginbase.Annotations.Resolved;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.client.Minecraft;
@@ -40,11 +41,14 @@ public class DisguiseInstanceTracker extends MorphClientObject
 
     //region CommandHandling
 
-    private final Map<Integer, String> trackingDisguises = new Object2ObjectArrayMap<>();
+    /**
+     * Tracking disguises that's announced by the server
+     */
+    private final Map<Integer, String> serverTrackingDisguises = new Object2ObjectArrayMap<>();
 
     public Map<Integer, String> getTrackingDisguises()
     {
-        return new Object2ObjectArrayMap<>(trackingDisguises);
+        return new Object2ObjectArrayMap<>(serverTrackingDisguises);
     }
 
     public void onSyncCommand(S2CCRSyncRegisterCommand s2CRenderMapSyncCommand)
@@ -52,7 +56,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
         this.reset();
 
         var map = s2CRenderMapSyncCommand.getMap();
-        trackingDisguises.putAll(map);
+        serverTrackingDisguises.putAll(map);
         map.forEach(this::setupSyncerIfNotExist);
     }
 
@@ -61,7 +65,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
         if (!s2CRenderMapAddCommand.isValid()) return;
 
         var networkId = s2CRenderMapAddCommand.getPlayerNetworkId();
-        trackingDisguises.put(networkId, s2CRenderMapAddCommand.getMobId());
+        serverTrackingDisguises.put(networkId, s2CRenderMapAddCommand.getMobId());
 
         if (Minecraft.getInstance().player.getId() == networkId)
         {
@@ -81,7 +85,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
         if (!s2CRenderMapRemoveCommand.isValid()) return;
 
         var id = s2CRenderMapRemoveCommand.getPlayerNetworkId();
-        trackingDisguises.remove(id);
+        serverTrackingDisguises.remove(id);
 
         var syncer = idSyncerMap.getOrDefault(id, null);
         if (syncer != null)
@@ -126,7 +130,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
 
     public void reset()
     {
-        trackingDisguises.clear();
+        serverTrackingDisguises.clear();
         this.playerMap.clear();
 
         var mapCopy = new Object2ObjectArrayMap<>(idSyncerMap);
@@ -238,7 +242,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
     public void setSyncer(int networkID, DisguiseSyncer syncer)
     {
         idSyncerMap.put(networkID, syncer);
-        trackingDisguises.put(networkID, syncer.disguiseIdentifier());
+        //trackingDisguises.put(networkID, syncer.disguiseIdentifier());
     }
 
     @Nullable
@@ -247,9 +251,9 @@ public class DisguiseInstanceTracker extends MorphClientObject
         var networkId = entity.getId();
         if (idSyncerMap.containsKey(networkId)) return idSyncerMap.get(networkId);
 
-        var tracking = trackingDisguises.getOrDefault(networkId, "no");
+        var tracking = serverTrackingDisguises.getOrDefault(networkId, null);
 
-        if (tracking.equals("no")) return null;
+        if (Objects.equals(tracking, null)) return null;
         if (!(entity instanceof AbstractClientPlayer player)) return null;
 
         var syncer = manager.createSyncerFor(player, tracking, player.getId());
