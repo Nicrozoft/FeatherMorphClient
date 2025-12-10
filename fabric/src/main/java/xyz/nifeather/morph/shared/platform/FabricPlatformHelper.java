@@ -10,7 +10,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class FabricPlatformHelper implements PlatformHelper
 {
@@ -51,7 +51,7 @@ public class FabricPlatformHelper implements PlatformHelper
     }
 
     @Override
-    public void registerServerStartTickEvent(ResourceLocation phase, ServerStartTick callback)
+    public void registerServerStartTickEvent(Identifier phase, ServerStartTick callback)
     {
         ServerTickEvents.START_SERVER_TICK.register(phase, callback::onStartTick);
     }
@@ -75,7 +75,7 @@ public class FabricPlatformHelper implements PlatformHelper
     }
 
     @Override
-    public <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> void registerArgumentType(ResourceLocation id, Class<? extends A> clazz, ArgumentTypeInfo<A, T> serializer)
+    public <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> void registerArgumentType(Identifier id, Class<? extends A> clazz, ArgumentTypeInfo<A, T> serializer)
     {
         ArgumentTypeRegistry.registerArgumentType(id, clazz, serializer);
     }

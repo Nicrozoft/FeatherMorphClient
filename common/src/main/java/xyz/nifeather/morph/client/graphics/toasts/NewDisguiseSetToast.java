@@ -4,9 +4,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import xiamomc.pluginbase.Annotations.Initializer;
 import xyz.nifeather.morph.client.graphics.color.ColorUtils;
 
@@ -51,7 +50,7 @@ public class NewDisguiseSetToast extends LinedToast
         return Math.max(super.width(), max1);
     }
 
-    private static final ResourceLocation TEX = ResourceLocation.fromNamespaceAndPath(ResourceLocation.DEFAULT_NAMESPACE, "textures/gui/sprites/icon/info.png");
+    private static final Identifier TEX = Identifier.fromNamespaceAndPath(Identifier.DEFAULT_NAMESPACE, "textures/gui/sprites/icon/info.png");
 
     @Override
     protected void postBackgroundDrawing(GuiGraphics context, long startTime)

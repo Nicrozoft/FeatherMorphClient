@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import org.jetbrains.annotations.Nullable;
@@ -29,7 +29,7 @@ public class MorphServerLoader
         Services.PLATFORM.registerServerStoppingEvent(this::onServerStop);
         Services.PLATFORM.registerWorldLoadEvent(this::onServerStart);
         Services.PLATFORM.registerCommandRegistrationEvent(this::onCommandRegister);
-        Services.PLATFORM.registerServerStartTickEvent(ResourceLocation.fromNamespaceAndPath("feathermorph_fabric_server", "server_tick"), this::onServerTick);
+        Services.PLATFORM.registerServerStartTickEvent(Identifier.fromNamespaceAndPath("feathermorph_fabric_server", "server_tick"), this::onServerTick);
     }
 
     public void onCommandRegister(CommandDispatcher<CommandSourceStack> dispatcher,

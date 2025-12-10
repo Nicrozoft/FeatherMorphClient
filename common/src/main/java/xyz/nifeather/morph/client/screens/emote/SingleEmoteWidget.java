@@ -1,7 +1,7 @@
 package xyz.nifeather.morph.client.screens.emote;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.graphics.Anchor;
 import xyz.nifeather.morph.client.graphics.DrawableText;
@@ -21,9 +21,9 @@ public class SingleEmoteWidget extends ClickableSpinnerWidget
     }
 
     @Override
-    protected ResourceLocation getPathOf(String variant)
+    protected Identifier getPathOf(String variant)
     {
-        return ResourceLocation.fromNamespaceAndPath("morphclient", "emote_select/button_" + variant);
+        return Identifier.fromNamespaceAndPath("morphclient", "emote_select/button_" + variant);
     }
 
     private final DrawableText title = new DrawableText();

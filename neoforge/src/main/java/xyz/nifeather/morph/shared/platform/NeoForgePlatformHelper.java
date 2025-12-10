@@ -10,7 +10,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.api.distmarker.Dist;
@@ -88,7 +88,7 @@ public class NeoForgePlatformHelper implements PlatformHelper {
     }
 
     @Override
-    public void registerServerStartTickEvent(ResourceLocation phase, ServerStartTick callback)
+    public void registerServerStartTickEvent(Identifier phase, ServerStartTick callback)
     {
         NeoForgePlatformHelper.START_SERVER_TICK.register(phase, callback);
         ensureEventsRegistered();
@@ -118,7 +118,7 @@ public class NeoForgePlatformHelper implements PlatformHelper {
     }
 
     @Override
-    public <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> void registerArgumentType(ResourceLocation id, Class<? extends A> clazz, ArgumentTypeInfo<A, T> serializer)
+    public <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> void registerArgumentType(Identifier id, Class<? extends A> clazz, ArgumentTypeInfo<A, T> serializer)
     {
         NeoForgePlatformHelperHolder.ARGUMENT_TYPE_CLASSES.put(clazz, serializer);
         NeoForgePlatformHelperHolder.ARGUMENT_TYPES.put(id, serializer);
@@ -198,7 +198,7 @@ public class NeoForgePlatformHelper implements PlatformHelper {
     {
         @SuppressWarnings("rawtypes")
         static final Map<Class, ArgumentTypeInfo<?, ?>> ARGUMENT_TYPE_CLASSES = new HashMap<>();
-        static final Map<ResourceLocation, ArgumentTypeInfo<?, ?>> ARGUMENT_TYPES = new HashMap<>();
+        static final Map<Identifier, ArgumentTypeInfo<?, ?>> ARGUMENT_TYPES = new HashMap<>();
         static final List<EndTick> clientTickCallbacks = new ArrayList<>();
         static final List<EndWorldTick> worldTickEndCallbacks = new ArrayList<>();
         static final List<HudRenderCallback> hudRenderCallbacks = new ArrayList<>();

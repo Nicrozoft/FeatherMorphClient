@@ -3,6 +3,7 @@ package xyz.nifeather.morph.client.mixin;
 import net.minecraft.client.Camera;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -18,7 +19,7 @@ public abstract class CameraMixin
 {
     @Shadow private Entity entity;
     @Shadow private float eyeHeight;
-    @Shadow private BlockGetter level;
+    @Shadow private Level level;
     @Shadow private float eyeHeightOld;
 
     @Unique
@@ -37,7 +38,7 @@ public abstract class CameraMixin
     private boolean featherMorph$isInstantSneak;
 
     @Inject(method = "setup", at = @At("HEAD"))
-    private void onUpdate(BlockGetter blockGetter, Entity entity, boolean thirdPerson, boolean inverseView, float tickDelta, CallbackInfo ci)
+    private void onUpdate(Level level, Entity entity, boolean thirdPerson, boolean inverseView, float tickDelta, CallbackInfo ci)
     {
         CameraHelper.isThirdPerson.set(thirdPerson);
     }

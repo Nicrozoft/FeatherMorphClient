@@ -1,6 +1,8 @@
 package xyz.nifeather.morph.server.commands.impl.plugin;
 
 import com.mojang.brigadier.builder.ArgumentBuilder;
+import net.minecraft.server.permissions.Permission;
+import net.minecraft.server.permissions.Permissions;
 import xyz.nifeather.morph.server.commands.BrigadierCommand;
 import xyz.nifeather.morph.server.commands.IServerBrigadierCommand;
 import xyz.nifeather.morph.server.commands.impl.plugin.managements.ManageGrantCommand;
@@ -30,7 +32,7 @@ public class ManagementCommand extends BrigadierCommand
     public void registerAsChild(ArgumentBuilder<CommandSourceStack, ?> parentBuilder)
     {
         var then = Commands.literal("manage")
-                .requires(source -> source.hasPermission(server.operatorUserPermissionLevel()));
+                .requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_ADMIN));
 
         subCommands.forEach(ibc -> ibc.registerAsChild(then));
 

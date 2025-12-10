@@ -2,12 +2,11 @@ package xyz.nifeather.morph.client.graphics;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class LoadingSpinner extends MDrawable
 {
-    private static final ResourceLocation LOADING_TEX = ResourceLocation.fromNamespaceAndPath("morphclient", "loading");
+    private static final Identifier LOADING_TEX = Identifier.fromNamespaceAndPath("morphclient", "loading");
 
     public LoadingSpinner()
     {

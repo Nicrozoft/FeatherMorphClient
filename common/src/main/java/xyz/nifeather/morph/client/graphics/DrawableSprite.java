@@ -4,24 +4,21 @@ import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
-import xyz.nifeather.morph.client.graphics.color.ColorUtils;
-import xyz.nifeather.morph.client.graphics.color.Colors;
 
 public class DrawableSprite extends MDrawable
 {
-    private final ResourceLocation textureIdentifier;
+    private final Identifier textureIdentifier;
     private final boolean isGuiTexture;
 
-    public DrawableSprite(ResourceLocation textureIdentifier, boolean isGuiTexture)
+    public DrawableSprite(Identifier textureIdentifier, boolean isGuiTexture)
     {
         this.textureIdentifier = textureIdentifier;
         this.isGuiTexture = isGuiTexture;
     }
 
-    public DrawableSprite(ResourceLocation textureIdentifier)
+    public DrawableSprite(Identifier textureIdentifier)
     {
         this(textureIdentifier, true);
     }

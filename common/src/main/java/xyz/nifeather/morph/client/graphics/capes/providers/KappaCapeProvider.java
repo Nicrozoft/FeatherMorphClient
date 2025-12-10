@@ -5,7 +5,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +53,7 @@ public final class KappaCapeProvider implements ICapeProvider
     }
 
     @Override
-    public CompletableFuture<Optional<ResourceLocation>> getCapeAsync(GameProfile profile)
+    public CompletableFuture<Optional<Identifier>> getCapeAsync(GameProfile profile)
     {
         var uuid = profile.id();
 
@@ -69,14 +69,14 @@ public final class KappaCapeProvider implements ICapeProvider
         return future;
     }
 
-    private final Map<UUID, CompletableFuture<Optional<ResourceLocation>>> onGoingRequests = new ConcurrentHashMap<>();
+    private final Map<UUID, CompletableFuture<Optional<Identifier>>> onGoingRequests = new ConcurrentHashMap<>();
 
     // This loads the cape for one player, doesn't matter if it's the player or not.
     // Requires a callback, that receives the id for the cape
-    public Optional<ResourceLocation> loadCape(GameProfile profile)
+    public Optional<Identifier> loadCape(GameProfile profile)
     {
         // Check if the player doesn't already have a cape.
-        ResourceLocation existingCape = capes.get(profile.name());
+        Identifier existingCape = capes.get(profile.name());
 
         if (existingCape != null)
             return Optional.of(existingCape);
@@ -113,11 +113,11 @@ public final class KappaCapeProvider implements ICapeProvider
     }
 
     // This is where capes will be stored
-    private static final Map<String, ResourceLocation> capes = new HashMap<String, ResourceLocation>();
+    private static final Map<String, Identifier> capes = new HashMap<String, Identifier>();
 
     // Try to load a cape from an URL.
     // If this fails, it'll return false, and let us try another url.
-    private @Nullable ResourceLocation tryUrl(GameProfile player, String targetUrl)
+    private @Nullable Identifier tryUrl(GameProfile player, String targetUrl)
     {
         try
         {
@@ -132,7 +132,7 @@ public final class KappaCapeProvider implements ICapeProvider
                         "cape_tex_" + player.id().toString().toLowerCase().replace("-", "_"), tex);
 
                 // Register texture is still allow async, but for sanity we do it on Minecraft thread
-                ResourceLocation texID = ResourceLocation.fromNamespaceAndPath("kappa", player.id().toString().replace("-", "_"));
+                Identifier texID = Identifier.fromNamespaceAndPath("kappa", player.id().toString().replace("-", "_"));
                 Minecraft.getInstance().getTextureManager().register(texID, texture);
 
                 return texID;

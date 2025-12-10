@@ -1,7 +1,7 @@
 package xyz.nifeather.morph.client.properties.impl;
 
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.Rabbit;
+import net.minecraft.world.entity.animal.rabbit.Rabbit;
 import xyz.nifeather.morph.client.mixin.accessors.RabbitAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;

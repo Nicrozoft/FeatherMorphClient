@@ -8,7 +8,7 @@ import xyz.nifeather.morph.client.Vec3dUtils;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
 
@@ -23,7 +23,7 @@ public class ModelWorkarounds
         return instance;
     }
 
-    private final Map<ResourceLocation, ModelPartConsumer<ModelPart, ModelPart>> workarounds = new Object2ObjectOpenHashMap<>();
+    private final Map<Identifier, ModelPartConsumer<ModelPart, ModelPart>> workarounds = new Object2ObjectOpenHashMap<>();
 
     private void addWorkaround(EntityType<?> modelType, ModelPartConsumer<ModelPart, ModelPart> consumer)
     {

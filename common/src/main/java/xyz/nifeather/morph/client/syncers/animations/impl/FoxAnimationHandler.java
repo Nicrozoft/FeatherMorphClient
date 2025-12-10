@@ -2,7 +2,7 @@ package xyz.nifeather.morph.client.syncers.animations.impl;
 
 import xyz.nifeather.morph.shared.AnimationNames;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.Fox;
+import net.minecraft.world.entity.animal.fox.Fox;
 import xyz.nifeather.morph.client.entities.IFox;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 

@@ -12,7 +12,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -89,10 +89,10 @@ public class DisplayWidget extends MorphClientObject implements NarratableEntry,
     private Bindable<String> currentIdentifier = new Bindable<>();
     private Bindable<String> selectedIdentifier = new Bindable<>();
 
-    public static final ResourceLocation buttonTextureSelected = ResourceLocation.fromNamespaceAndPath("morphclient", "disguise_selection/disguise_select_selected");
-    public static final ResourceLocation buttonTextureCurrent = ResourceLocation.fromNamespaceAndPath("morphclient", "disguise_selection/disguise_select_current");
-    public static final ResourceLocation buttonTextureWaiting = ResourceLocation.fromNamespaceAndPath("morphclient", "disguise_selection/disguise_select_waiting");
-    public static final ResourceLocation buttonTextureOverlay = ResourceLocation.fromNamespaceAndPath("morphclient", "disguise_selection/disguise_select_overlay_hover");
+    public static final Identifier buttonTextureSelected = Identifier.fromNamespaceAndPath("morphclient", "disguise_selection/disguise_select_selected");
+    public static final Identifier buttonTextureCurrent = Identifier.fromNamespaceAndPath("morphclient", "disguise_selection/disguise_select_current");
+    public static final Identifier buttonTextureWaiting = Identifier.fromNamespaceAndPath("morphclient", "disguise_selection/disguise_select_waiting");
+    public static final Identifier buttonTextureOverlay = Identifier.fromNamespaceAndPath("morphclient", "disguise_selection/disguise_select_overlay_hover");
 
     private final DrawableSprite spriteSelected;
     private final DrawableSprite spriteCurrent;

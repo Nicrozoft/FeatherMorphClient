@@ -2,7 +2,7 @@ package xyz.nifeather.morph.client.syncers.animations.impl;
 
 import xyz.nifeather.morph.shared.AnimationNames;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.Cat;
+import net.minecraft.world.entity.animal.feline.Cat;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 
 public class CatAnimationHandler extends AnimationHandler

@@ -32,8 +32,7 @@ dependencies {
     modApi("maven.modrinth:entity-model-features:pvyci2Ch")
     modApi("maven.modrinth:entitytexturefeatures:dP1ZqaGp")
 
-    implementation(files("../libs/fabric-api-base-${fabric_base}.jar"))
-    implementation(files("../libs/fabric-networking-api-v1-${fabric_networking}.jar"))
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${fabric_version}")
     implementation("me.shedaniel.cloth:cloth-config-neoforge:${clothconfig_version}")
 
     implementation("com.github.NiFeather:feathermorph-protocols:${protocolVersion}")

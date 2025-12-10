@@ -6,7 +6,7 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,9 +27,9 @@ public class ItemInHandRendererMixin
 
     @Redirect(
             method = "renderPlayerArm",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;renderLeftHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/resources/ResourceLocation;ZLnet/minecraft/client/player/AbstractClientPlayer;)V")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;renderLeftHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/resources/Identifier;ZLnet/minecraft/client/player/AbstractClientPlayer;)V")
     )
-    private void morphclient$renderArmHoldingItem_left(PlayerRenderer instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, ResourceLocation skinTexture, boolean sleeveVisible, AbstractClientPlayer player)
+    private void morphclient$renderArmHoldingItem_left(PlayerRenderer instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, Identifier skinTexture, boolean sleeveVisible, AbstractClientPlayer player)
     {
         if (morphclient$canRender())
             morphclient$renderLeftArm(matrices, vertexConsumers, light);
@@ -39,9 +39,9 @@ public class ItemInHandRendererMixin
 
     @Redirect(
             method = "renderPlayerArm",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;renderRightHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/resources/ResourceLocation;ZLnet/minecraft/client/player/AbstractClientPlayer;)V")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;renderRightHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/resources/Identifier;ZLnet/minecraft/client/player/AbstractClientPlayer;)V")
     )
-    private void morphclient$renderArmHoldingItem_right(PlayerRenderer instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, ResourceLocation skinTexture, boolean sleeveVisible, AbstractClientPlayer player)
+    private void morphclient$renderArmHoldingItem_right(PlayerRenderer instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, Identifier skinTexture, boolean sleeveVisible, AbstractClientPlayer player)
     {
         if (morphclient$canRender())
             morphclient$renderRightArm(matrices, vertexConsumers, light);
@@ -51,9 +51,9 @@ public class ItemInHandRendererMixin
 
     @Redirect(
             method = "renderMapHand",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;renderRightHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/resources/ResourceLocation;ZLnet/minecraft/client/player/AbstractClientPlayer;)V")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;renderRightHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/resources/Identifier;ZLnet/minecraft/client/player/AbstractClientPlayer;)V")
     )
-    private void morphclient$renderArmHoldingItem_right_alt(PlayerRenderer instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, ResourceLocation skinTexture, boolean sleeveVisible, AbstractClientPlayer player)
+    private void morphclient$renderArmHoldingItem_right_alt(PlayerRenderer instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, Identifier skinTexture, boolean sleeveVisible, AbstractClientPlayer player)
     {
         if (morphclient$canRender())
             morphclient$renderRightArm(matrices, vertexConsumers, light);
@@ -63,9 +63,9 @@ public class ItemInHandRendererMixin
 
     @Redirect(
             method = "renderMapHand",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;renderLeftHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/resources/ResourceLocation;ZLnet/minecraft/client/player/AbstractClientPlayer;)V")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;renderLeftHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/resources/Identifier;ZLnet/minecraft/client/player/AbstractClientPlayer;)V")
     )
-    private void morphclient$renderArmHoldingItem_left_alt(PlayerRenderer instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, ResourceLocation skinTexture, boolean sleeveVisible, AbstractClientPlayer player)
+    private void morphclient$renderArmHoldingItem_left_alt(PlayerRenderer instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, Identifier skinTexture, boolean sleeveVisible, AbstractClientPlayer player)
     {
         if (morphclient$canRender())
             morphclient$renderLeftArm(matrices, vertexConsumers, light);

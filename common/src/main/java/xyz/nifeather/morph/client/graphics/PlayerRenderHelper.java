@@ -12,10 +12,8 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.LayerDefinitions;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartNames;
-import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -23,9 +21,11 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -178,7 +178,7 @@ public class PlayerRenderHelper extends MorphClientObject
 
         matrixStack.pushPose();
 
-        var cameraPos = camera().getPosition();
+        var cameraPos = camera().position();
 
         //相机XYZ
         var cameraX = cameraPos.x;
@@ -332,7 +332,7 @@ public class PlayerRenderHelper extends MorphClientObject
         return part;
     }
 
-    private final RenderType dragonLayer = RenderType.entityCutoutNoCull(ResourceLocation.parse("textures/entity/enderdragon/dragon.png"));
+    private final RenderType dragonLayer = RenderTypes.entityCutoutNoCull(Identifier.parse("textures/entity/enderdragon/dragon.png"));
 
     /**
      * @return Whether rendered disguise instance
@@ -372,7 +372,7 @@ public class PlayerRenderHelper extends MorphClientObject
                 {
                     var renderer = (AvatarRenderer) livingEntityRenderer;
 
-                    ResourceLocation id = avatar.getSkin().body().texturePath();
+                    Identifier id = avatar.getSkin().body().texturePath();
 
                     if (renderingLeftPart)
                         renderer.renderLeftHand(matrices, submitNodeCollector, light, id, true);
@@ -392,29 +392,27 @@ public class PlayerRenderHelper extends MorphClientObject
             modelInfo = tryGetModel(disguiseEntity.getType(), model);
             targetArm = modelInfo.getPart(renderingLeftPart);
 
-            if (targetArm != null)
-            {
-                renderType = renderType == null ? RenderType.solid() : renderType;
+            if (targetArm == null || renderType == null)
+                return false;
 
-                targetArm.visible = true;
+            targetArm.visible = true;
 
-                var scale = modelInfo.scale;
-                matrices.scale((float)scale.x(), (float)scale.y(), (float)scale.z());
+            var scale = modelInfo.scale();
+            matrices.scale((float)scale.x(), (float)scale.y(), (float)scale.z());
 
-                var offset = modelInfo.offset;
-                matrices.translate(offset.x(), offset.y(), offset.z());
+            var offset = modelInfo.offset();
+            matrices.translate(offset.x(), offset.y(), offset.z());
 
-                light = (disguiseEntity.getType() == EntityType.ALLAY || disguiseEntity.getType() == EntityType.VEX)
-                        ? LightTexture.FULL_BRIGHT
-                        : light;
+            light = (disguiseEntity.getType() == EntityType.ALLAY || disguiseEntity.getType() == EntityType.VEX)
+                    ? LightTexture.FULL_BRIGHT
+                    : light;
 
-                targetArm.xRot = 0;
+            targetArm.xRot = 0;
 
-                submitNodeCollector.submitModelPart(targetArm, matrices, renderType,
-                        light, OverlayTexture.NO_OVERLAY, null);
+            submitNodeCollector.submitModelPart(targetArm, matrices, renderType,
+                    light, OverlayTexture.NO_OVERLAY, null);
 
-                return true;
-            }
+            return true;
         }
         catch (Exception e)
         {

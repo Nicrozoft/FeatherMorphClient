@@ -8,7 +8,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class EntityDisplayEntry extends ContainerObjectSelectionList.Entry<EntityDisplayEntry> implements Comparable<EntityDisplayEntry>
 {
@@ -26,9 +26,9 @@ public class EntityDisplayEntry extends ContainerObjectSelectionList.Entry<Entit
         return identifier;
     }
 
-    private ResourceLocation identifierAsNms;
+    private Identifier identifierAsNms;
 
-    private static final ResourceLocation defaultIdentifier = ResourceLocation.fromNamespaceAndPath("morph", "unknown");
+    private static final Identifier defaultIdentifier = Identifier.fromNamespaceAndPath("morph", "unknown");
 
     private int parentWidth = 0;
     private int expectedWidth = 0;
@@ -41,12 +41,12 @@ public class EntityDisplayEntry extends ContainerObjectSelectionList.Entry<Entit
         this.children.forEach(displayWidget -> displayWidget.setWidth(expectedWidth));
     }
 
-    public ResourceLocation getIdentifier()
+    public Identifier getIdentifier()
     {
         if (identifierAsNms != null)
             return identifierAsNms;
 
-        var id = ResourceLocation.tryParse(identifier.toLowerCase());
+        var id = Identifier.tryParse(identifier.toLowerCase());
         if (id == null)
             id = defaultIdentifier;
 

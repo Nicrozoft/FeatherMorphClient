@@ -17,7 +17,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.LoggerFactory;
 import xiamomc.pluginbase.Bindables.Bindable;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.EntityCache;
@@ -257,12 +256,12 @@ public class DisguiseScreen extends FeatherScreen
         var buttonContainer = new BasicContainer<MDrawable>();
 
         //初始化按钮
-        var closeButton = this.createDrawableWrapper(0, 0, 112, 20, Component.translatable("gui.back"), (button) ->
+        var closeButton = this.createDrawableButtonWrapper(0, 0, 112, 20, Component.translatable("gui.back"), (button) ->
         {
             this.onClose();
         });
 
-        var configMenuButton = this.createDrawableWrapper(0, 0, 20, 20, Component.literal("C"), (button ->
+        var configMenuButton = this.createDrawableButtonWrapper(0, 0, 20, 20, Component.literal("C"), (button ->
         {
             var screen = FeatherMorphClientBootstrap.getInstance().getFactory(this).build();
 
@@ -344,7 +343,7 @@ public class DisguiseScreen extends FeatherScreen
                     .setStyle(Style.EMPTY.withColor(color));
         };
 
-        var button = this.buildButtonWidget(0, 0, 20, 20, textFunction.apply(bindable.get()), btn ->
+        return this.createDrawableButtonWrapper(0, 0, 20, 20, textFunction.apply(bindable.get()), btn ->
         {
             var val = !bindable.get();
             bindable.set(val);
@@ -355,8 +354,6 @@ public class DisguiseScreen extends FeatherScreen
             modInstance.updateClientView(config.allowClientView, val);
             btn.setMessage(textFunction.apply(val));
         });
-
-        return new DrawableButtonWrapper(button);
     }
 
     private void resizeDisguiseList()

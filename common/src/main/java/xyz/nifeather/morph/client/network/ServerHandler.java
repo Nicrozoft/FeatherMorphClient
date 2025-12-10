@@ -7,7 +7,8 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.monster.Ghast;
@@ -320,7 +321,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
 
     // public static Boolean serverSideSneaking;
 
-    public static void logPacket(boolean isOutGoingPacket, ResourceLocation channel, String content)
+    public static void logPacket(boolean isOutGoingPacket, Identifier channel, String content)
     {
         if (!FeatherMorphClientBootstrap.getInstance().getModConfigData().verbosePackets) return;
 

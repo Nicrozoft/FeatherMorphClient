@@ -19,7 +19,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.PlayerModelType;
@@ -59,7 +59,7 @@ public class CommonInputHandles
             var world = Minecraft.getInstance().level;
             var registry = world.registryAccess().lookupOrThrow(registryKey);
 
-            ResourceLocation resourceLocation = ResourceLocation.parse(input);
+            Identifier resourceLocation = Identifier.parse(input);
             var val = registry.getValue(resourceLocation);
 
             if (val == null) return Optional.empty();
@@ -191,7 +191,7 @@ public class CommonInputHandles
     {
         if (input == null) return Optional.empty();
 
-        ResourceLocation location = ResourceLocation.tryParse(input);
+        Identifier location = Identifier.tryParse(input);
         if (location == null) return Optional.empty();
 
         return Optional.of(new ClientAsset.ResourceTexture(location));

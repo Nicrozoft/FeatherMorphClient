@@ -7,14 +7,14 @@ import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -193,7 +193,7 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
     {
         var platform = Services.PLATFORM;
 
-        var category = KeyMapping.Category.register(ResourceLocation.fromNamespaceAndPath("morphclient", "keybind"));
+        var category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath("morphclient", "keybind"));
 
         //初始化按键
         executeSkillKeyBind = platform.registerPlatformKeyBinding(new KeyMapping(

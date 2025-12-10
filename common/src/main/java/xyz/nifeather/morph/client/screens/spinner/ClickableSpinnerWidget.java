@@ -3,7 +3,7 @@ package xyz.nifeather.morph.client.screens.spinner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import org.lwjgl.glfw.GLFW;
 import xyz.nifeather.morph.client.graphics.Axes;
@@ -17,9 +17,9 @@ public class ClickableSpinnerWidget extends Container
     protected final DrawableSprite spriteBorder;
     protected final DrawableSprite spriteHover;
 
-    protected ResourceLocation getPathOf(String variant)
+    protected Identifier getPathOf(String variant)
     {
-        return ResourceLocation.fromNamespaceAndPath("morphclient", "spinner_default/" + variant);
+        return Identifier.fromNamespaceAndPath("morphclient", "spinner_default/" + variant);
     }
 
     protected long getFadeDuration()
@@ -27,7 +27,7 @@ public class ClickableSpinnerWidget extends Container
         return 300;
     }
 
-    protected DrawableSprite createDrawableSprite(ResourceLocation textureIdentifier)
+    protected DrawableSprite createDrawableSprite(Identifier textureIdentifier)
     {
         var drawableSprite = new DrawableSprite(textureIdentifier);
 

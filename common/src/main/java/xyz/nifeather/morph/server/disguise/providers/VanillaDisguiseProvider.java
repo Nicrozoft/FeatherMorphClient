@@ -11,7 +11,7 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -31,7 +31,7 @@ public class VanillaDisguiseProvider extends AbstractDisguiseProvider
     @Override
     public boolean isValid(String identifier)
     {
-        var asIdentifier = ResourceLocation.tryParse(identifier);
+        var asIdentifier = Identifier.tryParse(identifier);
         if (asIdentifier == null)
             return false;
 

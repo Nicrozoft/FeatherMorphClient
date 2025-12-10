@@ -2,7 +2,7 @@ package xyz.nifeather.morph.client.syncers.animations.impl;
 
 import xyz.nifeather.morph.shared.AnimationNames;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.Panda;
+import net.minecraft.world.entity.animal.panda.Panda;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 
 public class PandaAnimationHandler extends AnimationHandler

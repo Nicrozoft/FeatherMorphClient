@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -138,7 +138,7 @@ public class ConvertedMeta
                 for (int i = 0; i < eqIds.length - 1; i++)
                 {
                     var itemId = eqIds[i];
-                    var identifier = ResourceLocation.tryParse(itemId);
+                    var identifier = Identifier.tryParse(itemId);
 
                     ItemStack item;
 

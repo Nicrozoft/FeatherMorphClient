@@ -3,7 +3,7 @@ package xyz.nifeather.morph.client.syncers.animations.impl;
 import xyz.nifeather.morph.shared.AnimationNames;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.Parrot;
+import net.minecraft.world.entity.animal.parrot.Parrot;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 
 public class ParrotAnimationHandler extends AnimationHandler

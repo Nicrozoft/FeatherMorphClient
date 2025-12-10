@@ -1,7 +1,7 @@
 package xyz.nifeather.morph.client;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntitySpawnReason;

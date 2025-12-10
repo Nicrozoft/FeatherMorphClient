@@ -8,7 +8,7 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.HumanoidArm;
@@ -38,13 +38,13 @@ public class MorphLocalPlayer extends RemotePlayer
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @NotNull
-    private ResourceLocation morphTextureIdentifier = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/entity/player/wide/steve.png");
+    private Identifier morphTextureIdentifier = Identifier.fromNamespaceAndPath("minecraft", "textures/entity/player/wide/steve.png");
 
     @Nullable
-    private ResourceLocation capeTextureIdentifier;
+    private Identifier capeTextureIdentifier;
 
     @Nullable
-    private ResourceLocation ofCapeIdentifier;
+    private Identifier ofCapeIdentifier;
 
     @Nullable
     private String skinTextureUrl;
@@ -289,7 +289,7 @@ public class MorphLocalPlayer extends RemotePlayer
     public double distanceToSqr(Vec3 vector)
     {
         // compat with 3d skin layers
-        if (vector.equals(Minecraft.getInstance().gameRenderer.getMainCamera().getPosition()))
+        if (vector.equals(Minecraft.getInstance().gameRenderer.getMainCamera().position()))
             return 0d;
 
         return super.distanceToSqr(vector);

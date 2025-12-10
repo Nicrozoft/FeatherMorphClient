@@ -5,7 +5,7 @@ import me.shedaniel.autoconfig.ConfigHolder;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import xyz.nifeather.morph.client.config.ModConfigData;
 import xyz.nifeather.morph.server.MorphServerLoader;
 import xyz.nifeather.morph.shared.SharedValues;
@@ -62,7 +62,7 @@ public class FeatherMorphCommonBootstrap
             MorphServerLoader.LOGGER.info("Register argument types...");
             MorphServerLoader.LOGGER.info("Sadly, we can't register these at runtime.");
 
-            Services.PLATFORM.registerArgumentType(ResourceLocation.parse("feathermorph:relaxed_string"),
+            Services.PLATFORM.registerArgumentType(Identifier.parse("feathermorph:relaxed_string"),
                     RelaxedStringArgumentType.class,
                     SingletonArgumentInfo.contextFree(() -> RelaxedStringArgumentType.INSTANCE));
         }

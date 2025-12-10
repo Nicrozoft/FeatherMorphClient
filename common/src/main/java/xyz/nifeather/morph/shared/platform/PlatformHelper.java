@@ -11,7 +11,7 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -36,7 +36,7 @@ public interface PlatformHelper
 
     void registerWorldLoadEvent(WorldLoad callback);
 
-    void registerServerStartTickEvent(ResourceLocation phase, ServerStartTick callback);
+    void registerServerStartTickEvent(Identifier phase, ServerStartTick callback);
 
     void registerAfterKilledOtherEntityEvent(AfterKilledOtherEntity callback);
 
@@ -45,7 +45,7 @@ public interface PlatformHelper
     KeyMapping registerPlatformKeyBinding(KeyMapping keyMapping);
 
     <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> void registerArgumentType(
-            ResourceLocation id, Class<? extends A> clazz, ArgumentTypeInfo<A, T> serializer);
+            Identifier id, Class<? extends A> clazz, ArgumentTypeInfo<A, T> serializer);
 
     @FunctionalInterface
     interface HudRenderCallback

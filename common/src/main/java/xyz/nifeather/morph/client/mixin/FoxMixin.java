@@ -1,6 +1,6 @@
 package xyz.nifeather.morph.client.mixin;
 
-import net.minecraft.world.entity.animal.Fox;
+import net.minecraft.world.entity.animal.fox.Fox;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import xyz.nifeather.morph.client.entities.IFox;

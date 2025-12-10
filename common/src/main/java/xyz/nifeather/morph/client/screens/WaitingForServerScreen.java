@@ -12,10 +12,12 @@ import xyz.nifeather.morph.client.graphics.Anchor;
 import xyz.nifeather.morph.client.graphics.DrawableText;
 import xyz.nifeather.morph.client.graphics.IMDrawable;
 import xyz.nifeather.morph.client.graphics.LoadingSpinner;
-import xyz.nifeather.morph.client.graphics.MButtonWidget;
+import xyz.nifeather.morph.client.graphics.container.DrawableButtonWrapper;
 import xyz.nifeather.morph.client.graphics.transforms.Transformer;
 import xyz.nifeather.morph.client.graphics.transforms.easings.Easing;
 import xyz.nifeather.morph.client.screens.disguise.DisguiseScreen;
+
+import java.awt.*;
 
 public class WaitingForServerScreen extends FeatherScreen
 {
@@ -32,14 +34,14 @@ public class WaitingForServerScreen extends FeatherScreen
         super(title);
 
         this.nextScreen = next;
-        closeButton = this.buildButtonWidget(0, 0, 150, 20, Component.translatable("gui.back"), (button) ->
+        closeButton = this.createDrawableButtonWrapper(0, 0, 150, 20, Component.translatable("gui.back"), (button) ->
         {
             this.onClose();
         });
     }
 
     private final DrawableText notReadyText = new DrawableText(Component.translatable("gui.morphclient.waiting_for_server"));
-    private final MButtonWidget closeButton;
+    private final DrawableButtonWrapper closeButton;
 
     private final Bindable<Float> backgroundDim = new Bindable<>(0f);
 

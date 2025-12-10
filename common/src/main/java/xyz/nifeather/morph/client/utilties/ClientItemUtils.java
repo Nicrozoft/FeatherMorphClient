@@ -6,7 +6,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Optional;
@@ -46,8 +46,8 @@ public class ClientItemUtils
 
     public static boolean isAir(ItemStack stack)
     {
-        return stack.getItemHolder().is(ResourceLocation.fromNamespaceAndPath("minecraft", "air"));
+        return stack.getItemHolder().is(Identifier.fromNamespaceAndPath("minecraft", "air"));
     }
 
-    public static final ItemStack air = new ItemStack(BuiltInRegistries.ITEM.getValue(ResourceLocation.fromNamespaceAndPath("minecraft", "air")));
+    public static final ItemStack air = new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.fromNamespaceAndPath("minecraft", "air")));
 }

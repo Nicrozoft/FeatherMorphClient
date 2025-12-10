@@ -5,7 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -27,9 +27,9 @@ public class HeldItemRendererMixin
 
     @Redirect(
             method = "renderPlayerArm",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/AvatarRenderer;renderLeftHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/resources/ResourceLocation;Z)V")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/AvatarRenderer;renderLeftHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/resources/Identifier;Z)V")
     )
-    private void morphclient$renderArmHoldingItem_left(AvatarRenderer<?> instance, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int light, ResourceLocation resourceLocation, boolean bl)
+    private void morphclient$renderArmHoldingItem_left(AvatarRenderer<?> instance, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int light, Identifier resourceLocation, boolean bl)
     {
         if (morphclient$canRender())
             morphclient$renderLeftArm(poseStack, submitNodeCollector, light);
@@ -39,9 +39,9 @@ public class HeldItemRendererMixin
 
     @Redirect(
             method = "renderPlayerArm",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/AvatarRenderer;renderRightHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/resources/ResourceLocation;Z)V")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/AvatarRenderer;renderRightHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/resources/Identifier;Z)V")
     )
-    private void morphclient$renderArmHoldingItem_right(AvatarRenderer instance, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int light, ResourceLocation resourceLocation, boolean bl)
+    private void morphclient$renderArmHoldingItem_right(AvatarRenderer instance, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int light, Identifier resourceLocation, boolean bl)
     {
         if (morphclient$canRender())
             morphclient$renderRightArm(poseStack, submitNodeCollector, light);
@@ -51,9 +51,9 @@ public class HeldItemRendererMixin
 
     @Redirect(
             method = "renderMapHand",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/AvatarRenderer;renderRightHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/resources/ResourceLocation;Z)V")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/AvatarRenderer;renderRightHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/resources/Identifier;Z)V")
     )
-    private void morphclient$renderArmHoldingItem_right_alt(AvatarRenderer instance, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int light, ResourceLocation resourceLocation, boolean bl)
+    private void morphclient$renderArmHoldingItem_right_alt(AvatarRenderer instance, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int light, Identifier resourceLocation, boolean bl)
     {
         if (morphclient$canRender())
             morphclient$renderRightArm(poseStack, submitNodeCollector, light);
@@ -63,9 +63,9 @@ public class HeldItemRendererMixin
 
     @Redirect(
             method = "renderMapHand",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/AvatarRenderer;renderLeftHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/resources/ResourceLocation;Z)V")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/AvatarRenderer;renderLeftHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;ILnet/minecraft/resources/Identifier;Z)V")
     )
-    private void morphclient$renderArmHoldingItem_left_alt(AvatarRenderer instance, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int light, ResourceLocation resourceLocation, boolean bl)
+    private void morphclient$renderArmHoldingItem_left_alt(AvatarRenderer instance, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int light, Identifier resourceLocation, boolean bl)
     {
         if (morphclient$canRender())
             morphclient$renderLeftArm(poseStack, submitNodeCollector, light);

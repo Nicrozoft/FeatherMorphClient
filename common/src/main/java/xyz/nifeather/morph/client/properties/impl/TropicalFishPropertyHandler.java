@@ -1,7 +1,7 @@
 package xyz.nifeather.morph.client.properties.impl;
 
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.TropicalFish;
+import net.minecraft.world.entity.animal.fish.TropicalFish;
 import net.minecraft.world.item.DyeColor;
 import xyz.nifeather.morph.client.mixin.accessors.TropicalFishAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
