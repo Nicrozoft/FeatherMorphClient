@@ -703,6 +703,9 @@ public abstract class DisguiseSyncer extends MorphClientObject
             entity.swingingArm = bindingPlayer.swingingArm;
         }
 
+        if (entity.isFallFlying() != bindingPlayer.isFallFlying())
+            ((EntityAccessor) entity).callSetSharedFlag(7, bindingPlayer.isFallFlying());
+
         // Hand and sneaking
         if (entity.getType() != EntityType.MANNEQUIN)
             entity.setShiftKeyDown(bindingPlayer.isShiftKeyDown());
