@@ -1,9 +1,13 @@
 package xyz.nifeather.morph.client.properties;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import xyz.nifeather.morph.client.properties.impl.*;
 
+import java.nio.charset.MalformedInputException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -11,24 +15,21 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class PropertyHandlers
 {
-    public static void init()
-    {
-        INSTANCE.bruh();
-    }
-
     public static final PropertyHandlers INSTANCE = new PropertyHandlers();
-
-    private void bruh()
-    {
-        // yes this is empty
-    }
 
     private final Map<EntityType<?>, AbstractPropertyHandler> handlerMap = new ConcurrentHashMap<>();
 
-    private final FallbackPropertyHandler fallbackPropertyHandler = new FallbackPropertyHandler();
-
-    public PropertyHandlers()
+    public void reset()
     {
+        handlerMap.clear();
+    }
+    public void init()
+    {
+        if (Minecraft.getInstance().level == null)
+            throw new RuntimeException("Client level is not available, cannot initialize disguise properties!");
+
+        reset();
+
         register(EntityType.PLAYER, new PlayerPropertyHandler());
         register(EntityType.ARMOR_STAND, new ArmorStandPropertyHandler());
         register(EntityType.AXOLOTL, new AxolotlPropertyHandler());
@@ -79,6 +80,8 @@ public class PropertyHandlers
         register(EntityType.MANNEQUIN, new MannequinPropertyHandler());
         register(EntityType.COPPER_GOLEM, new CopperGolemPropertyHandler());
     }
+
+    private final FallbackPropertyHandler fallbackPropertyHandler = new FallbackPropertyHandler();
 
     public FallbackPropertyHandler fallbackHandler()
     {

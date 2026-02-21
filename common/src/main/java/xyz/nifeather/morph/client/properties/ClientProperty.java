@@ -1,11 +1,11 @@
 package xyz.nifeather.morph.client.properties;
 
-import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
 public record ClientProperty<X, E>(String identifier,
+                                                  X defaultValue, Class<X> type,
                                                   Class<E> appliableClass,
                                                   IInputHandle<X> inputHandle,
                                                   IOutputHandle<X> outputHandle,
@@ -22,7 +22,7 @@ public record ClientProperty<X, E>(String identifier,
         return outputHandle.handle(value);
     }
 
-    public Optional<E> tryCast(Object obj)
+    public Optional<E> tryCastEntity(Object obj)
     {
         if (!appliableClass.isInstance(obj))
             return Optional.empty();
@@ -30,27 +30,27 @@ public record ClientProperty<X, E>(String identifier,
         return Optional.of((E) obj);
     }
 
-    public void apply(E entity, X value)
+    public Optional<X> tryCastValue(Object obj)
     {
-        tryCast(entity).ifPresent(cast -> entityHandle.handle(cast, value));
+        if (!type.isInstance(obj))
+            return Optional.empty();
+
+        return Optional.of((X) obj);
+    }
+
+    public void apply(E e, X x)
+    {
+        tryCastEntity(e).ifPresent(entity -> tryCastValue(x).ifPresent(value -> entityHandle.handle(entity, value)));
     }
 
     public static <X, E> Builder<X, E> builder(String identifier, X value, Class<X> type, Class<E> appliableClass)
     {
-        return new Builder<>(identifier, appliableClass);
+        return new Builder<>(identifier, value, type, appliableClass);
     }
 
     public static <X, E> Builder<X, E> builder(String identifier, X value, Class<E> appliableClass)
     {
-        return new Builder<>(identifier, appliableClass);
-    }
-
-    /**
-     * If the type of the value is in in-game registries, you may want to call this.
-     */
-    public static <X, E> Builder<X, E> builder(String identifier, Class<E> appliableClass)
-    {
-        return new Builder<>(identifier, appliableClass);
+        return new Builder<>(identifier, value, (Class<X>) value.getClass(), appliableClass);
     }
 
     public static final class Builder<X, E>
@@ -59,15 +59,21 @@ public record ClientProperty<X, E>(String identifier,
 
         private final String identifier;
         private final Class<E> appliableClass;
+        private final X defaultValue;
+        private final Class<X> type;
         private IInputHandle<X> inputHandle = CommonInputHandles::noOp;
         private IOutputHandle<X> outputHandle = CommonOutputHandles::noOp;
         private IEntityHandle<X, E> entityHandle = (o, o1) -> noOp(o1, o);
 
         public Builder(String identifier,
+                       X defaultValue, Class<X> type,
                        Class<E> appliableClass)
         {
             this.identifier = identifier;
             this.appliableClass = appliableClass;
+
+            this.defaultValue = defaultValue;
+            this.type = type;
         }
 
         public Builder<X, E> inputHandle(IInputHandle<X> inputHandle)
@@ -92,6 +98,7 @@ public record ClientProperty<X, E>(String identifier,
         {
             return new ClientProperty<>(
                     identifier,
+                    defaultValue, type,
                     appliableClass,
                     inputHandle,
                     outputHandle,

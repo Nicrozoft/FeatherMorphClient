@@ -6,7 +6,12 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.util.Util;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -143,12 +148,23 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
         Services.PLATFORM.registerClientTickEndEvent(this::tick);
         Services.PLATFORM.registerWorldTickEndEvent(this::postWorldTick);
         Services.PLATFORM.registerHudRenderEvent(hudRenderHelper::onRender);
+        ClientPlayConnectionEvents.JOIN.register(this::onJoin);
 
         modelWorkarounds = ModelWorkarounds.getInstance();
         savedDisguiseStorage = new SavedDisguiseStorage();
 
-        PropertyHandlers.init();
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> savedDisguiseStorage.clearCache());
+        ClientPlayConnectionEvents.DISCONNECT.register(this::onDisconnect);
+    }
+
+    private void onDisconnect(ClientPacketListener listener, Minecraft minecraft)
+    {
+        savedDisguiseStorage.clearCache();
+        PropertyHandlers.INSTANCE.reset();
+    }
+
+    private void onJoin(ClientPacketListener listener, PacketSender sender, Minecraft minecraft)
+    {
+        PropertyHandlers.INSTANCE.init();
     }
 
     private final HudRenderHelper hudRenderHelper = new HudRenderHelper();

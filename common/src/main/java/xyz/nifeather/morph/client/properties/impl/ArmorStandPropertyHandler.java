@@ -17,63 +17,65 @@ import java.util.Optional;
 public class ArmorStandPropertyHandler extends EntityPropertyHandler<ArmorStand>
 {
     public final ClientProperty<Boolean, ArmorStand> SHOW_ARMS =
-            ClientProperty.<Boolean, ArmorStand>builder(PropertyNames.ARMOR_STAND_SHOW_ARMS, ArmorStand.class)
+            ClientProperty.builder(PropertyNames.ARMOR_STAND_SHOW_ARMS, false, ArmorStand.class)
                     .inputHandle(CommonInputHandles::readBoolean)
                     .outputHandle(CommonOutputHandles::writeBoolean)
                     .entityHandle(ArmorStand::setShowArms)
                     .build();
 
     public final ClientProperty<Boolean, ArmorStand> HAS_BASE_PLATE =
-            ClientProperty.<Boolean, ArmorStand>builder(PropertyNames.ARMOR_STAND_HAS_BASE_PLATE, ArmorStand.class)
+            ClientProperty.builder(PropertyNames.ARMOR_STAND_HAS_BASE_PLATE, true, ArmorStand.class)
                     .inputHandle(CommonInputHandles::readBoolean)
                     .outputHandle(CommonOutputHandles::writeBoolean)
                     .entityHandle((e, v) -> e.setNoBasePlate(!v))
                     .build();
 
     public final ClientProperty<Boolean, ArmorStandEntityAccessor> SMALL =
-            ClientProperty.<Boolean, ArmorStandEntityAccessor>builder(PropertyNames.ARMOR_STAND_SMALL, ArmorStandEntityAccessor.class)
+            ClientProperty.builder(PropertyNames.ARMOR_STAND_SMALL, false, ArmorStandEntityAccessor.class)
                     .inputHandle(CommonInputHandles::readBoolean)
                     .outputHandle(CommonOutputHandles::writeBoolean)
                     .entityHandle(ArmorStandEntityAccessor::callSetSmall)
                     .build();
+    
+    private static final Rotations ROT_ZERO = new Rotations(0, 0, 0);
 
     public final ClientProperty<Rotations, ArmorStand> HEAD_ROTATION =
-            ClientProperty.<Rotations, ArmorStand>builder(PropertyNames.ARMOR_STAND_HEAD_ROTATION, ArmorStand.class)
+            ClientProperty.builder(PropertyNames.ARMOR_STAND_HEAD_ROTATION, ROT_ZERO, ArmorStand.class)
                     .inputHandle(this::vector3fFromString)
                     .outputHandle(CommonOutputHandles::noOp)
                     .entityHandle(ArmorStand::setHeadPose)
                     .build();
 
     public final ClientProperty<Rotations, ArmorStand> BODY_ROTATION =
-            ClientProperty.<Rotations, ArmorStand>builder(PropertyNames.ARMOR_STAND_BODY_ROTATION, ArmorStand.class)
+            ClientProperty.builder(PropertyNames.ARMOR_STAND_BODY_ROTATION, ROT_ZERO, ArmorStand.class)
                     .inputHandle(this::vector3fFromString)
                     .outputHandle(CommonOutputHandles::noOp)
                     .entityHandle(ArmorStand::setBodyPose)
                     .build();
 
     public final ClientProperty<Rotations, ArmorStand> LEFT_ARM_ROTATION =
-            ClientProperty.<Rotations, ArmorStand>builder(PropertyNames.ARMOR_STAND_LEFT_ARM_ROTATION, ArmorStand.class)
+            ClientProperty.builder(PropertyNames.ARMOR_STAND_LEFT_ARM_ROTATION, ROT_ZERO, ArmorStand.class)
                     .inputHandle(this::vector3fFromString)
                     .outputHandle(CommonOutputHandles::noOp)
                     .entityHandle(ArmorStand::setLeftArmPose)
                     .build();
 
     public final ClientProperty<Rotations, ArmorStand> RIGHT_ARM_ROTATION =
-            ClientProperty.<Rotations, ArmorStand>builder(PropertyNames.ARMOR_STAND_RIGHT_ARM_ROTATION, ArmorStand.class)
+            ClientProperty.builder(PropertyNames.ARMOR_STAND_RIGHT_ARM_ROTATION, ROT_ZERO, ArmorStand.class)
                     .inputHandle(this::vector3fFromString)
                     .outputHandle(CommonOutputHandles::noOp)
                     .entityHandle(ArmorStand::setRightArmPose)
                     .build();
 
     public final ClientProperty<Rotations, ArmorStand> LEFT_LEG_ROTATION =
-            ClientProperty.<Rotations, ArmorStand>builder(PropertyNames.ARMOR_STAND_LEFT_LEG_ROTATION, ArmorStand.class)
+            ClientProperty.builder(PropertyNames.ARMOR_STAND_LEFT_LEG_ROTATION, ROT_ZERO, ArmorStand.class)
                     .inputHandle(this::vector3fFromString)
                     .outputHandle(CommonOutputHandles::noOp)
                     .entityHandle(ArmorStand::setLeftLegPose)
                     .build();
 
     public final ClientProperty<Rotations, ArmorStand> RIGHT_LEG_ROTATION =
-            ClientProperty.<Rotations, ArmorStand>builder(PropertyNames.ARMOR_STAND_RIGHT_LEG_ROTATION, ArmorStand.class)
+            ClientProperty.builder(PropertyNames.ARMOR_STAND_RIGHT_LEG_ROTATION, ROT_ZERO, ArmorStand.class)
                     .inputHandle(this::vector3fFromString)
                     .outputHandle(CommonOutputHandles::noOp)
                     .entityHandle(ArmorStand::setRightLegPose)

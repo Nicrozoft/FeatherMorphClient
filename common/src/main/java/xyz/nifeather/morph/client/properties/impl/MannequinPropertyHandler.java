@@ -22,7 +22,7 @@ public class MannequinPropertyHandler extends EntityPropertyHandler<Mannequin>
                     .build();
 
     public final ClientProperty<ResolvableProfile, MannequinAccessor> SKIN = 
-            ClientProperty.builder(PropertyNames.MANNEQUIN_SKIN, ResolvableProfile.createUnresolved(UUID.randomUUID()), MannequinAccessor.class)
+            ClientProperty.builder(PropertyNames.MANNEQUIN_SKIN, ResolvableProfile.createUnresolved(UUID.randomUUID()), ResolvableProfile.class, MannequinAccessor.class)
                     .inputHandle(CommonInputHandles::resolvableProfile)
                     .entityHandle(MannequinAccessor::callSetProfile)
                     .build();

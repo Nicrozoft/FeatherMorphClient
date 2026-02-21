@@ -5,6 +5,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.animal.cow.CowVariant;
+import net.minecraft.world.entity.animal.cow.CowVariants;
 import net.minecraft.world.entity.variant.ModelAndTexture;
 import net.minecraft.world.entity.variant.SpawnPrioritySelectors;
 import xyz.nifeather.morph.client.properties.ClientProperty;
@@ -16,7 +17,7 @@ import java.util.Optional;
 public class CowPropertyHandler extends EntityPropertyHandler<Cow>
 {
     public final ClientProperty<Holder<CowVariant>, Cow> VARIANT =
-            ClientProperty.<Holder<CowVariant>, Cow>builder(PropertyNames.COW_VARIANT, Cow.class)
+            ClientProperty.builder(PropertyNames.COW_VARIANT, lookupVariantOrThrow(Registries.COW_VARIANT, CowVariants.DEFAULT), Cow.class)
                     .inputHandle(this::readVariant)
                     .entityHandle(Cow::setVariant)
                     .build();

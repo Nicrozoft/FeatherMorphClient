@@ -7,6 +7,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.animal.feline.Cat;
 import net.minecraft.world.entity.animal.feline.CatVariant;
+import net.minecraft.world.entity.animal.feline.CatVariants;
 import net.minecraft.world.entity.variant.SpawnPrioritySelectors;
 import net.minecraft.world.item.DyeColor;
 import xyz.nifeather.morph.client.mixin.accessors.CatAccessor;
@@ -20,7 +21,7 @@ import java.util.UUID;
 public class CatPropertyHandler extends EntityPropertyHandler<Cat>
 {
     public final ClientProperty<Holder<CatVariant>, CatAccessor> VARIANT =
-            ClientProperty.<Holder<CatVariant>, CatAccessor>builder(PropertyNames.CAT_VARIANT, CatAccessor.class)
+            ClientProperty.builder(PropertyNames.CAT_VARIANT, lookupVariantOrThrow(Registries.CAT_VARIANT, CatVariants.BLACK), CatAccessor.class)
                     .inputHandle(this::readCatVariant)
                     .entityHandle(CatAccessor::callSetVariant)
                     .build();

@@ -21,13 +21,13 @@ import java.util.Optional;
 public class ZombieVillagerPropertyhandler extends EntityPropertyHandler<ZombieVillager>
 {
     public final ClientProperty<Boolean, Zombie> IS_BABY =
-            ClientProperty.<Boolean, Zombie>builder(PropertyNames.ZOMBIE_VILLAGER_IS_BABY, Zombie.class)
+            ClientProperty.builder(PropertyNames.ZOMBIE_VILLAGER_IS_BABY, false, Zombie.class)
                     .inputHandle(CommonInputHandles::readBoolean)
                     .entityHandle(Zombie::setBaby)
                     .build();
 
     public final ClientProperty<Holder<VillagerType>, ZombieVillager> TYPE =
-            ClientProperty.<Holder<VillagerType>, ZombieVillager>builder(PropertyNames.ZOMBIE_VILLAGER_TYPE, ZombieVillager.class)
+            ClientProperty.builder(PropertyNames.ZOMBIE_VILLAGER_TYPE, lookupVariantOrThrow(Registries.VILLAGER_TYPE, VillagerType.PLAINS), ZombieVillager.class)
                     .inputHandle(s -> CommonInputHandles.readVariantHolder(Registries.VILLAGER_TYPE, s))
                     .entityHandle((villager, type) ->
                     {
@@ -37,7 +37,7 @@ public class ZombieVillagerPropertyhandler extends EntityPropertyHandler<ZombieV
                     .build();
 
     public final ClientProperty<Holder<VillagerProfession>, ZombieVillager> PROFESSION =
-            ClientProperty.<Holder<VillagerProfession>, ZombieVillager>builder(PropertyNames.ZOMBIE_VILLAGER_PROFESSION, ZombieVillager.class)
+            ClientProperty.builder(PropertyNames.ZOMBIE_VILLAGER_PROFESSION, lookupVariantOrThrow(Registries.VILLAGER_PROFESSION, VillagerProfession.NONE), ZombieVillager.class)
                     .inputHandle(s -> CommonInputHandles.readVariantHolder(Registries.VILLAGER_PROFESSION, s))
                     .entityHandle((villager, professionHolder) ->
                     {
@@ -47,7 +47,7 @@ public class ZombieVillagerPropertyhandler extends EntityPropertyHandler<ZombieV
                     .build();
 
     public final ClientProperty<Integer, ZombieVillager> LEVEL =
-            ClientProperty.<Integer, ZombieVillager>builder(PropertyNames.ZOMBIE_VILLAGER_LEVEL, ZombieVillager.class)
+            ClientProperty.builder(PropertyNames.ZOMBIE_VILLAGER_LEVEL, 0, ZombieVillager.class)
                     .inputHandle(CommonInputHandles::intOrEmpty)
                     .entityHandle((villager, level) ->
                     {

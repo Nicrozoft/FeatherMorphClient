@@ -12,7 +12,7 @@ import java.util.Optional;
 public class ZombiePropertyhandler extends EntityPropertyHandler<Zombie>
 {
     public final ClientProperty<Boolean, Zombie> IS_BABY =
-            ClientProperty.<Boolean, Zombie>builder(PropertyNames.ZOMBIE_IS_BABY, Zombie.class)
+            ClientProperty.builder(PropertyNames.ZOMBIE_IS_BABY, false, Zombie.class)
                     .inputHandle(CommonInputHandles::readBoolean)
                     .entityHandle(Zombie::setBaby)
                     .build();

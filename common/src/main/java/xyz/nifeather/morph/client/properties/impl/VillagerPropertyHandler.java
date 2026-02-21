@@ -17,7 +17,7 @@ import java.util.Optional;
 public class VillagerPropertyHandler extends EntityPropertyHandler<Villager>
 {
     public final ClientProperty<Holder<VillagerType>, Villager> TYPE =
-            ClientProperty.<Holder<VillagerType>, Villager>builder(PropertyNames.VILLAGER_TYPE, Villager.class)
+            ClientProperty.builder(PropertyNames.VILLAGER_TYPE, lookupVariantOrThrow(Registries.VILLAGER_TYPE, VillagerType.PLAINS), Villager.class)
                     .inputHandle(s -> CommonInputHandles.readVariantHolder(Registries.VILLAGER_TYPE, s))
                     .entityHandle((villager, type) ->
                     {
@@ -27,7 +27,7 @@ public class VillagerPropertyHandler extends EntityPropertyHandler<Villager>
                     .build();
 
     public final ClientProperty<Holder<VillagerProfession>, Villager> PROFESSION =
-            ClientProperty.<Holder<VillagerProfession>, Villager>builder(PropertyNames.VILLAGER_PROFESSION, Villager.class)
+            ClientProperty.builder(PropertyNames.VILLAGER_PROFESSION, lookupVariantOrThrow(Registries.VILLAGER_PROFESSION, VillagerProfession.NONE), Villager.class)
                     .inputHandle(s -> CommonInputHandles.readVariantHolder(Registries.VILLAGER_PROFESSION, s))
                     .entityHandle((villager, professionHolder) ->
                     {
@@ -37,7 +37,7 @@ public class VillagerPropertyHandler extends EntityPropertyHandler<Villager>
                     .build();
 
     public final ClientProperty<Integer, Villager> LEVEL =
-            ClientProperty.<Integer, Villager>builder(PropertyNames.VILLAGER_LEVEL, Villager.class)
+            ClientProperty.builder(PropertyNames.VILLAGER_LEVEL, 0, Villager.class)
                     .inputHandle(CommonInputHandles::intOrEmpty)
                     .entityHandle((villager, level) ->
                     {

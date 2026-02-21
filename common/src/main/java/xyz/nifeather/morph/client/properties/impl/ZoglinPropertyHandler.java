@@ -12,7 +12,7 @@ import java.util.Optional;
 public class ZoglinPropertyHandler extends EntityPropertyHandler<Zoglin>
 {
     public final ClientProperty<Boolean, Zoglin> IS_BABY =
-            ClientProperty.<Boolean, Zoglin>builder(PropertyNames.ZOGLIN_IS_BABY, Zoglin.class)
+            ClientProperty.builder(PropertyNames.ZOGLIN_IS_BABY, false, Zoglin.class)
                     .inputHandle(CommonInputHandles::readBoolean)
                     .entityHandle(Zoglin::setBaby)
                     .build();

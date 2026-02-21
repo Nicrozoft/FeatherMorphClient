@@ -14,19 +14,19 @@ import java.util.Optional;
 public class TropicalFishPropertyHandler extends EntityPropertyHandler<TropicalFish>
 {
     public final ClientProperty<DyeColor, TropicalFishAccessor> BODY_COLOR =
-            ClientProperty.<DyeColor, TropicalFishAccessor>builder(PropertyNames.TROPICAL_FISH_BODY_COLOR, TropicalFishAccessor.class)
+            ClientProperty.builder(PropertyNames.TROPICAL_FISH_BODY_COLOR, DyeColor.WHITE, TropicalFishAccessor.class)
                     .inputHandle(CommonInputHandles::readDyeColor)
                     .entityHandle(TropicalFishAccessor::callSetBaseColor)
                     .build();
 
     public final ClientProperty<DyeColor, TropicalFishAccessor> PATTERN_COLOR =
-            ClientProperty.<DyeColor, TropicalFishAccessor>builder(PropertyNames.TROPICAL_FISH_PATTERN, TropicalFishAccessor.class)
+            ClientProperty.builder(PropertyNames.TROPICAL_FISH_PATTERN, DyeColor.BLACK, TropicalFishAccessor.class)
                     .inputHandle(CommonInputHandles::readDyeColor)
                     .entityHandle(TropicalFishAccessor::callSetPatternColor)
                     .build();
 
     public final ClientProperty<TropicalFish.Pattern, TropicalFishAccessor> PATTERN =
-            ClientProperty.<TropicalFish.Pattern, TropicalFishAccessor>builder(PropertyNames.TROPICAL_FISH_PATTERN, TropicalFishAccessor.class)
+            ClientProperty.builder(PropertyNames.TROPICAL_FISH_PATTERN, TropicalFish.Pattern.BETTY, TropicalFishAccessor.class)
                     .inputHandle(s -> CommonInputHandles.readEnum(TropicalFish.Pattern.values(), s))
                     .entityHandle(TropicalFishAccessor::callSetPattern)
                     .build();

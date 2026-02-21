@@ -1,6 +1,10 @@
 package xyz.nifeather.morph.client.properties.impl;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import xyz.nifeather.morph.client.properties.*;
 
@@ -35,5 +39,13 @@ public abstract class EntityPropertyHandler<E extends Entity> extends AbstractPr
     public EntityPropertyHandler()
     {
         register(CUSTOM_NAME, CUSTOM_NAME_VISIBLE, EQUIPMENT, DISPLAY_DISGUISE_EQUIPMENT);
+    }
+
+    protected <R extends Registry<V>, V> Holder<V> lookupVariantOrThrow(ResourceKey<R> registryKey, ResourceKey<V> key)
+    {
+        return Minecraft.getInstance().level.registryAccess()
+                .lookupOrThrow(registryKey)
+                .get(key)
+                .orElseThrow();
     }
 }
