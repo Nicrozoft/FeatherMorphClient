@@ -9,6 +9,7 @@ import xyz.nifeather.morph.client.mixin.accessors.PigAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Optional;
 
@@ -28,9 +29,9 @@ public class PigPropertyHandler extends EntityPropertyHandler<Pig>
     }
 
     @Override
-    protected <X> void applyToEntity(Pig entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(Pig entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         if (property.identifier().equals(PropertyNames.PIG_VARIANT))
             ((PigAccessor)entity).callSetVariant((Holder<PigVariant>) value);

@@ -224,6 +224,9 @@ public class CommonInputHandles
                 case CHESTPLATE -> EquipmentSlot.CHEST;
                 case LEGGINGS ->  EquipmentSlot.LEGS;
                 case BOOTS -> EquipmentSlot.FEET;
+
+                case BODY -> EquipmentSlot.BODY;
+                case SADDLE -> EquipmentSlot.SADDLE;
             };
 
             if (item != null)

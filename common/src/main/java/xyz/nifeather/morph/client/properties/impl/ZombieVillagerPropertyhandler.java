@@ -10,6 +10,7 @@ import net.minecraft.world.entity.npc.villager.VillagerType;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Optional;
 
@@ -32,9 +33,9 @@ public class ZombieVillagerPropertyhandler extends EntityPropertyHandler<ZombieV
     }
 
     @Override
-    protected <X> void applyToEntity(ZombieVillager entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(ZombieVillager entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         VillagerData data = entity.getVillagerData();
 

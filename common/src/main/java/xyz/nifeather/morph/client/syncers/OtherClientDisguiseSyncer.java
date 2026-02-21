@@ -1,27 +1,19 @@
 package xyz.nifeather.morph.client.syncers;
 
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 import xyz.nifeather.morph.client.EntityCache;
 import xyz.nifeather.morph.client.entities.MorphLocalPlayer;
 
 public class OtherClientDisguiseSyncer extends DisguiseSyncer
 {
-    public OtherClientDisguiseSyncer(AbstractClientPlayer bindingPlayer, String morphId, int networkId)
+    public OtherClientDisguiseSyncer(AbstractClientPlayer bindingPlayer,
+                                     String morphId,
+                                     int networkId,
+                                     @NotNull LivingEntity disguiseEntity)
     {
-        super(bindingPlayer, morphId, networkId);
-    }
-
-    @Override
-    public boolean setupEntity()
-    {
-        if (!super.setupEntity())
-            return false;
-
-        if (disguiseInstance instanceof MorphLocalPlayer localPlayer)
-            localPlayer.setBindingPlayer(this.bindingPlayer);
-
-        return true;
+        super(bindingPlayer, morphId, networkId, disguiseEntity);
     }
 
     @Override
@@ -29,28 +21,10 @@ public class OtherClientDisguiseSyncer extends DisguiseSyncer
     {
     }
 
-    private EntityCache localCache;
-
-    @Override
-    protected @NotNull EntityCache getEntityCache()
-    {
-        if (localCache == null) localCache = new EntityCache();
-        else if (localCache.disposed() && !this.disposed())
-        {
-            logger.warn("A non-disposed DisguiseSyncer '%s' has a disposed EntityCache?!");
-            logger.warn("Creating a new instance now...");
-            Thread.dumpStack();
-
-            localCache = new EntityCache();
-        }
-
-        return localCache;
-    }
-
     @Override
     public void syncTick()
     {
-        if (disguiseInstance == null || disposed()) return;
+        if (disposed()) return;
 
         baseSync();
         syncYawPitch();

@@ -10,6 +10,7 @@ import xyz.nifeather.morph.client.mixin.accessors.ArmorStandEntityAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.List;
 import java.util.Optional;
@@ -65,9 +66,9 @@ public class ArmorStandPropertyHandler extends EntityPropertyHandler<ArmorStand>
         return Optional.ofNullable(entity instanceof ArmorStand armorStand ? armorStand : null);
     }
 
-    protected <X> void applyToEntity(ArmorStand entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(ArmorStand entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         switch (property.identifier())
         {

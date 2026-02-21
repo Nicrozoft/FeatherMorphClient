@@ -1,13 +1,13 @@
 package xyz.nifeather.morph.client.properties.impl;
 
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.axolotl.Axolotl;
 import net.minecraft.world.entity.monster.Guardian;
 import xyz.nifeather.morph.client.entities.IHasOverrideGlowing;
 import xyz.nifeather.morph.client.mixin.accessors.GuardianAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Optional;
 
@@ -27,9 +27,9 @@ public class GuardianPropertyHandler extends EntityPropertyHandler<Guardian>
     }
 
     @Override
-    protected <X> void applyToEntity(Guardian entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(Guardian entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         switch (property.identifier())
         {

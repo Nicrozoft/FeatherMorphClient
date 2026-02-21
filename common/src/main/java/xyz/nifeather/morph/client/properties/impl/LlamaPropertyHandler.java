@@ -5,6 +5,7 @@ import net.minecraft.world.entity.animal.equine.Llama;
 import xyz.nifeather.morph.client.mixin.accessors.LlamaAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -32,9 +33,9 @@ public class LlamaPropertyHandler extends EntityPropertyHandler<Llama>
     }
 
     @Override
-    protected <X> void applyToEntity(Llama entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(Llama entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         if (property.equals(COLOR))
             ((LlamaAccessor)entity).callSetVariant((Llama.Variant) value);

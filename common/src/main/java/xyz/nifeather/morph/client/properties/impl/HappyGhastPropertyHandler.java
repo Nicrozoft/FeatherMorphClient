@@ -5,6 +5,7 @@ import net.minecraft.world.entity.animal.happyghast.HappyGhast;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Optional;
 
@@ -24,9 +25,9 @@ public class HappyGhastPropertyHandler extends EntityPropertyHandler<HappyGhast>
     }
 
     @Override
-    protected <X> void applyToEntity(HappyGhast entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(HappyGhast entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         if (property.equals(IS_GHASTLING))
             entity.setBaby(((Boolean)value));

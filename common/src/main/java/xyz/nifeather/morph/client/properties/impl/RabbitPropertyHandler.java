@@ -6,6 +6,7 @@ import xyz.nifeather.morph.client.mixin.accessors.RabbitAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Optional;
 
@@ -25,9 +26,9 @@ public class RabbitPropertyHandler extends EntityPropertyHandler<Rabbit>
     }
 
     @Override
-    protected <X> void applyToEntity(Rabbit entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(Rabbit entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         if (property.equals(VARIANT))
             ((RabbitAccessor)entity).callSetVariant((Rabbit.Variant) value);

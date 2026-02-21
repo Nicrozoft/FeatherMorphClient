@@ -7,6 +7,7 @@ import xyz.nifeather.morph.client.mixin.accessors.TropicalFishAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Optional;
 
@@ -28,9 +29,9 @@ public class TropicalFishPropertyHandler extends EntityPropertyHandler<TropicalF
     }
 
     @Override
-    protected <X> void applyToEntity(TropicalFish entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(TropicalFish entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         switch (property.identifier())
         {

@@ -4,6 +4,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.panda.Panda;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -32,9 +33,9 @@ public class PandaPropertyHandler extends EntityPropertyHandler<Panda>
     }
 
     @Override
-    protected <X> void applyToEntity(Panda entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(Panda entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         switch (property.identifier())
         {

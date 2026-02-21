@@ -12,6 +12,7 @@ import xyz.nifeather.morph.client.mixin.accessors.WolfAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -34,9 +35,9 @@ public class WolfPropertyHandler extends EntityPropertyHandler<Wolf>
     }
 
     @Override
-    protected <X> void applyToEntity(Wolf entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(Wolf entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         switch (property.identifier())
         {

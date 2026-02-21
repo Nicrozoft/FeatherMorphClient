@@ -5,6 +5,7 @@ import net.minecraft.world.entity.animal.parrot.Parrot;
 import xyz.nifeather.morph.client.mixin.accessors.ParrotAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -32,9 +33,9 @@ public class ParrotPropertyHandler extends EntityPropertyHandler<Parrot>
     }
 
     @Override
-    protected <X> void applyToEntity(Parrot entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(Parrot entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         if (property.equals(VARIANT))
             ((ParrotAccessor)entity).callSetVariant((Parrot.Variant) value);

@@ -1,5 +1,7 @@
 package xyz.nifeather.morph.client;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -24,6 +26,7 @@ import xiamomc.pluginbase.Exceptions.NullDependencyException;
 import xyz.nifeather.morph.client.graphics.toasts.DisguiseEntryToast;
 import xyz.nifeather.morph.client.graphics.toasts.NewDisguiseSetToast;
 import xyz.nifeather.morph.client.properties.AbstractPropertyHandler;
+import xyz.nifeather.morph.client.properties.ClientPropertyHolder;
 import xyz.nifeather.morph.client.properties.PropertyHandlers;
 import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
@@ -31,10 +34,8 @@ import xyz.nifeather.morph.client.syncers.OtherClientDisguiseSyncer;
 import xyz.nifeather.morph.client.syncers.animations.AnimHandlerIndex;
 import xyz.nifeather.morph.shared.AnimationNames;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.SortedSet;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -71,6 +72,35 @@ public class ClientMorphManager extends MorphClientObject
 
     @Resolved
     private DisguiseInstanceTracker instanceTracker;
+
+    private final Map<Integer, Map<String, String>> storedProperties = new ConcurrentHashMap<>();
+
+    public Map<String, String> getNetworkPropertiesFor(int id)
+    {
+        return storedProperties.getOrDefault(id, new ConcurrentHashMap<>());
+    }
+
+    public void setNetworkPropertiesFor(int id, Map<String, String> map)
+    {
+        var asConcurrent = map instanceof ConcurrentHashMap<String, String> concurrent
+                           ? concurrent
+                           : new ConcurrentHashMap<>(map);
+
+        storedProperties.put(id, asConcurrent);
+    }
+
+    public void mergeNetworkPropertiesFor(int id, Map<String, String> input)
+    {
+        var map = getNetworkPropertiesFor(id);
+        map.putAll(input);
+
+        setNetworkPropertiesFor(id, map);
+    }
+
+    public void dropNetworkPropertiesFor(int id)
+    {
+        storedProperties.remove(id);
+    }
 
     //endregion
 
@@ -158,7 +188,7 @@ public class ClientMorphManager extends MorphClientObject
         var currentClientPlayer = Minecraft.getInstance().player;
 
         if (lastClientPlayer != null && lastClientPlayer != currentClientPlayer)
-            refreshLocalSyncer(currentIdentifier.get());
+            refreshLocalSyncer(currentIdentifier.get()).ifPresent(this::setBindingClientSyncer);
 
         if (currentClientPlayer == null || lastClientPlayer == currentClientPlayer) return;
 
@@ -167,12 +197,6 @@ public class ClientMorphManager extends MorphClientObject
 
     @Nullable
     private Player lastClientPlayer;
-
-    private void setBindingClientSyncer(@NotNull DisguiseSyncer disguiseSyncer)
-    {
-        instanceTracker.setSyncer(Minecraft.getInstance().player.getId(), disguiseSyncer);
-        localPlayerSyncer = disguiseSyncer;
-    }
 
     private void disposeExistingSyncerIfPresent()
     {
@@ -183,59 +207,6 @@ public class ClientMorphManager extends MorphClientObject
         instanceTracker.removeSyncer(localPlayerSyncer);
         localPlayerSyncer.dispose();
         localPlayerSyncer = null;
-    }
-
-    private Optional<DisguiseSyncer> setupSyncerFromIdentifier(@Nullable String disguiseIdentifier,
-                                                               BiConsumer<LivingEntity, AbstractPropertyHandler<LivingEntity>> onEntitySetup)
-    {
-        if (disguiseIdentifier == null || disguiseIdentifier.isBlank())
-            return Optional.empty();
-
-        disposeExistingSyncerIfPresent();
-
-        var clientPlayer = Minecraft.getInstance().player;
-        assert clientPlayer != null;
-
-        var newDisguiseSyncer = this.createSyncerFor(clientPlayer, disguiseIdentifier, clientPlayer.getId());
-        if (newDisguiseSyncer == null) return Optional.empty();
-
-        if (lastEmote != null)
-            newDisguiseSyncer.playAnimation(lastEmote);
-
-        if (serverSkin != null)
-            newDisguiseSyncer.updateSkin(serverSkin);
-
-        newDisguiseSyncer.getEntityFuture().thenAccept(entity ->
-        {
-            var nextPropertyHandler = PropertyHandlers.INSTANCE.getHandler(entity).orElseThrow();
-            this.propertyHandler = nextPropertyHandler;
-
-            onEntitySetup.accept(entity, nextPropertyHandler);
-        });
-
-        return Optional.of(newDisguiseSyncer);
-    }
-
-    private void refreshLocalSyncer(String currentIdentifier)
-    {
-        var lastDisguiseSyncer = localPlayerSyncer;
-
-        // disposing previous syncer would make them clear their cached properties
-        // so we cache them here
-        Map<String, String> cachedProperty = lastDisguiseSyncer == null ? Map.of() : lastDisguiseSyncer.cachedNetworkProperties();
-
-        // Then we dispose the last syncer
-        disposeExistingSyncerIfPresent();
-
-        this.setupSyncerFromIdentifier(currentIdentifier, (entity, propertyHandler) ->
-        {
-            propertyHandler.tryCast(entity)
-                    .ifPresent(living -> propertyHandler.handle(cachedProperty, living));
-        }).ifPresent(syncer ->
-        {
-            syncer.mergeNetworkProperties(cachedProperty);
-            this.setBindingClientSyncer(syncer);
-        });
     }
 
     //region Add/Remove/Set disguises
@@ -404,7 +375,8 @@ public class ClientMorphManager extends MorphClientObject
         emoteDisplayName = null;
         serverSkin = null;
 
-        setupSyncerFromIdentifier(val, (a, b) -> {}).ifPresent(this::setBindingClientSyncer);
+        dropNetworkPropertiesFor(Minecraft.getInstance().player.getId());
+        refreshLocalSyncer(val).ifPresent(this::setBindingClientSyncer);
 
         if (val != null && val.isBlank())
             val = null;
@@ -416,23 +388,71 @@ public class ClientMorphManager extends MorphClientObject
         currentNbtCompound.set(null);
     }
 
+    private Optional<DisguiseSyncer> refreshLocalSyncer(@Nullable String disguiseIdentifier)
+    {
+        if (disguiseIdentifier == null || disguiseIdentifier.isBlank())
+            return Optional.empty();
+
+        disposeExistingSyncerIfPresent();
+
+        var clientPlayer = Minecraft.getInstance().player;
+        assert clientPlayer != null;
+
+        var newDisguiseSyncer = this.createSyncerFor(clientPlayer, disguiseIdentifier, clientPlayer.getId());
+        if (newDisguiseSyncer == null) return Optional.empty();
+
+        if (lastEmote != null)
+            newDisguiseSyncer.playAnimation(lastEmote);
+
+        if (serverSkin != null)
+            newDisguiseSyncer.updateSkin(serverSkin);
+
+        return Optional.of(newDisguiseSyncer);
+    }
+
+    private void setBindingClientSyncer(@NotNull DisguiseSyncer disguiseSyncer)
+    {
+        instanceTracker.setSyncer(Minecraft.getInstance().player.getId(), disguiseSyncer);
+        localPlayerSyncer = disguiseSyncer;
+    }
+
     @Resolved
     private AnimHandlerIndex animIndex;
 
+    @Nullable
     public DisguiseSyncer createSyncerFor(AbstractClientPlayer player, String disguiseId, int networkId)
     {
         var clientPlayer = Minecraft.getInstance().player;
         if (clientPlayer == null)
             throw new NullDependencyException("Required non-null client player to get DisguiseSyncer");
 
+        var isClient = clientPlayer == player;
+        EntityCache entityCache = isClient ? EntityCache.getGlobalCache() : new EntityCache();
+        var entity = entityCache.getEntity(disguiseId, player);
+        if (entity == null)
+            return null;
+
+        addSchedule(() -> Minecraft.getInstance().level.addEntity(entity));
+
         DisguiseSyncer syncer;
-        if (clientPlayer == player)
-            syncer = new ClientDisguiseSyncer(player, disguiseId, networkId);
+        if (isClient)
+            syncer = new ClientDisguiseSyncer(player, disguiseId, networkId, entity);
         else
-            syncer = new OtherClientDisguiseSyncer(player, disguiseId, networkId);
+            syncer = new OtherClientDisguiseSyncer(player, disguiseId, networkId, entity);
 
         var handler = animIndex.get(disguiseId);
         syncer.setAnimationHandler(handler);
+
+        var properties = getNetworkPropertiesFor(player.getId());
+        var propertyCollection = PropertyHandlers.INSTANCE.getHandler(entity).orElse(null);
+
+        if (propertyCollection != null)
+            syncer.propertyHolder().registerFromPropertyCollection(propertyCollection);
+
+        syncer.propertyHolder().updateFromPropertiesInput(properties);
+
+        if (propertyCollection != null)
+            propertyCollection.tryCast(entity).ifPresent(e -> propertyCollection.handle(properties, syncer));
 
         return syncer;
     }
@@ -457,30 +477,7 @@ public class ClientMorphManager extends MorphClientObject
         }
     }
 
-    @Nullable
-    private AbstractPropertyHandler<?> propertyHandler;
-
-    public void handlePropertiesUpdate(Map<String, String> input)
+    public void handlePropertiesUpdate(DisguiseSyncer syncer, Map<String, String> input)
     {
-        if (this.localPlayerSyncer == null)
-            return;
-
-        localPlayerSyncer.mergeNetworkProperties(input);
-
-        var entity = this.localPlayerSyncer.getDisguiseInstance();
-        if (entity == null)
-            return;
-
-        var propertyHandler = (AbstractPropertyHandler<Entity>) propertyHandler();
-        if (propertyHandler == null)
-            return;
-
-        propertyHandler.tryCast(entity).ifPresent(cast -> propertyHandler.handle(input, cast));
-    }
-
-    @Nullable
-    public AbstractPropertyHandler<?> propertyHandler()
-    {
-        return this.propertyHandler;
     }
 }

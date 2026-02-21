@@ -8,6 +8,7 @@ import net.minecraft.world.entity.animal.chicken.ChickenVariant;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Optional;
 
@@ -27,9 +28,9 @@ public class ChickenPropertyHandler extends EntityPropertyHandler<Chicken>
     }
 
     @Override
-    protected <X> void applyToEntity(Chicken entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(Chicken entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         if (property.identifier().equals(PropertyNames.CHICKEN_VARIANT))
             entity.setVariant((Holder<ChickenVariant>) value);

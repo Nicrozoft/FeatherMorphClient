@@ -7,7 +7,9 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.graphics.color.MaterialColors;
 import xyz.nifeather.morph.client.network.handlers.V3ProtocolHandler;
@@ -120,8 +122,11 @@ public class SaveDisguiseSubCommand implements IBrigadierCommand<FabricClientCom
             return 0;
         }
 
+        var morphManager = FeatherMorphClientBootstrap.getInstance().morphManager;
+        var propertyMap = morphManager.getNetworkPropertiesFor(Minecraft.getInstance().player.getId());
+        var savedDisguise = new SavedDisguise(ClientDisguiseSyncer.getCurrentInstance().disguiseIdentifier(), propertyMap);
+
         var saveName = StringArgumentType.getString(context, "name");
-        var savedDisguise = SavedDisguise.fromSyncer(ClientDisguiseSyncer.getCurrentInstance());
 
         if (savedDisguiseStorage().save(savedDisguise, saveName))
             context.getSource().sendFeedback(Component.translatable("text.morphclient.save_morph_success", saveName));

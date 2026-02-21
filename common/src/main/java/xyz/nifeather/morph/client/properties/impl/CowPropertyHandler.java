@@ -8,6 +8,7 @@ import net.minecraft.world.entity.animal.cow.CowVariant;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Optional;
 
@@ -27,9 +28,9 @@ public class CowPropertyHandler extends EntityPropertyHandler<Cow>
     }
 
     @Override
-    protected <X> void applyToEntity(Cow entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(Cow entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         if (property.identifier().equals(PropertyNames.COW_VARIANT))
             entity.setVariant((Holder<CowVariant>) value);

@@ -1,6 +1,5 @@
 package xyz.nifeather.morph.client.syncers;
 
-import com.google.common.collect.ImmutableMap;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
@@ -23,12 +22,10 @@ import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.LoggerFactory;
 import xiamomc.pluginbase.Annotations.Resolved;
-import xyz.nifeather.morph.client.ConvertedMeta;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
-import xyz.nifeather.morph.client.EntityCache;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.MorphClientObject;
 import xyz.nifeather.morph.client.entities.*;
@@ -36,20 +33,18 @@ import xyz.nifeather.morph.client.mixin.accessors.AbstractHorseEntityMixin;
 import xyz.nifeather.morph.client.mixin.accessors.EntityAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LimbAnimatorAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LivingEntityAccessor;
+import xyz.nifeather.morph.client.properties.*;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 import xyz.nifeather.morph.client.utilties.ClientItemUtils;
 
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class DisguiseSyncer extends MorphClientObject
 {
-    @Nullable
-    protected LivingEntity disguiseInstance;
+    @NotNull
+    protected final LivingEntity disguiseInstance;
 
-    @Nullable
+    @NotNull
     public LivingEntity getDisguiseInstance()
     {
         return disguiseInstance;
@@ -57,21 +52,6 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     @NotNull
     protected AbstractClientPlayer bindingPlayer;
-
-    @NotNull
-    private ConvertedMeta bindingMeta = new ConvertedMeta();
-
-    @NotNull
-    protected ConvertedMeta getBindingMeta()
-    {
-        return bindingMeta;
-    }
-
-    @Nullable
-    protected CompoundTag getCompound()
-    {
-        return bindingMeta.nbt;
-    }
 
     protected final String disguiseId;
     public String disguiseIdentifier()
@@ -84,26 +64,11 @@ public abstract class DisguiseSyncer extends MorphClientObject
     @Resolved(shouldSolveImmediately = true)
     private DisguiseInstanceTracker instanceTracker;
 
-    @NotNull
-    protected abstract EntityCache getEntityCache();
+    protected final ClientPropertyHolder propertyHolder = new ClientPropertyHolder();
 
-    protected final Map<String, String> cachedProperties = new ConcurrentHashMap<>();
-
-    public void mergeNetworkProperties(Map<String, String> map)
+    public ClientPropertyHolder propertyHolder()
     {
-        cachedProperties.putAll(map);
-    }
-
-    public void setCachedNetworkProperties(Map<String, String> map)
-    {
-        cachedProperties.clear();
-        cachedProperties.putAll(map);
-    }
-
-    @Unmodifiable
-    public Map<String, String> cachedNetworkProperties()
-    {
-        return ImmutableMap.copyOf(cachedProperties);
+        return propertyHolder;
     }
 
     @NotNull
@@ -112,15 +77,20 @@ public abstract class DisguiseSyncer extends MorphClientObject
         return bindingPlayer;
     }
 
-    public DisguiseSyncer(@NotNull AbstractClientPlayer bindingPlayer, String morphId, int networkId)
+    public DisguiseSyncer(@NotNull AbstractClientPlayer bindingPlayer,
+                          String morphId, int networkId,
+                          @NonNull LivingEntity disguiseEntity)
     {
         this.bindingPlayer = bindingPlayer;
         this.disguiseId = morphId;
         this.bindingNetworkId = networkId;
+        this.disguiseInstance = disguiseEntity;
 
-        bindingMeta.outdated = true;
+        propertyHolder.hookOnPropertyWrite(this::onPropertyWrite);
+    }
 
-        setupEntity();
+    private void onPropertyWrite(ClientProperty<Object> property, Object o)
+    {
     }
 
     private AnimationHandler animHandler;
@@ -157,116 +127,14 @@ public abstract class DisguiseSyncer extends MorphClientObject
     @Nullable
     private Entity findCrystalBy(int id)
     {
-        if (disguiseInstance == null || id == 0) return null;
+        if (id == 0) return null;
 
         return bindingPlayer.level().getEntity(id);
     }
 
-    @NotNull
-    private final CompletableFuture<LivingEntity> entityFuture = new CompletableFuture<>();
-
-    protected void finishEntityFuture(LivingEntity instance)
-    {
-        entityFuture.complete(instance);
-    }
-
-    /**
-     * Called when the entity finished setup
-     */
-    public CompletableFuture<LivingEntity> getEntityFuture()
-    {
-        return entityFuture;
-    }
-
-    /**
-     * @return Whether we created the entity successfully
-     */
-    protected boolean setupEntity()
-    {
-        if (disguiseInstance != null)
-            throw new IllegalStateException("This syncer %s already have a disguise instance on bind!".formatted(this.toString()));
-
-        try (var clientWorld = Minecraft.getInstance().level)
-        {
-            if (clientWorld == null)
-                return false;
-
-            var entityCache = getEntityCache();
-
-            var prevEntity = disguiseInstance;
-            var client = FeatherMorphClientBootstrap.getInstance();
-
-            if (prevEntity != null)
-            {
-                prevEntity.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-                prevEntity.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
-
-                prevEntity.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
-                prevEntity.setItemSlot(EquipmentSlot.CHEST, ItemStack.EMPTY);
-                prevEntity.setItemSlot(EquipmentSlot.LEGS, ItemStack.EMPTY);
-                prevEntity.setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
-
-                beamTarget = null;
-
-                prevEntity.hurtTime = 0;
-
-                disposeEntity(prevEntity);
-                entityCache.discardEntity(disguiseId);
-            }
-
-            var newInstance = entityCache.getEntity(disguiseId, bindingPlayer);
-
-            if (newInstance == null)
-            {
-                logger.info("Can't create entity with ID: %s, is it valid for the client?".formatted(disguiseId));
-                return false;
-            }
-
-            newInstance.setId(newInstance.getId() - newInstance.getId() * 2);
-
-            client.schedule(() -> clientWorld.addEntity(newInstance));
-
-            var nbt = getCompound();
-            if (nbt != null)
-                client.schedule(() -> mergeNbt(nbt));
-
-            newInstance.addTag("BINDING_" + bindingPlayer.getId());
-            newInstance.noPhysics = true;
-
-            if (newInstance instanceof IMorphClientEntity iMorphEntity)
-                iMorphEntity.featherMorph$setIsDisguiseEntity(bindingNetworkId);
-
-            if (newInstance instanceof MorphLocalPlayer localPlayer)
-            {
-                localPlayer.setBindingPlayer(Minecraft.getInstance().player);
-
-                if (prevEntity instanceof MorphLocalPlayer prevPlayer && prevPlayer.personEquals(localPlayer))
-                    localPlayer.copyFrom(prevPlayer);
-            }
-
-            this.disguiseInstance = newInstance;
-
-            initialSync();
-            baseSync();
-
-            finishEntityFuture(newInstance);
-        }
-        catch (Throwable t)
-        {
-            logger.error("Error occurred while refreshing client view: %s".formatted(t.getMessage()));
-            t.printStackTrace();
-
-            disguiseInstance = null;
-            return false;
-        }
-
-        return true;
-    }
-
     public void playAttackAnimation()
     {
-        if (disguiseInstance != null)
-            disguiseInstance.handleEntityEvent(EntityEvent.START_ATTACKING);
+        disguiseInstance.handleEntityEvent(EntityEvent.START_ATTACKING);
     }
 
     private static final ItemStack air = new ItemStack(Items.AIR);
@@ -274,8 +142,6 @@ public abstract class DisguiseSyncer extends MorphClientObject
     protected void mergeNbt(CompoundTag nbtCompound)
     {
         var entity = disguiseInstance;
-
-        if (entity == null) return;
 
         try (ProblemReporter.ScopedCollector scopedCollector = new ProblemReporter.ScopedCollector(entity.problemPath(), FeatherMorphClientBootstrap.LOGGER))
         {
@@ -349,19 +215,14 @@ public abstract class DisguiseSyncer extends MorphClientObject
         logger.error(e.getMessage());
         e.printStackTrace();
 
-        if (disguiseInstance != null)
+        try
         {
-            try
-            {
-                disposeEntity(disguiseInstance);
-            }
-            catch (Exception ee)
-            {
-                LoggerFactory.getLogger("MorphClient").error("Unable to remove entity:" + ee.getMessage());
-                ee.printStackTrace();
-            }
-
-            disguiseInstance = null;
+            disposeEntity(disguiseInstance);
+        }
+        catch (Exception ee)
+        {
+            LoggerFactory.getLogger("MorphClient").error("Unable to remove entity:" + ee.getMessage());
+            ee.printStackTrace();
         }
 
         onTickError();
@@ -417,7 +278,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     public void preRenderStateSetup()
     {
-        if (!allowTick || disguiseInstance == null) return;
+        if (!allowTick) return;
 
         var xRot = bindingPlayer.getXRot();
         var xRotO = bindingPlayer.xRotO;
@@ -448,9 +309,6 @@ public abstract class DisguiseSyncer extends MorphClientObject
     {
         if (!allowTick) return;
 
-        if (disguiseInstance == null)
-            return;
-
         if (disguiseInstance.getType() != EntityType.PLAYER && disguiseInstance.hasCustomName())
         {
             renderState.nameTag = disguiseInstance.getName();
@@ -473,7 +331,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     public void postRenderStateSetup()
     {
-        if (!allowTick || disguiseInstance == null) return;
+        if (!allowTick) return;
 
         if (disguiseLastPositionSaving != null)
         {
@@ -514,8 +372,6 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     protected void syncYawPitch()
     {
-        if (disguiseInstance == null) return;
-
         var player = bindingPlayer;
 
         // 幻翼的pitch需要倒转
@@ -544,60 +400,31 @@ public abstract class DisguiseSyncer extends MorphClientObject
         }
     }
 
-    protected boolean showOverridedEquips()
+    private static final DisguiseEquipment emptyEquipment = DisguiseEquipment.empty();
+
+    public void syncEquipment()
     {
-        return bindingMeta.showOverridedEquips;
-    }
+        var shouldDisplayDisguiseEquipment = propertyHolder.getOr(PropertyNames.ENTITY_DISPLAY_DISGUISE_EQUIPMENT, false);
 
-    protected void syncEquipments()
-    {
-        if (disguiseInstance == null) return;
+        // So that we don't read disguise equipment if we don't have to.
+        var disguiseEquip = shouldDisplayDisguiseEquipment
+                            ? propertyHolder.getOr(PropertyNames.ENTITY_EQUIPMENT, emptyEquipment)
+                            : null;
 
-        var meta = getBindingMeta();
-        var showOverridedEquips = showOverridedEquips();
-        var disguiseEquip = meta.convertedEquipment;
+        for (EquipmentSlot slot : EquipmentSlot.values())
+        {
+            if (!disguiseInstance.canUseSlot(slot))
+                continue;
 
-        // In case the server returned a bad meta...
-        if (disguiseEquip == null && showOverridedEquips)
-            return;
-
-        var headStack = showOverridedEquips ? disguiseEquip.head : bindingPlayer.getItemBySlot(EquipmentSlot.HEAD);
-        var chestStack = showOverridedEquips ? disguiseEquip.chest : bindingPlayer.getItemBySlot(EquipmentSlot.CHEST);
-        var legStack = showOverridedEquips ? disguiseEquip.leggings : bindingPlayer.getItemBySlot(EquipmentSlot.LEGS);
-        var feetStack = showOverridedEquips ? disguiseEquip.feet : bindingPlayer.getItemBySlot(EquipmentSlot.FEET);
-        var handStack = showOverridedEquips ? disguiseEquip.mainHand : bindingPlayer.getItemBySlot(EquipmentSlot.MAINHAND);
-        var offHandStack = showOverridedEquips ? disguiseEquip.offHand : bindingPlayer.getItemBySlot(EquipmentSlot.OFFHAND);
-
-        //logger.info("Show disguised? " + showOverridedEquips + " :: Checkstack? " + chestStack);
-
-        disguiseInstance.setItemSlot(EquipmentSlot.MAINHAND, handStack);
-        disguiseInstance.setItemSlot(EquipmentSlot.OFFHAND, offHandStack);
-
-        disguiseInstance.setItemSlot(EquipmentSlot.HEAD, headStack);
-        disguiseInstance.setItemSlot(EquipmentSlot.CHEST, chestStack);
-        disguiseInstance.setItemSlot(EquipmentSlot.LEGS, legStack);
-        disguiseInstance.setItemSlot(EquipmentSlot.FEET, feetStack);
+            var stack = shouldDisplayDisguiseEquipment ? disguiseEquip.getItem(slot) : bindingPlayer.getItemBySlot(slot);
+            disguiseInstance.setItemSlot(slot, stack);
+        }
     }
 
     protected void syncPosition()
     {
-        if (disguiseInstance == null) return;
-
         var playerPos = bindingPlayer.position();
         disguiseInstance.setPos(playerPos.x, playerPos.y - 4096, playerPos.z);
-    }
-
-    private void preMetaChange(ConvertedMeta meta)
-    {
-        if (meta.nbt != null)
-            this.mergeNbt(meta.nbt);
-
-        if (meta.profileNbt != null && this.disguiseInstance instanceof MorphLocalPlayer localPlayer)
-            localPlayer.updateSkin(meta.profileNbt);
-
-        meta.outdated = false;
-
-        this.bindingMeta = meta;
     }
 
     private ClientLevel world;
@@ -605,7 +432,6 @@ public abstract class DisguiseSyncer extends MorphClientObject
     protected void baseSync()
     {
         var entity = disguiseInstance;
-        if (entity == null) return;
 
         if (this.disposed())
         {
@@ -631,8 +457,6 @@ public abstract class DisguiseSyncer extends MorphClientObject
             if (prev != null)
             {
                 logger.info(this + " World changed, scheduling syncer dispose");
-
-                getEntityCache().dropAll();
                 addSchedule(this::dispose);
             }
 
@@ -646,12 +470,9 @@ public abstract class DisguiseSyncer extends MorphClientObject
             return;
         }
 
-        if (bindingMeta.outdated)
-            this.preMetaChange(instanceTracker.getMetaFor(this.bindingNetworkId));
-
         markSyncing();
         syncPosition();
-        syncEquipments();
+        syncEquipment();
 
         // 因为我们在LivingEntity和PlayerEntity那里都加了阻止伪装实体被世界tick的mixin,
         // 所以在这里手动调用tick
@@ -791,11 +612,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
         if (disposed())
             return;
 
-        if (getEntityCache() != EntityCache.getGlobalCache())
-            getEntityCache().dispose();
-
-        if (disguiseInstance != null)
-            disposeEntity(disguiseInstance);
+        disposeEntity(disguiseInstance);
 
         try
         {
@@ -807,12 +624,11 @@ public abstract class DisguiseSyncer extends MorphClientObject
             t.printStackTrace();
         }
 
-        disguiseInstance = null;
         world = null;
         prevWorld = null;
         disposed.set(true);
 
-        cachedProperties.clear();
+        propertyHolder.reset();
 
         bindingPlayer.refreshDimensions();
 

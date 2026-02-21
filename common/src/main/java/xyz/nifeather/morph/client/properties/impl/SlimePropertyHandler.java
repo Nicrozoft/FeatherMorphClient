@@ -5,6 +5,7 @@ import net.minecraft.world.entity.monster.Slime;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Optional;
 
@@ -24,9 +25,9 @@ public class SlimePropertyHandler extends EntityPropertyHandler<Slime>
     }
 
     @Override
-    protected <X> void applyToEntity(Slime entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(Slime entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         if (property.equals(SIZE))
             entity.setSize((Integer)value, false);

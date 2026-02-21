@@ -9,6 +9,7 @@ import xyz.nifeather.morph.client.entities.MorphLocalPlayer;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 import xyz.nifeather.morph.client.utilties.MathUtils;
 
 import java.util.Optional;
@@ -37,9 +38,9 @@ public class PlayerPropertyHandler extends EntityPropertyHandler<Player>
     }
 
     @Override
-    protected <X> void applyToEntity(Player entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(Player entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         if (!(entity instanceof MorphLocalPlayer morphLocalPlayer)) return;
         if (!(entity instanceof IMorphLivingEntity customLiving)) return;

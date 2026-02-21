@@ -42,6 +42,8 @@ public class ClientS2CCommandConverter extends S2CCommandConverter
                 case CHESTPLATE -> NetheriteS2CSetFakeEquipCommand.ProtocolEquipmentSlot.CHESTPLATE;
                 case LEGGINGS -> NetheriteS2CSetFakeEquipCommand.ProtocolEquipmentSlot.LEGGINGS;
                 case BOOTS -> NetheriteS2CSetFakeEquipCommand.ProtocolEquipmentSlot.BOOTS;
+
+                default -> null;
             };
 
             return new LegacyS2CClientSetEquipCommand(cmd.getItemStack(), netheriteSlot);

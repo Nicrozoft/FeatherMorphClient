@@ -1,16 +1,9 @@
 package xyz.nifeather.morph.client.properties.impl;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import xyz.nifeather.morph.client.DisguiseInstanceTracker;
-import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
-import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.properties.*;
-import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 public abstract class EntityPropertyHandler<E extends Entity> extends AbstractPropertyHandler<E>
 {
@@ -24,10 +17,8 @@ public abstract class EntityPropertyHandler<E extends Entity> extends AbstractPr
         register(CUSTOM_NAME, CUSTOM_NAME_VISIBLE, EQUIPMENT, DISPLAY_DISGUISE_EQUIPMENT);
     }
 
-    private final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-
     @Override
-    protected <X> void applyToEntity(E entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(E entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
         if (property.equals(CUSTOM_NAME))
         {
@@ -37,36 +28,9 @@ public abstract class EntityPropertyHandler<E extends Entity> extends AbstractPr
         {
             entity.setCustomNameVisible((Boolean) value);
         }
-        else if (property.equals(EQUIPMENT))
+        else if (property.equals(EQUIPMENT) || property.equals(DISPLAY_DISGUISE_EQUIPMENT))
         {
-            if (!(entity instanceof IMorphClientEntity morphClientEntity) || !morphClientEntity.featherMorph$isDisguiseEntity()) return;
-
-            var equipment = (DisguiseEquipment) value;
-            var masterId = morphClientEntity.featherMorph$getMasterEntityId();
-            var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(masterId);
-
-            if (syncer == null || !syncer.equals(ClientDisguiseSyncer.getCurrentInstance())) return;
-
-            for (EquipmentSlot slot : EquipmentSlot.values())
-            {
-                if (slot == EquipmentSlot.BODY || slot == EquipmentSlot.SADDLE) continue;
-
-                var item = equipment.getItemOrNull(slot);
-
-                if (item != null)
-                    FeatherMorphClientBootstrap.getInstance().morphManager.setEquip(slot, item);
-            }
-        }
-        else if (property.equals(DISPLAY_DISGUISE_EQUIPMENT))
-        {
-            if (!(entity instanceof IMorphClientEntity morphClientEntity) || !morphClientEntity.featherMorph$isDisguiseEntity()) return;
-
-            var masterId = morphClientEntity.featherMorph$getMasterEntityId();
-            var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(masterId);
-
-            if (syncer == null || !syncer.equals(ClientDisguiseSyncer.getCurrentInstance())) return;
-
-            FeatherMorphClientBootstrap.getInstance().morphManager.equipOverriden.set((Boolean) value);
+            syncer.syncEquipment();
         }
     }
 }

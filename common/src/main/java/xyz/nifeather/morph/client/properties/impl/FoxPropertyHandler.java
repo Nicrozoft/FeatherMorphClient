@@ -5,6 +5,7 @@ import net.minecraft.world.entity.animal.fox.Fox;
 import xyz.nifeather.morph.client.mixin.accessors.FoxAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Optional;
 
@@ -29,9 +30,9 @@ public class FoxPropertyHandler extends EntityPropertyHandler<Fox>
     }
 
     @Override
-    protected <X> void applyToEntity(Fox entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(Fox entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         if (property.equals(VARIANT))
             ((FoxAccessor)entity).callSetVariant((Fox.Variant) value);

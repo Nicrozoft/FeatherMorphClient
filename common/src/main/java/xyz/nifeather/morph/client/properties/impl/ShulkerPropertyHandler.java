@@ -7,6 +7,7 @@ import xyz.nifeather.morph.client.mixin.accessors.ShulkerAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Optional;
 
@@ -26,9 +27,9 @@ public class ShulkerPropertyHandler extends EntityPropertyHandler<Shulker>
     }
 
     @Override
-    protected <X> void applyToEntity(Shulker entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(Shulker entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         if (property.equals(COLOR))
             ((ShulkerAccessor)entity).callSetVariant(Optional.of((DyeColor) value));

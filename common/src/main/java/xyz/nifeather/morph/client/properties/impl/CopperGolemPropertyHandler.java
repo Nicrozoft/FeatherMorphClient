@@ -5,6 +5,7 @@ import net.minecraft.world.entity.animal.golem.CopperGolem;
 import net.minecraft.world.level.block.WeatheringCopper;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -32,9 +33,9 @@ public class CopperGolemPropertyHandler extends EntityPropertyHandler<CopperGole
     }
 
     @Override
-    protected <X> void applyToEntity(CopperGolem entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(CopperGolem entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         if (property.equals(WEATHER_STATE))
             entity.setWeatherState((WeatheringCopper.WeatherState) value);

@@ -6,6 +6,7 @@ import xyz.nifeather.morph.client.entities.IMorphCreeper;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Optional;
 
@@ -25,9 +26,9 @@ public class CreeperPropertyHandler extends EntityPropertyHandler<Creeper>
     }
 
     @Override
-    protected <X> void applyToEntity(Creeper entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(Creeper entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         if (property.identifier().equals(PropertyNames.CREEPER_CHARGED))
             ((IMorphCreeper)entity).morphclient$setPowered((Boolean)value);

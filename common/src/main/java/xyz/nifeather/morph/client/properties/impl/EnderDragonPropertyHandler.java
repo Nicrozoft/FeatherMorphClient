@@ -6,6 +6,7 @@ import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Optional;
 
@@ -25,9 +26,9 @@ public class EnderDragonPropertyHandler extends EntityPropertyHandler<EnderDrago
     }
 
     @Override
-    protected <X> void applyToEntity(EnderDragon entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(EnderDragon entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         if (property.equals(DRAGON_PHASE))
             entity.getPhaseManager().setPhase(EnderDragonPhase.getById((Integer)value));

@@ -22,6 +22,7 @@ import xyz.nifeather.morph.client.entities.IMorphLocalPlayer;
 import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
 import xyz.nifeather.morph.client.network.handlers.IProtocolHandler;
 import xyz.nifeather.morph.client.network.handlers.V3ProtocolHandler;
+import xyz.nifeather.morph.client.properties.PropertyHandlers;
 import xyz.nifeather.morph.client.utilties.NbtUtils;
 import xyz.nifeather.morph.network.commands.C2S.*;
 import xyz.nifeather.morph.network.commands.CommandRegistriesNew;
@@ -616,7 +617,19 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Override
     public void onUpdatePropertiesCommand(S2CUpdatePropertiesCommand command)
     {
-        morphManager.handlePropertiesUpdate(command.getProperties());
+        var clientPlayer = Minecraft.getInstance().player;
+        if (clientPlayer == null)
+            return;
+
+        var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(clientPlayer.getId());
+        if (syncer == null) return;
+
+        var input = command.getProperties();
+        morphManager.mergeNetworkPropertiesFor(clientPlayer.getId(), input);
+        syncer.propertyHolder().updateFromPropertiesInput(input);
+
+        PropertyHandlers.INSTANCE.getHandler(syncer.getDisguiseInstance())
+                .ifPresent(h -> h.handle(input, syncer));
     }
 
     //endregion Impl of ServerHandler

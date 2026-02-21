@@ -1,6 +1,5 @@
 package xyz.nifeather.morph.client.properties.impl;
 
-import com.mojang.authlib.GameProfile;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.decoration.Mannequin;
@@ -9,6 +8,7 @@ import xyz.nifeather.morph.client.mixin.accessors.MannequinAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Optional;
 
@@ -31,9 +31,9 @@ public class MannequinPropertyHandler extends EntityPropertyHandler<Mannequin>
     }
 
     @Override
-    protected <X> void applyToEntity(Mannequin entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(Mannequin entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         if (property.equals(DESCRIPTION))
             ((MannequinAccessor) entity).callSetDescription((Component) value);

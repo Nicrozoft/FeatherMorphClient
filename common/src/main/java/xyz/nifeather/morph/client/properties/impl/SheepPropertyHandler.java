@@ -6,6 +6,7 @@ import net.minecraft.world.item.DyeColor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Optional;
 
@@ -25,9 +26,9 @@ public class SheepPropertyHandler extends EntityPropertyHandler<Sheep>
     }
 
     @Override
-    protected <X> void applyToEntity(Sheep entity, ClientProperty<X> property, X value)
+    protected <X> void applyToEntity(Sheep entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
     {
-        super.applyToEntity(entity, property, value);
+        super.applyToEntity(entity, syncer, property, value);
 
         if (property.equals(COLOR))
             entity.setColor((DyeColor) value);
