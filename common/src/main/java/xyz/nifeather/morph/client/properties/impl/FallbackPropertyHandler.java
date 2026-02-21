@@ -7,9 +7,4 @@ import java.util.Optional;
 
 public class FallbackPropertyHandler extends EntityPropertyHandler<Entity>
 {
-    @Override
-    public Optional<Entity> tryCast(Entity entity)
-    {
-        return entity instanceof Entity entity1 ? Optional.of(entity1) : Optional.empty();
-    }
 }

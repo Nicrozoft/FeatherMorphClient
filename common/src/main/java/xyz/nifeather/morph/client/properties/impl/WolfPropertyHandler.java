@@ -19,45 +19,29 @@ import java.util.UUID;
 
 public class WolfPropertyHandler extends EntityPropertyHandler<Wolf>
 {
-    public final ClientProperty<Holder<WolfVariant>> VARIANT = ClientProperty.of(PropertyNames.WOLF_VARIANT, s -> CommonInputHandles.readVariantHolder(Registries.WOLF_VARIANT, s));
-    public final ClientProperty<UUID> OWNER = ClientProperty.of(PropertyNames.WOLF_OWNER, CommonInputHandles::uuid);
-    public final ClientProperty<DyeColor> COLLAR_COLOR = ClientProperty.of(PropertyNames.WOLF_COLLAR_COLOR, CommonInputHandles::readDyeColor);
+    public final ClientProperty<Holder<WolfVariant>, WolfAccessor> VARIANT =
+            ClientProperty.<Holder<WolfVariant>, WolfAccessor>builder(PropertyNames.WOLF_VARIANT, WolfAccessor.class)
+                    .inputHandle(s -> CommonInputHandles.readVariantHolder(Registries.WOLF_VARIANT, s))
+                    .entityHandle(WolfAccessor::callSetVariant)
+                    .build();
+
+    public final ClientProperty<UUID, Wolf> OWNER = ClientProperty.<UUID, Wolf>builder(PropertyNames.WOLF_OWNER, Wolf.class)
+            .inputHandle(CommonInputHandles::uuid)
+            .entityHandle((wolf, ownerUUID) ->
+            {
+                wolf.setOwnerReference(EntityReference.of(ownerUUID));
+                wolf.setTame(true, true);
+            })
+            .build();
+
+    public final ClientProperty<DyeColor, WolfAccessor> COLLAR_COLOR =
+            ClientProperty.<DyeColor, WolfAccessor>builder(PropertyNames.WOLF_COLLAR_COLOR, WolfAccessor.class)
+                    .inputHandle(CommonInputHandles::readDyeColor)
+                    .entityHandle(WolfAccessor::callSetCollarColor)
+                    .build();
 
     public WolfPropertyHandler()
     {
         register(VARIANT, OWNER, COLLAR_COLOR);
-    }
-
-    @Override
-    public Optional<Wolf> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof Wolf wolf ? wolf : null);
-    }
-
-    @Override
-    protected <X> void applyToEntity(Wolf entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        switch (property.identifier())
-        {
-            case PropertyNames.WOLF_VARIANT -> ((WolfAccessor)entity).callSetVariant((Holder<WolfVariant>) value);
-            case PropertyNames.WOLF_OWNER ->
-            {
-                entity.setOwnerReference(EntityReference.of((UUID) value));
-                writeTamed(entity);
-            }
-
-            case PropertyNames.WOLF_COLLAR_COLOR ->
-            {
-                ((WolfAccessor)entity).callSetCollarColor((DyeColor) value);
-                writeTamed(entity);
-            }
-        }
-    }
-
-    private void writeTamed(TamableAnimal entity)
-    {
-        entity.setTame(true, true);
     }
 }

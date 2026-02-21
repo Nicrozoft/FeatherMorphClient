@@ -11,25 +11,14 @@ import java.util.Optional;
 
 public class SnowGolemPropertyHandler extends EntityPropertyHandler<SnowGolem>
 {
-    public final ClientProperty<Boolean> HAS_PUMPKIN = ClientProperty.of(PropertyNames.SNOW_GOLEM_HAS_PUMPKIN, CommonInputHandles.BOOLEAN);
+    public final ClientProperty<Boolean, SnowGolem> HAS_PUMPKIN =
+            ClientProperty.builder(PropertyNames.SNOW_GOLEM_HAS_PUMPKIN, false, SnowGolem.class)
+                    .inputHandle(CommonInputHandles::readBoolean)
+                    .entityHandle(SnowGolem::setPumpkin)
+                    .build();
 
     public SnowGolemPropertyHandler()
     {
         register(HAS_PUMPKIN);
-    }
-
-    @Override
-    public Optional<SnowGolem> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof SnowGolem snowGolem ? snowGolem : null);
-    }
-
-    @Override
-    protected <X> void applyToEntity(SnowGolem entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        if (property.equals(HAS_PUMPKIN))
-            entity.setPumpkin((Boolean) value);
     }
 }

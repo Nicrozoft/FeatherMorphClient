@@ -1,21 +1,40 @@
 package xyz.nifeather.morph.client.properties.impl;
 
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.entity.animal.equine.Markings;
 import net.minecraft.world.entity.animal.equine.Variant;
 import xyz.nifeather.morph.client.mixin.accessors.HorseAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.PropertyNames;
-import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Arrays;
 import java.util.Optional;
 
 public class HorsePropertyHandler extends EntityPropertyHandler<Horse>
 {
-    public final ClientProperty<Markings> STYLE = ClientProperty.of(PropertyNames.HORSE_STYLE, this::readHorseStyle);
-    public final ClientProperty<Variant> COLOR = ClientProperty.of(PropertyNames.HORSE_COLOR, this::readHorseColor);
+    public final ClientProperty<Markings, HorseAccessor> STYLE =
+            ClientProperty.builder(PropertyNames.HORSE_STYLE, Markings.NONE, HorseAccessor.class)
+                    .inputHandle(this::readHorseStyle)
+                    .entityHandle(this::applyStyle)
+                    .build();
+
+    private void applyStyle(HorseAccessor accessor, Markings markings)
+    {
+        var horse = (Horse) accessor;
+        accessor.callSetVariantAndMarkings(horse.getVariant(), markings);
+    }
+
+    public final ClientProperty<Variant, HorseAccessor> COLOR =
+            ClientProperty.builder(PropertyNames.HORSE_COLOR, Variant.BLACK, HorseAccessor.class)
+                    .inputHandle(this::readHorseColor)
+                    .entityHandle(this::applyColor)
+                    .build();
+
+    private void applyColor(HorseAccessor accessor, Variant variant)
+    {
+        var horse = (Horse) accessor;
+        accessor.callSetVariantAndMarkings(variant, horse.getMarkings());
+    }
 
     private Optional<Markings> readHorseStyle(String string)
     {
@@ -32,23 +51,5 @@ public class HorsePropertyHandler extends EntityPropertyHandler<Horse>
     public HorsePropertyHandler()
     {
         register(STYLE, COLOR);
-    }
-
-    @Override
-    public Optional<Horse> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof Horse horse ? horse : null);
-    }
-
-    @Override
-    protected <X> void applyToEntity(Horse entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        switch (property.identifier())
-        {
-            case PropertyNames.HORSE_COLOR -> ((HorseAccessor)entity).callSetVariantAndMarkings((Variant) value, entity.getMarkings());
-            case PropertyNames.HORSE_STYLE -> ((HorseAccessor)entity).callSetVariantAndMarkings(entity.getVariant(), (Markings) value);
-        }
     }
 }

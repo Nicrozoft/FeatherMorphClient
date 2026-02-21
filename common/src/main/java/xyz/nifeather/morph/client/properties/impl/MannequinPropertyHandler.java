@@ -11,37 +11,36 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public class MannequinPropertyHandler extends EntityPropertyHandler<Mannequin>
 {
-    public final ClientProperty<Component> DESCRIPTION = ClientProperty.of(PropertyNames.MANNEQUIN_NPC_DESCRIPTION, CommonInputHandles::component);
-    public final ClientProperty<ResolvableProfile> SKIN = ClientProperty.of(PropertyNames.MANNEQUIN_SKIN, CommonInputHandles::resolvableProfile);
-    public final ClientProperty<Boolean> HIDE_DESCRIPTION = ClientProperty.of(PropertyNames.MANNEQUIN_HIDE_DESCRIPTION, CommonInputHandles.BOOLEAN);
-    public final ClientProperty<Boolean> IMMOVABLE = ClientProperty.of(PropertyNames.MANNEQUIN_IMMOVABLE, CommonInputHandles.BOOLEAN);
+    public final ClientProperty<Component, MannequinAccessor> DESCRIPTION =
+            ClientProperty.builder(PropertyNames.MANNEQUIN_NPC_DESCRIPTION, Component.empty(), Component.class, MannequinAccessor.class)
+                    .inputHandle(CommonInputHandles::component)
+                    .entityHandle(MannequinAccessor::callSetDescription)
+                    .build();
+
+    public final ClientProperty<ResolvableProfile, MannequinAccessor> SKIN = 
+            ClientProperty.builder(PropertyNames.MANNEQUIN_SKIN, ResolvableProfile.createUnresolved(UUID.randomUUID()), MannequinAccessor.class)
+                    .inputHandle(CommonInputHandles::resolvableProfile)
+                    .entityHandle(MannequinAccessor::callSetProfile)
+                    .build();
+
+    public final ClientProperty<Boolean, MannequinAccessor> HIDE_DESCRIPTION =
+            ClientProperty.builder(PropertyNames.MANNEQUIN_HIDE_DESCRIPTION, false, MannequinAccessor.class)
+                    .inputHandle(CommonInputHandles::readBoolean)
+                    .entityHandle(MannequinAccessor::callSetHideDescription)
+                    .build();
+
+    public final ClientProperty<Boolean, MannequinAccessor> IMMOVABLE =
+            ClientProperty.builder(PropertyNames.MANNEQUIN_IMMOVABLE, false, MannequinAccessor.class)
+                    .inputHandle(CommonInputHandles::readBoolean)
+                    .entityHandle(MannequinAccessor::callSetImmovable)
+                    .build();
 
     public MannequinPropertyHandler()
     {
         register(DESCRIPTION, HIDE_DESCRIPTION, IMMOVABLE, SKIN);
-    }
-
-    @Override
-    public Optional<Mannequin> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof Mannequin mannequin ? mannequin : null);
-    }
-
-    @Override
-    protected <X> void applyToEntity(Mannequin entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        if (property.equals(DESCRIPTION))
-            ((MannequinAccessor) entity).callSetDescription((Component) value);
-        else if (property.equals(HIDE_DESCRIPTION))
-            ((MannequinAccessor)entity).callSetHideDescription((Boolean) value);
-        else if (property.equals(IMMOVABLE))
-            ((MannequinAccessor)entity).callSetImmovable((Boolean) value);
-        else if (property.equals(SKIN))
-            ((MannequinAccessor)entity).callSetProfile((ResolvableProfile) value);
     }
 }

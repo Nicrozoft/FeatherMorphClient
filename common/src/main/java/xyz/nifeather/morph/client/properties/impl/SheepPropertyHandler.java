@@ -12,25 +12,14 @@ import java.util.Optional;
 
 public class SheepPropertyHandler extends EntityPropertyHandler<Sheep>
 {
-    public final ClientProperty<DyeColor> COLOR = ClientProperty.of(PropertyNames.SHEEP_COLOR, s -> CommonInputHandles.readEnum(DyeColor.values(), s));
+    public final ClientProperty<DyeColor, Sheep> COLOR =
+            ClientProperty.builder(PropertyNames.SHEEP_COLOR, DyeColor.BLACK, Sheep.class)
+                    .inputHandle(CommonInputHandles::readDyeColor)
+                    .entityHandle(Sheep::setColor)
+                    .build();
 
     public SheepPropertyHandler()
     {
         register(COLOR);
-    }
-
-    @Override
-    public Optional<Sheep> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof Sheep sheep ? sheep : null);
-    }
-
-    @Override
-    protected <X> void applyToEntity(Sheep entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        if (property.equals(COLOR))
-            entity.setColor((DyeColor) value);
     }
 }

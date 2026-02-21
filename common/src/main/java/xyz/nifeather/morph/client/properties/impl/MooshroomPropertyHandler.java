@@ -11,7 +11,11 @@ import java.util.Optional;
 
 public class MooshroomPropertyHandler extends EntityPropertyHandler<MushroomCow>
 {
-    public final ClientProperty<MushroomCow.Variant> VARIANT = ClientProperty.of(PropertyNames.MOOSHROOM_VARIANT, this::readMushroomCowVariant);
+    public final ClientProperty<MushroomCow.Variant, MushroomCowAccessor> VARIANT =
+            ClientProperty.builder(PropertyNames.MOOSHROOM_VARIANT, MushroomCow.Variant.RED, MushroomCowAccessor.class)
+                    .inputHandle(this::readMushroomCowVariant)
+                    .entityHandle(MushroomCowAccessor::callSetVariant)
+                    .build();
 
     private Optional<MushroomCow.Variant> readMushroomCowVariant(String string)
     {
@@ -23,20 +27,5 @@ public class MooshroomPropertyHandler extends EntityPropertyHandler<MushroomCow>
     public MooshroomPropertyHandler()
     {
         register(VARIANT);
-    }
-
-    @Override
-    public Optional<MushroomCow> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof MushroomCow mushroomCow ? mushroomCow : null);
-    }
-
-    @Override
-    protected <X> void applyToEntity(MushroomCow entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        if (property.equals(VARIANT))
-            ((MushroomCowAccessor)entity).callSetVariant((MushroomCow.Variant) value);
     }
 }

@@ -11,25 +11,14 @@ import java.util.Optional;
 
 public class PhantomPropertyHandler extends EntityPropertyHandler<Phantom>
 {
-    public final ClientProperty<Integer> SIZE = ClientProperty.of(PropertyNames.PHANTOM_SIZE, CommonInputHandles::intOrEmpty);
+    public final ClientProperty<Integer, Phantom> SIZE =
+            ClientProperty.builder(PropertyNames.PHANTOM_SIZE, 0, Phantom.class)
+                    .inputHandle(CommonInputHandles::intOrEmpty)
+                    .entityHandle(Phantom::setPhantomSize)
+                    .build();
 
     public PhantomPropertyHandler()
     {
         register(SIZE);
-    }
-
-    @Override
-    public Optional<Phantom> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof Phantom phantom ? phantom : null);
-    }
-
-    @Override
-    protected <X> void applyToEntity(Phantom entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        if (property.equals(SIZE))
-            entity.setPhantomSize((Integer) value);
     }
 }

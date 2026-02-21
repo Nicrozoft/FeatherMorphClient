@@ -11,8 +11,17 @@ import java.util.Optional;
 
 public class PandaPropertyHandler extends EntityPropertyHandler<Panda>
 {
-    public final ClientProperty<Panda.Gene> MAIN_GENE = ClientProperty.of(PropertyNames.PANDA_MAIN_GENE, this::readGene);
-    public final ClientProperty<Panda.Gene> HIDDEN_GENE = ClientProperty.of(PropertyNames.PANDA_HIDDEN_GENE, this::readGene);
+    public final ClientProperty<Panda.Gene, Panda> MAIN_GENE =
+            ClientProperty.builder(PropertyNames.PANDA_MAIN_GENE, Panda.Gene.NORMAL, Panda.class)
+                    .inputHandle(this::readGene)
+                    .entityHandle(Panda::setMainGene)
+                    .build();
+
+    public final ClientProperty<Panda.Gene, Panda> HIDDEN_GENE =
+            ClientProperty.builder(PropertyNames.PANDA_HIDDEN_GENE, Panda.Gene.NORMAL, Panda.class)
+                    .inputHandle(this::readGene)
+                    .entityHandle(Panda::setHiddenGene)
+                    .build();
 
     private Optional<Panda.Gene> readGene(String string)
     {
@@ -24,23 +33,5 @@ public class PandaPropertyHandler extends EntityPropertyHandler<Panda>
     public PandaPropertyHandler()
     {
         register(MAIN_GENE, HIDDEN_GENE);
-    }
-
-    @Override
-    public Optional<Panda> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof Panda panda ? panda : null);
-    }
-
-    @Override
-    protected <X> void applyToEntity(Panda entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        switch (property.identifier())
-        {
-            case PropertyNames.PANDA_MAIN_GENE -> entity.setMainGene((Panda.Gene) value);
-            case PropertyNames.PANDA_HIDDEN_GENE -> entity.setHiddenGene((Panda.Gene) value);
-        }
     }
 }

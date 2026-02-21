@@ -1,18 +1,20 @@
 package xyz.nifeather.morph.client.properties.impl;
 
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.equine.Llama;
 import xyz.nifeather.morph.client.mixin.accessors.LlamaAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.PropertyNames;
-import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.Arrays;
 import java.util.Optional;
 
 public class LlamaPropertyHandler extends EntityPropertyHandler<Llama>
 {
-    public final ClientProperty<Llama.Variant> COLOR = ClientProperty.of(PropertyNames.LLAMA_COLOR, this::readLlamaVariant);
+    public final ClientProperty<Llama.Variant, LlamaAccessor> COLOR =
+            ClientProperty.builder(PropertyNames.LLAMA_COLOR, Llama.Variant.DEFAULT, LlamaAccessor.class)
+                    .inputHandle(this::readLlamaVariant)
+                    .entityHandle(LlamaAccessor::callSetVariant)
+                    .build();
 
     private Optional<Llama.Variant> readLlamaVariant(String string)
     {
@@ -24,20 +26,5 @@ public class LlamaPropertyHandler extends EntityPropertyHandler<Llama>
     public LlamaPropertyHandler()
     {
         register(COLOR);
-    }
-
-    @Override
-    public Optional<Llama> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof Llama llama ? llama : null);
-    }
-
-    @Override
-    protected <X> void applyToEntity(Llama entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        if (property.equals(COLOR))
-            ((LlamaAccessor)entity).callSetVariant((Llama.Variant) value);
     }
 }

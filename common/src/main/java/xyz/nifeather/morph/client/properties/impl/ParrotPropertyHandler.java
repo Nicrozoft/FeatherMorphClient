@@ -12,7 +12,11 @@ import java.util.Optional;
 
 public class ParrotPropertyHandler extends EntityPropertyHandler<Parrot>
 {
-    public final ClientProperty<Parrot.Variant> VARIANT = ClientProperty.of(PropertyNames.PARROT_VARIANT, this::readParrotVariant);
+    public final ClientProperty<Parrot.Variant, ParrotAccessor> VARIANT =
+            ClientProperty.builder(PropertyNames.PARROT_VARIANT, Parrot.Variant.DEFAULT, ParrotAccessor.class)
+                    .inputHandle(this::readParrotVariant)
+                    .entityHandle(ParrotAccessor::callSetVariant)
+                    .build();
 
     private Optional<Parrot.Variant> readParrotVariant(String string)
     {
@@ -24,20 +28,5 @@ public class ParrotPropertyHandler extends EntityPropertyHandler<Parrot>
     public ParrotPropertyHandler()
     {
         register(VARIANT);
-    }
-
-    @Override
-    public Optional<Parrot> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof Parrot parrot ? parrot : null);
-    }
-
-    @Override
-    protected <X> void applyToEntity(Parrot entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        if (property.equals(VARIANT))
-            ((ParrotAccessor)entity).callSetVariant((Parrot.Variant) value);
     }
 }

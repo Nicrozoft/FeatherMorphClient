@@ -3,30 +3,81 @@ package xyz.nifeather.morph.client.properties.impl;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.minecraft.core.Rotations;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.mixin.accessors.ArmorStandEntityAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
+import xyz.nifeather.morph.client.properties.CommonOutputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
-import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 
 import java.util.List;
 import java.util.Optional;
 
 public class ArmorStandPropertyHandler extends EntityPropertyHandler<ArmorStand>
 {
-    public final ClientProperty<Boolean> SHOW_ARMS = ClientProperty.of(PropertyNames.ARMOR_STAND_SHOW_ARMS, CommonInputHandles.BOOLEAN);
-    public final ClientProperty<Boolean> HAS_BASE_PLATE = ClientProperty.of(PropertyNames.ARMOR_STAND_HAS_BASE_PLATE, CommonInputHandles.BOOLEAN);
-    public final ClientProperty<Boolean> SMALL = ClientProperty.of(PropertyNames.ARMOR_STAND_SMALL, CommonInputHandles.BOOLEAN);
+    public final ClientProperty<Boolean, ArmorStand> SHOW_ARMS =
+            ClientProperty.<Boolean, ArmorStand>builder(PropertyNames.ARMOR_STAND_SHOW_ARMS, ArmorStand.class)
+                    .inputHandle(CommonInputHandles::readBoolean)
+                    .outputHandle(CommonOutputHandles::writeBoolean)
+                    .entityHandle(ArmorStand::setShowArms)
+                    .build();
 
-    public final ClientProperty<Rotations> HEAD_ROTATION = ClientProperty.of(PropertyNames.ARMOR_STAND_HEAD_ROTATION, this::vector3fFromString);
-    public final ClientProperty<Rotations> BODY_ROTATION = ClientProperty.of(PropertyNames.ARMOR_STAND_BODY_ROTATION, this::vector3fFromString);
-    public final ClientProperty<Rotations> LEFT_ARM_ROTATION = ClientProperty.of(PropertyNames.ARMOR_STAND_LEFT_ARM_ROTATION, this::vector3fFromString);
-    public final ClientProperty<Rotations> RIGHT_ARM_ROTATION = ClientProperty.of(PropertyNames.ARMOR_STAND_RIGHT_ARM_ROTATION, this::vector3fFromString);
-    public final ClientProperty<Rotations> LEFT_LEG_ROTATION = ClientProperty.of(PropertyNames.ARMOR_STAND_LEFT_LEG_ROTATION, this::vector3fFromString);
-    public final ClientProperty<Rotations> RIGHT_LEG_ROTATION = ClientProperty.of(PropertyNames.ARMOR_STAND_RIGHT_LEG_ROTATION, this::vector3fFromString);
+    public final ClientProperty<Boolean, ArmorStand> HAS_BASE_PLATE =
+            ClientProperty.<Boolean, ArmorStand>builder(PropertyNames.ARMOR_STAND_HAS_BASE_PLATE, ArmorStand.class)
+                    .inputHandle(CommonInputHandles::readBoolean)
+                    .outputHandle(CommonOutputHandles::writeBoolean)
+                    .entityHandle((e, v) -> e.setNoBasePlate(!v))
+                    .build();
+
+    public final ClientProperty<Boolean, ArmorStandEntityAccessor> SMALL =
+            ClientProperty.<Boolean, ArmorStandEntityAccessor>builder(PropertyNames.ARMOR_STAND_SMALL, ArmorStandEntityAccessor.class)
+                    .inputHandle(CommonInputHandles::readBoolean)
+                    .outputHandle(CommonOutputHandles::writeBoolean)
+                    .entityHandle(ArmorStandEntityAccessor::callSetSmall)
+                    .build();
+
+    public final ClientProperty<Rotations, ArmorStand> HEAD_ROTATION =
+            ClientProperty.<Rotations, ArmorStand>builder(PropertyNames.ARMOR_STAND_HEAD_ROTATION, ArmorStand.class)
+                    .inputHandle(this::vector3fFromString)
+                    .outputHandle(CommonOutputHandles::noOp)
+                    .entityHandle(ArmorStand::setHeadPose)
+                    .build();
+
+    public final ClientProperty<Rotations, ArmorStand> BODY_ROTATION =
+            ClientProperty.<Rotations, ArmorStand>builder(PropertyNames.ARMOR_STAND_BODY_ROTATION, ArmorStand.class)
+                    .inputHandle(this::vector3fFromString)
+                    .outputHandle(CommonOutputHandles::noOp)
+                    .entityHandle(ArmorStand::setBodyPose)
+                    .build();
+
+    public final ClientProperty<Rotations, ArmorStand> LEFT_ARM_ROTATION =
+            ClientProperty.<Rotations, ArmorStand>builder(PropertyNames.ARMOR_STAND_LEFT_ARM_ROTATION, ArmorStand.class)
+                    .inputHandle(this::vector3fFromString)
+                    .outputHandle(CommonOutputHandles::noOp)
+                    .entityHandle(ArmorStand::setLeftArmPose)
+                    .build();
+
+    public final ClientProperty<Rotations, ArmorStand> RIGHT_ARM_ROTATION =
+            ClientProperty.<Rotations, ArmorStand>builder(PropertyNames.ARMOR_STAND_RIGHT_ARM_ROTATION, ArmorStand.class)
+                    .inputHandle(this::vector3fFromString)
+                    .outputHandle(CommonOutputHandles::noOp)
+                    .entityHandle(ArmorStand::setRightArmPose)
+                    .build();
+
+    public final ClientProperty<Rotations, ArmorStand> LEFT_LEG_ROTATION =
+            ClientProperty.<Rotations, ArmorStand>builder(PropertyNames.ARMOR_STAND_LEFT_LEG_ROTATION, ArmorStand.class)
+                    .inputHandle(this::vector3fFromString)
+                    .outputHandle(CommonOutputHandles::noOp)
+                    .entityHandle(ArmorStand::setLeftLegPose)
+                    .build();
+
+    public final ClientProperty<Rotations, ArmorStand> RIGHT_LEG_ROTATION =
+            ClientProperty.<Rotations, ArmorStand>builder(PropertyNames.ARMOR_STAND_RIGHT_LEG_ROTATION, ArmorStand.class)
+                    .inputHandle(this::vector3fFromString)
+                    .outputHandle(CommonOutputHandles::noOp)
+                    .entityHandle(ArmorStand::setRightLegPose)
+                    .build();
 
     public ArmorStandPropertyHandler()
     {
@@ -58,30 +109,5 @@ public class ArmorStandPropertyHandler extends EntityPropertyHandler<ArmorStand>
         }
 
         return Optional.empty();
-    }
-
-    @Override
-    public Optional<ArmorStand> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof ArmorStand armorStand ? armorStand : null);
-    }
-
-    protected <X> void applyToEntity(ArmorStand entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        switch (property.identifier())
-        {
-            case PropertyNames.ARMOR_STAND_SHOW_ARMS -> entity.setShowArms((Boolean)value);
-            case PropertyNames.ARMOR_STAND_HAS_BASE_PLATE -> entity.setNoBasePlate(!(Boolean)value);
-            case PropertyNames.ARMOR_STAND_SMALL -> ((ArmorStandEntityAccessor)entity).callSetSmall((Boolean)value);
-
-            case PropertyNames.ARMOR_STAND_HEAD_ROTATION -> entity.setHeadPose((Rotations) value);
-            case PropertyNames.ARMOR_STAND_BODY_ROTATION -> entity.setBodyPose((Rotations) value);
-            case PropertyNames.ARMOR_STAND_LEFT_ARM_ROTATION -> entity.setLeftArmPose((Rotations) value);
-            case PropertyNames.ARMOR_STAND_RIGHT_ARM_ROTATION -> entity.setRightArmPose((Rotations) value);
-            case PropertyNames.ARMOR_STAND_LEFT_LEG_ROTATION -> entity.setLeftLegPose((Rotations) value);
-            case PropertyNames.ARMOR_STAND_RIGHT_LEG_ROTATION -> entity.setRightLegPose((Rotations) value);
-        }
     }
 }

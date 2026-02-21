@@ -1,6 +1,7 @@
 package xyz.nifeather.morph.client.properties.impl;
 
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.item.DyeColor;
 import xyz.nifeather.morph.client.mixin.accessors.ShulkerAccessor;
@@ -13,25 +14,14 @@ import java.util.Optional;
 
 public class ShulkerPropertyHandler extends EntityPropertyHandler<Shulker>
 {
-    public final ClientProperty<DyeColor> COLOR = ClientProperty.of(PropertyNames.SHULKER_COLOR, s -> CommonInputHandles.readEnum(DyeColor.values(), s));
+    public final ClientProperty<DyeColor, ShulkerAccessor> COLOR =
+            ClientProperty.builder(PropertyNames.SHEEP_COLOR, DyeColor.BLACK, ShulkerAccessor.class)
+                    .inputHandle(CommonInputHandles::readDyeColor)
+                    .entityHandle((shulker, color) -> shulker.callSetVariant(Optional.ofNullable(color)))
+                    .build();
 
     public ShulkerPropertyHandler()
     {
         register(COLOR);
-    }
-
-    @Override
-    public Optional<Shulker> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof Shulker shulker ? shulker : null);
-    }
-
-    @Override
-    protected <X> void applyToEntity(Shulker entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        if (property.equals(COLOR))
-            ((ShulkerAccessor)entity).callSetVariant(Optional.of((DyeColor) value));
     }
 }

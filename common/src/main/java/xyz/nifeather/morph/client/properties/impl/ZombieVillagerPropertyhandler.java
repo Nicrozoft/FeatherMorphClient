@@ -1,9 +1,13 @@
 package xyz.nifeather.morph.client.properties.impl;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.monster.zombie.ZombieVillager;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.npc.villager.VillagerData;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.entity.npc.villager.VillagerType;
@@ -16,35 +20,45 @@ import java.util.Optional;
 
 public class ZombieVillagerPropertyhandler extends EntityPropertyHandler<ZombieVillager>
 {
-    public final ClientProperty<Boolean> IS_BABY = ClientProperty.of(PropertyNames.ZOMBIE_VILLAGER_IS_BABY, CommonInputHandles.BOOLEAN);
-    public final ClientProperty<Holder<VillagerType>> TYPE = ClientProperty.of(PropertyNames.ZOMBIE_VILLAGER_TYPE, s -> CommonInputHandles.readVariantHolder(Registries.VILLAGER_TYPE, s));
-    public final ClientProperty<Holder<VillagerProfession>> PROFESSION = ClientProperty.of(PropertyNames.ZOMBIE_VILLAGER_PROFESSION, s -> CommonInputHandles.readVariantHolder(Registries.VILLAGER_PROFESSION, s));
-    public final ClientProperty<Integer> LEVEL = ClientProperty.of(PropertyNames.ZOMBIE_VILLAGER_LEVEL, CommonInputHandles::intOrEmpty);
+    public final ClientProperty<Boolean, Zombie> IS_BABY =
+            ClientProperty.<Boolean, Zombie>builder(PropertyNames.ZOMBIE_VILLAGER_IS_BABY, Zombie.class)
+                    .inputHandle(CommonInputHandles::readBoolean)
+                    .entityHandle(Zombie::setBaby)
+                    .build();
+
+    public final ClientProperty<Holder<VillagerType>, ZombieVillager> TYPE =
+            ClientProperty.<Holder<VillagerType>, ZombieVillager>builder(PropertyNames.ZOMBIE_VILLAGER_TYPE, ZombieVillager.class)
+                    .inputHandle(s -> CommonInputHandles.readVariantHolder(Registries.VILLAGER_TYPE, s))
+                    .entityHandle((villager, type) ->
+                    {
+                        VillagerData data = villager.getVillagerData();
+                        villager.setVillagerData(new VillagerData(type, data.profession(), data.level()));
+                    })
+                    .build();
+
+    public final ClientProperty<Holder<VillagerProfession>, ZombieVillager> PROFESSION =
+            ClientProperty.<Holder<VillagerProfession>, ZombieVillager>builder(PropertyNames.ZOMBIE_VILLAGER_PROFESSION, ZombieVillager.class)
+                    .inputHandle(s -> CommonInputHandles.readVariantHolder(Registries.VILLAGER_PROFESSION, s))
+                    .entityHandle((villager, professionHolder) ->
+                    {
+                        VillagerData data = villager.getVillagerData();
+                        villager.setVillagerData(new VillagerData(data.type(), professionHolder, data.level()));
+                    })
+                    .build();
+
+    public final ClientProperty<Integer, ZombieVillager> LEVEL =
+            ClientProperty.<Integer, ZombieVillager>builder(PropertyNames.ZOMBIE_VILLAGER_LEVEL, ZombieVillager.class)
+                    .inputHandle(CommonInputHandles::intOrEmpty)
+                    .entityHandle((villager, level) ->
+                    {
+                        VillagerData data = villager.getVillagerData();
+                        villager.setVillagerData(new VillagerData(data.type(), data.profession(), level));
+                    })
+                    .build();
+
 
     public ZombieVillagerPropertyhandler()
     {
         register(IS_BABY, TYPE, PROFESSION, LEVEL);
-    }
-
-    @Override
-    public Optional<ZombieVillager> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof ZombieVillager zombie ? zombie : null);
-    }
-
-    @Override
-    protected <X> void applyToEntity(ZombieVillager entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        VillagerData data = entity.getVillagerData();
-
-        switch (property.identifier())
-        {
-            case PropertyNames.ZOMBIE_VILLAGER_IS_BABY -> entity.setBaby((Boolean) value);
-            case PropertyNames.ZOMBIE_VILLAGER_TYPE -> entity.setVillagerData(new VillagerData((Holder<VillagerType>) value, data.profession(), data.level()));
-            case PropertyNames.ZOMBIE_VILLAGER_PROFESSION -> entity.setVillagerData(new VillagerData(data.type(), (Holder<VillagerProfession>) value, data.level()));
-            case PropertyNames.ZOMBIE_VILLAGER_LEVEL -> entity.setVillagerData(new VillagerData(data.type(), data.profession(), (Integer) value));
-        }
     }
 }

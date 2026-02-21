@@ -26,6 +26,7 @@ import xiamomc.pluginbase.Exceptions.NullDependencyException;
 import xyz.nifeather.morph.client.graphics.toasts.DisguiseEntryToast;
 import xyz.nifeather.morph.client.graphics.toasts.NewDisguiseSetToast;
 import xyz.nifeather.morph.client.properties.AbstractPropertyHandler;
+import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.ClientPropertyHolder;
 import xyz.nifeather.morph.client.properties.PropertyHandlers;
 import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
@@ -449,10 +450,10 @@ public class ClientMorphManager extends MorphClientObject
         if (propertyCollection != null)
             syncer.propertyHolder().registerFromPropertyCollection(propertyCollection);
 
-        syncer.propertyHolder().updateFromPropertiesInput(properties);
-
-        if (propertyCollection != null)
-            propertyCollection.tryCast(entity).ifPresent(e -> propertyCollection.handle(properties, syncer));
+        syncer.propertyHolder().updateFromPropertiesInput(properties).forEach((p, v) ->
+        {
+            ((ClientProperty<Object, Entity>) p).apply(entity, v);
+        });
 
         return syncer;
     }

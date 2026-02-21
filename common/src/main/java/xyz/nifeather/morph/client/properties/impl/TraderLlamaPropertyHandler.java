@@ -13,7 +13,11 @@ import java.util.Optional;
 
 public class TraderLlamaPropertyHandler extends EntityPropertyHandler<TraderLlama>
 {
-    public final ClientProperty<Llama.Variant> COLOR = ClientProperty.of(PropertyNames.LLAMA_COLOR, this::readLlamaVariant);
+    public final ClientProperty<Llama.Variant, LlamaAccessor> COLOR =
+            ClientProperty.builder(PropertyNames.LLAMA_COLOR, Llama.Variant.DEFAULT, LlamaAccessor.class)
+                    .inputHandle(this::readLlamaVariant)
+                    .entityHandle(LlamaAccessor::callSetVariant)
+                    .build();
 
     private Optional<Llama.Variant> readLlamaVariant(String string)
     {
@@ -25,20 +29,5 @@ public class TraderLlamaPropertyHandler extends EntityPropertyHandler<TraderLlam
     public TraderLlamaPropertyHandler()
     {
         register(COLOR);
-    }
-
-    @Override
-    public Optional<TraderLlama> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof TraderLlama llama ? llama : null);
-    }
-
-    @Override
-    protected <X> void applyToEntity(TraderLlama entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        if (property.equals(COLOR))
-            ((LlamaAccessor)entity).callSetVariant((Llama.Variant) value);
     }
 }

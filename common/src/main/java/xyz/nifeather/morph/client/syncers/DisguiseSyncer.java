@@ -89,7 +89,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
         propertyHolder.hookOnPropertyWrite(this::onPropertyWrite);
     }
 
-    private void onPropertyWrite(ClientProperty<Object> property, Object o)
+    private void onPropertyWrite(ClientProperty<Object, Entity> property, Object o)
     {
     }
 

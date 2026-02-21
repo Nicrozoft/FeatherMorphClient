@@ -1,35 +1,20 @@
 package xyz.nifeather.morph.client.properties.impl;
 
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
-import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
-
-import java.util.Optional;
 
 public class HoglinPropertyHandler extends EntityPropertyHandler<Hoglin>
 {
-    public final ClientProperty<Boolean> IS_BABY = ClientProperty.of(PropertyNames.HOGLIN_IS_BABY, CommonInputHandles.BOOLEAN);
+    public final ClientProperty<Boolean, Hoglin> IS_BABY = 
+            ClientProperty.builder(PropertyNames.HOGLIN_IS_BABY, false, Hoglin.class)
+                    .inputHandle(CommonInputHandles::readBoolean)
+                    .entityHandle((hoglin, baby) -> hoglin.setAge(baby ? Integer.MIN_VALUE : 1))
+                    .build();
 
     public HoglinPropertyHandler()
     {
         register(IS_BABY);
-    }
-
-    @Override
-    public Optional<Hoglin> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof Hoglin hoglin ? hoglin : null);
-    }
-
-    @Override
-    protected <X> void applyToEntity(Hoglin entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        if (property.equals(IS_BABY))
-            entity.setAge(((Boolean)value) ? Integer.MIN_VALUE : 1);
     }
 }

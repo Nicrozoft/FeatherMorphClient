@@ -11,25 +11,14 @@ import java.util.Optional;
 
 public class ZombiePropertyhandler extends EntityPropertyHandler<Zombie>
 {
-    public final ClientProperty<Boolean> IS_BABY = ClientProperty.of(PropertyNames.ZOMBIE_IS_BABY, CommonInputHandles.BOOLEAN);
+    public final ClientProperty<Boolean, Zombie> IS_BABY =
+            ClientProperty.<Boolean, Zombie>builder(PropertyNames.ZOMBIE_IS_BABY, Zombie.class)
+                    .inputHandle(CommonInputHandles::readBoolean)
+                    .entityHandle(Zombie::setBaby)
+                    .build();
 
     public ZombiePropertyhandler()
     {
         register(IS_BABY);
-    }
-
-    @Override
-    public Optional<Zombie> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof Zombie zombie ? zombie : null);
-    }
-
-    @Override
-    protected <X> void applyToEntity(Zombie entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        if (property.equals(IS_BABY))
-            entity.setBaby((Boolean) value);
     }
 }

@@ -47,6 +47,16 @@ public class CommonInputHandles
 {
     public static final Function<String, Optional<Boolean>> BOOLEAN = input -> Optional.of(Boolean.valueOf(input));
 
+    public static <X> Optional<X> noOp(String s)
+    {
+        return Optional.empty();
+    }
+
+    public static Optional<Boolean> readBoolean(String input)
+    {
+        return Optional.of(Boolean.valueOf(input));
+    }
+
     public static <E extends Enum<?>> Optional<E> readEnum(E[] array, String input)
     {
         return Arrays.stream(array).filter(e -> e.name().equalsIgnoreCase(input)).findFirst();

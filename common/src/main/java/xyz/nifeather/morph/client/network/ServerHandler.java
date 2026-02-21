@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.monster.Ghast;
@@ -22,6 +23,7 @@ import xyz.nifeather.morph.client.entities.IMorphLocalPlayer;
 import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
 import xyz.nifeather.morph.client.network.handlers.IProtocolHandler;
 import xyz.nifeather.morph.client.network.handlers.V3ProtocolHandler;
+import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.PropertyHandlers;
 import xyz.nifeather.morph.client.utilties.NbtUtils;
 import xyz.nifeather.morph.network.commands.C2S.*;
@@ -626,10 +628,10 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
 
         var input = command.getProperties();
         morphManager.mergeNetworkPropertiesFor(clientPlayer.getId(), input);
-        syncer.propertyHolder().updateFromPropertiesInput(input);
-
-        PropertyHandlers.INSTANCE.getHandler(syncer.getDisguiseInstance())
-                .ifPresent(h -> h.handle(input, syncer));
+        syncer.propertyHolder().updateFromPropertiesInput(input).forEach((p, v) ->
+        {
+            ((ClientProperty<Object, Entity>) p).apply(syncer.getDisguiseInstance(), v);
+        });
     }
 
     //endregion Impl of ServerHandler

@@ -12,25 +12,14 @@ import java.util.Optional;
 
 public class RabbitPropertyHandler extends EntityPropertyHandler<Rabbit>
 {
-    public final ClientProperty<Rabbit.Variant> VARIANT = ClientProperty.of(PropertyNames.RABBIT_VARIANT, s -> CommonInputHandles.readEnum(Rabbit.Variant.values(), s));
+    public final ClientProperty<Rabbit.Variant, RabbitAccessor> VARIANT =
+            ClientProperty.builder(PropertyNames.RABBIT_VARIANT, Rabbit.Variant.BROWN, RabbitAccessor.class)
+                    .inputHandle(s -> CommonInputHandles.readEnum(Rabbit.Variant.values(), s))
+                    .entityHandle(RabbitAccessor::callSetVariant)
+                    .build();
 
     public RabbitPropertyHandler()
     {
         register(VARIANT);
-    }
-
-    @Override
-    public Optional<Rabbit> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof Rabbit rabbit ? rabbit : null);
-    }
-
-    @Override
-    protected <X> void applyToEntity(Rabbit entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        if (property.equals(VARIANT))
-            ((RabbitAccessor)entity).callSetVariant((Rabbit.Variant) value);
     }
 }

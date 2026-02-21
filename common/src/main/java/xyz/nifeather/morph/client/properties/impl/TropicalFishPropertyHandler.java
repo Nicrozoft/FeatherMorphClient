@@ -13,31 +13,26 @@ import java.util.Optional;
 
 public class TropicalFishPropertyHandler extends EntityPropertyHandler<TropicalFish>
 {
-    public final ClientProperty<DyeColor> BODY_COLOR = ClientProperty.of(PropertyNames.TROPICAL_FISH_BODY_COLOR, s -> CommonInputHandles.readEnum(DyeColor.values(), s));
-    public final ClientProperty<DyeColor> PATTERN_COLOR = ClientProperty.of(PropertyNames.TROPICAL_FISH_PATTERN_COLOR, s -> CommonInputHandles.readEnum(DyeColor.values(), s));
-    public final ClientProperty<TropicalFish.Pattern> PATTERN = ClientProperty.of(PropertyNames.TROPICAL_FISH_PATTERN, s -> CommonInputHandles.readEnum(TropicalFish.Pattern.values(), s));
+    public final ClientProperty<DyeColor, TropicalFishAccessor> BODY_COLOR =
+            ClientProperty.<DyeColor, TropicalFishAccessor>builder(PropertyNames.TROPICAL_FISH_BODY_COLOR, TropicalFishAccessor.class)
+                    .inputHandle(CommonInputHandles::readDyeColor)
+                    .entityHandle(TropicalFishAccessor::callSetBaseColor)
+                    .build();
+
+    public final ClientProperty<DyeColor, TropicalFishAccessor> PATTERN_COLOR =
+            ClientProperty.<DyeColor, TropicalFishAccessor>builder(PropertyNames.TROPICAL_FISH_PATTERN, TropicalFishAccessor.class)
+                    .inputHandle(CommonInputHandles::readDyeColor)
+                    .entityHandle(TropicalFishAccessor::callSetPatternColor)
+                    .build();
+
+    public final ClientProperty<TropicalFish.Pattern, TropicalFishAccessor> PATTERN =
+            ClientProperty.<TropicalFish.Pattern, TropicalFishAccessor>builder(PropertyNames.TROPICAL_FISH_PATTERN, TropicalFishAccessor.class)
+                    .inputHandle(s -> CommonInputHandles.readEnum(TropicalFish.Pattern.values(), s))
+                    .entityHandle(TropicalFishAccessor::callSetPattern)
+                    .build();
 
     public TropicalFishPropertyHandler()
     {
         register(BODY_COLOR, PATTERN_COLOR, PATTERN);
-    }
-
-    @Override
-    public Optional<TropicalFish> tryCast(Entity entity)
-    {
-        return Optional.ofNullable(entity instanceof TropicalFish tropicalFish ? tropicalFish : null);
-    }
-
-    @Override
-    protected <X> void applyToEntity(TropicalFish entity, DisguiseSyncer syncer, ClientProperty<X> property, X value)
-    {
-        super.applyToEntity(entity, syncer, property, value);
-
-        switch (property.identifier())
-        {
-            case PropertyNames.TROPICAL_FISH_BODY_COLOR -> ((TropicalFishAccessor)entity).callSetBaseColor((DyeColor) value);
-            case PropertyNames.TROPICAL_FISH_PATTERN_COLOR -> ((TropicalFishAccessor)entity).callSetPatternColor((DyeColor) value);
-            case PropertyNames.TROPICAL_FISH_PATTERN -> ((TropicalFishAccessor)entity).callSetPattern((TropicalFish.Pattern) value);
-        }
     }
 }

@@ -23,7 +23,7 @@ public class PropertyHandlers
         // yes this is empty
     }
 
-    private final Map<EntityType<?>, AbstractPropertyHandler<?>> handlerMap = new ConcurrentHashMap<>();
+    private final Map<EntityType<?>, AbstractPropertyHandler> handlerMap = new ConcurrentHashMap<>();
 
     private final FallbackPropertyHandler fallbackPropertyHandler = new FallbackPropertyHandler();
 
@@ -85,14 +85,14 @@ public class PropertyHandlers
         return fallbackPropertyHandler;
     }
 
-    public <E extends Entity> Optional<AbstractPropertyHandler<E>> getHandler(E entity)
+    public <E extends Entity> Optional<AbstractPropertyHandler> getHandler(E entity)
     {
         var match = handlerMap.getOrDefault(entity.getType(), null);
 
-        return Optional.of((AbstractPropertyHandler<E>) Objects.requireNonNullElse(match, fallbackPropertyHandler));
+        return Optional.of((AbstractPropertyHandler) Objects.requireNonNullElse(match, fallbackPropertyHandler));
     }
 
-    public <E extends Entity> void register(EntityType<E> entityType, AbstractPropertyHandler<E> handler)
+    public <E extends Entity> void register(EntityType<E> entityType, AbstractPropertyHandler handler)
     {
         handlerMap.put(entityType, handler);
     }
