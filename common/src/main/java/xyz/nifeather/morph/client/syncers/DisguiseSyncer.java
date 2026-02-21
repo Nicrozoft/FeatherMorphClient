@@ -61,9 +61,6 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     protected final int bindingNetworkId;
 
-    @Resolved(shouldSolveImmediately = true)
-    private DisguiseInstanceTracker instanceTracker;
-
     protected final ClientPropertyHolder propertyHolder = new ClientPropertyHolder();
 
     public ClientPropertyHolder propertyHolder()
@@ -87,6 +84,9 @@ public abstract class DisguiseSyncer extends MorphClientObject
         this.disguiseInstance = disguiseEntity;
 
         propertyHolder.hookOnPropertyWrite(this::onPropertyWrite);
+
+        if (disguiseEntity instanceof IMorphClientEntity iMorphClientEntity)
+            iMorphClientEntity.featherMorph$setIsDisguiseEntity(networkId);
     }
 
     private void onPropertyWrite(ClientProperty<Object, Entity> property, Object o)
