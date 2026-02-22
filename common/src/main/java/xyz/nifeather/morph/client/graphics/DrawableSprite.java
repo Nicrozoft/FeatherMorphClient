@@ -23,6 +23,9 @@ public class DrawableSprite extends MDrawable
         this(textureIdentifier, true);
     }
 
+    public int textureWidth = -1;
+    public int textureHeight = -1;
+
     @Override
     protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
     {
@@ -43,11 +46,14 @@ public class DrawableSprite extends MDrawable
         }
         else
         {
+            int u = textureWidth != -1 ? textureWidth : texWidth;
+            int v = textureHeight != -1 ? textureHeight : texHeight;
+
             context.blit(RenderPipelines.GUI_TEXTURED, textureIdentifier,
                     0, 0,
                     0, 0,
                     texWidth, texHeight,
-                    texWidth, texHeight, color);
+                    u, v, color);
         }
     }
 

@@ -6,6 +6,7 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.model.geom.builders.UVPair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2f;
 
 public interface IMDrawable extends Renderable, GuiEventListener, NarratableEntry
 {
@@ -14,7 +15,7 @@ public interface IMDrawable extends Renderable, GuiEventListener, NarratableEntr
 
     public void setWidth(float width);
     public void setHeight(float height);
-    public void setSize(UVPair vector);
+    public void setSize(Vector2f vector);
 
     public float getRenderWidth();
     public float getRenderHeight();

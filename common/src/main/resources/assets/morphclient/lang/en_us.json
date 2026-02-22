@@ -30,6 +30,8 @@
   "gui.morphclient.select_disguise": "Select disguise",
   "gui.morphclient.version_mismatch": "API version mismatch",
   "gui.morphclient.waiting_for_server": "Waiting for server...",
+  "gui.morphclient.saved_disguise_selection": "Select Saved Disguise",
+  "gui.morphclient.double_click_to_disguise": "Double-click to disguise",
   "item.morphclient.bottle_with_disguise": "Magic Bottle of %s",
   "item.morphclient.disguise_tool": "Disguise Tool",
   "item.morphclient.magic_bottle": "Magic Bottle",

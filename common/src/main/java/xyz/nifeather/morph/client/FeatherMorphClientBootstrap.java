@@ -39,6 +39,7 @@ import xyz.nifeather.morph.client.properties.PropertyHandlers;
 import xyz.nifeather.morph.client.screens.WaitingForServerScreen;
 import xyz.nifeather.morph.client.screens.disguise.DisguiseScreen;
 import xyz.nifeather.morph.client.screens.emote.EmoteScreen;
+import xyz.nifeather.morph.client.screens.quickDisguise.QuickDisguiseScreen;
 import xyz.nifeather.morph.client.storage.SavedDisguiseStorage;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 import xyz.nifeather.morph.client.syncers.animations.AnimHandlerIndex;
@@ -194,6 +195,7 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
     private KeyMapping resetCacheKeybind;
     private KeyMapping displayOwnerBind;
     private KeyMapping emoteKeyBind;
+    private KeyMapping savedDisguiseSelectionKeybind;
 
     public KeyMapping getEmoteKeyBind()
     {
@@ -258,6 +260,11 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
         displayOwnerBind = platform.registerPlatformKeyBinding(new KeyMapping(
                 "key.morphclient.display_name", InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_F8, category
+        ));
+
+        savedDisguiseSelectionKeybind = platform.registerPlatformKeyBinding(new KeyMapping(
+                "key.morphclient.saved_disguise_selection", InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_B, category
         ));
     }
 
@@ -349,6 +356,9 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
 
         while (emoteKeyBind.consumeClick())
             Minecraft.getInstance().setScreen(new WaitingForServerScreen(new EmoteScreen()));
+
+        while (savedDisguiseSelectionKeybind.consumeClick())
+            Minecraft.getInstance().setScreen(new WaitingForServerScreen(new QuickDisguiseScreen()));
     }
 
     @Nullable

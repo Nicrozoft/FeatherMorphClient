@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2f;
 import org.joml.Vector2i;
 import xyz.nifeather.morph.client.MorphClientObject;
 import xyz.nifeather.morph.client.graphics.color.ColorUtils;
@@ -285,10 +286,10 @@ public abstract class MDrawable extends MorphClientObject implements IMDrawable
         return modY ? height * getParentScreenSpace().height() : height;
     }
 
-    public void setSize(UVPair vector2f)
+    public void setSize(Vector2f vector2f)
     {
-        this.setWidth(vector2f.u());
-        this.setHeight(vector2f.v());
+        this.setWidth(vector2f.x());
+        this.setHeight(vector2f.y());
     }
 
     //endregion W/H
@@ -527,8 +528,8 @@ public abstract class MDrawable extends MorphClientObject implements IMDrawable
 
             // Render Self rect
             //context.fill(0, 0,
-             //       renderWidth, renderHeight,
-              //      ColorUtils.forOpacity(MaterialColors.Cyan500, 0.4f).getColor());
+            //        renderWidth, renderHeight,
+            //        ColorUtils.forOpacity(MaterialColors.Cyan500, 0.4f).getColor());
 
             // 嵌套遮罩有问题
             if (masking)

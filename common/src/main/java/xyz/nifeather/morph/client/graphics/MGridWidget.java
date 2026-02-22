@@ -11,7 +11,8 @@ import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.model.geom.builders.UVPair;
+import org.jetbrains.annotations.UnknownNullability;
+import org.joml.Vector2f;
 
 public class MGridWidget extends GridLayout implements IMDrawable
 {
@@ -33,10 +34,10 @@ public class MGridWidget extends GridLayout implements IMDrawable
     }
 
     @Override
-    public void setSize(UVPair vector)
+    public void setSize(Vector2f vector)
     {
-        this.setWidth(vector.u());
-        this.setHeight(vector.v());
+        this.setWidth(vector.x());
+        this.setHeight(vector.y());
     }
 
     @Override

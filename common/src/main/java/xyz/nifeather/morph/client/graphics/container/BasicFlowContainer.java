@@ -3,6 +3,7 @@ package xyz.nifeather.morph.client.graphics.container;
 import xyz.nifeather.morph.client.graphics.Anchor;
 import xyz.nifeather.morph.client.graphics.Axes;
 import xyz.nifeather.morph.client.graphics.MDrawable;
+import xyz.nifeather.morph.client.graphics.color.ColorUtils;
 import xyz.nifeather.morph.client.graphics.color.MaterialColors;
 import net.minecraft.client.gui.GuiGraphics;
 import xiamomc.pluginbase.Annotations.Initializer;
@@ -109,7 +110,7 @@ public class BasicFlowContainer<T extends MDrawable> extends BasicContainer<T>
     {
         super.onRender(context, mouseX, mouseY, delta);
 
-        context.fill(0, 0, renderWidth, renderHeight, MaterialColors.Amber500.getColor());
+        //context.fill(0, 0, renderWidth, renderHeight, ColorUtils.forOpacity(MaterialColors.Amber500, 0.5f).getColor());
         //logger.info("Fw " + renderWidth + " FH " + renderHeight);
     }
 }

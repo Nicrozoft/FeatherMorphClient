@@ -1,6 +1,7 @@
 package xyz.nifeather.morph.client.graphics;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import me.shedaniel.math.Color;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
@@ -9,6 +10,7 @@ import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.graphics.color.ColorUtils;
 import xyz.nifeather.morph.client.graphics.color.Colors;
@@ -103,9 +105,41 @@ public class DrawableText extends MDrawable
         return tooltip;
     }
 
+    private int backgroundColor = 0x00000000;
+
+    public void setBackgroundColor(Color color)
+    {
+        setBackgroundColor(color.getColor());
+    }
+
+    public void setBackgroundColor(int color)
+    {
+        this.backgroundColor = color;
+    }
+
+    public int getBackgroundColor()
+    {
+        return backgroundColor;
+    }
+
+    private int shadowExpandPixels = 0;
+
+    public void setShadowExpandPixels(int pixels)
+    {
+        this.shadowExpandPixels = pixels;
+    }
+
+    public int getShadowExpandPixels()
+    {
+        return shadowExpandPixels;
+    }
+
     @Override
     public void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
     {
+        if (backgroundColor != 0)
+            context.fill(-shadowExpandPixels, -shadowExpandPixels, shadowExpandPixels + renderer.width(text), shadowExpandPixels + renderer.lineHeight, backgroundColor);
+
         context.drawString(renderer, text, 0, 0, color, drawShadow);
 
         if (hovered() && getTooltip() != null)

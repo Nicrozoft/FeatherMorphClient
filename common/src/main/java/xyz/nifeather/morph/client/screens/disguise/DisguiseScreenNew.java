@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2f;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.graphics.*;
 import xyz.nifeather.morph.client.graphics.color.ColorUtils;
@@ -37,7 +38,7 @@ public class DisguiseScreenNew extends FeatherScreen
         float flowWidthRatio = 0.6f;
         var otherContainer = new Container();
         otherContainer.setRelativeSizeAxes(Axes.Both);
-        otherContainer.setSize(new UVPair(1 - flowWidthRatio, 1));
+        otherContainer.setSize(new Vector2f(1 - flowWidthRatio, 1));
         otherContainer.setAnchor(Anchor.TopRight);
         otherContainer.setX(Math.round(-this.width * (1 - flowWidthRatio)));
         otherContainer.setY(20);
@@ -47,14 +48,14 @@ public class DisguiseScreenNew extends FeatherScreen
         var flow = new FlowContainer();
         flow.setSpacing(3);
         flow.setFlowAxes(Axes.Both);
-        flow.setSize(new UVPair(flowWidthRatio, 1));
+        flow.setSize(new Vector2f(flowWidthRatio, 1));
         flow.setRelativeSizeAxes(Axes.Both);
         flow.setMargin(new MarginPadding(5, 0, 20 + 5, 0));
 
         FeatherMorphClientBootstrap.getInstance().morphManager.getAvailableMorphs().forEach(id ->
         {
             var widget = new DisplayWdgt(id);
-            widget.setSize(new UVPair(36, 48));
+            widget.setSize(new Vector2f(36, 48));
             flow.add(widget);
         });
 
@@ -64,13 +65,13 @@ public class DisguiseScreenNew extends FeatherScreen
 
         var titleFlow = new FlowContainer();
         titleFlow.setFlowAxes(Axes.Y);
-        titleFlow.setSize(new UVPair(1, 20));
+        titleFlow.setSize(new Vector2f(1, 20));
         titleFlow.setRelativeSizeAxes(Axes.X);
 
         var box = new Box();
         box.color = ColorUtils.forOpacity(ColorUtils.fromHex("#000000"), 0.5f).getColor();
         box.setRelativeSizeAxes(Axes.X);
-        box.setSize(new UVPair(1, 19));
+        box.setSize(new Vector2f(1, 19));
 
         var line = new Box();
         line.color = MaterialColors.Blue500.getColor();
@@ -109,7 +110,7 @@ public class DisguiseScreenNew extends FeatherScreen
 
             display.setParent(this);
             display.setRelativeSizeAxes(Axes.Both);
-            display.setSize(new UVPair(0.6f, 0.6f));
+            display.setSize(new Vector2f(0.6f, 0.6f));
             display.setAnchor(Anchor.Centre);
 
             nameText.setRelativeSizeAxes(Axes.X);

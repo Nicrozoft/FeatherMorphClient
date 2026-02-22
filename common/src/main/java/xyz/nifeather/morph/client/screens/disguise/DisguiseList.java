@@ -1,28 +1,22 @@
 package xyz.nifeather.morph.client.screens.disguise;
 
-import net.minecraft.client.gui.components.AbstractScrollArea;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
-import net.minecraft.client.renderer.item.properties.conditional.IsUsingItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
+import org.joml.Vector2f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.config.ModConfigData;
 import xyz.nifeather.morph.client.graphics.IMDrawable;
 import xyz.nifeather.morph.client.graphics.MarginPadding;
-import xyz.nifeather.morph.client.graphics.transforms.Recorder;
-import xyz.nifeather.morph.client.graphics.transforms.Transformer;
-import xyz.nifeather.morph.client.graphics.transforms.easings.Easing;
 
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
-import net.minecraft.client.model.geom.builders.UVPair;
-import net.minecraft.util.Mth;
 import xyz.nifeather.morph.client.mixin.accessors.AbstractScrollAreaAccessor;
 
 public class DisguiseList extends ContainerObjectSelectionList<EntityDisplayEntry> implements IMDrawable
@@ -178,10 +172,10 @@ public class DisguiseList extends ContainerObjectSelectionList<EntityDisplayEntr
     }
 
     @Override
-    public void setSize(UVPair vector)
+    public void setSize(@UnknownNullability Vector2f vector)
     {
-        this.setWidth(vector.u());
-        this.setHeight(vector.v());
+        this.setWidth(vector.x());
+        this.setHeight(vector.y());
     }
 
     @Override

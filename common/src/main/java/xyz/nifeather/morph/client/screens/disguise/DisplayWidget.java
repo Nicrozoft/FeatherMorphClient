@@ -16,6 +16,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.LoggerFactory;
 import xiamomc.pluginbase.Annotations.Resolved;
@@ -123,8 +124,8 @@ public class DisplayWidget extends MorphClientObject implements NarratableEntry,
         };
 
         // Container Setup
-        displayContainer.setSize(new UVPair(48, 18));
-        entityDisplay.setSize(new UVPair(18, 18));
+        displayContainer.setSize(new Vector2f(48, 18));
+        entityDisplay.setSize(new Vector2f(18, 18));
 
         displayContainer.add(entityDisplay);
         backgroundContainer.add(spriteSelected = new DrawableSprite(buttonTextureSelected));
@@ -197,7 +198,7 @@ public class DisplayWidget extends MorphClientObject implements NarratableEntry,
 
     private void updateBackgroundSize(boolean makeHidden)
     {
-        var backgroundSize = new UVPair(this.width, this.height);
+        var backgroundSize = new Vector2f(this.width, this.height);
         backgroundContainer.setSize(backgroundSize);
 
         backgroundContainer.children().forEach(d ->

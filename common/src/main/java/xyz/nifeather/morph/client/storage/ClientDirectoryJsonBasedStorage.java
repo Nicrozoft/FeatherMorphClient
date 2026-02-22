@@ -180,8 +180,8 @@ public abstract class ClientDirectoryJsonBasedStorage<T> extends MorphClientObje
     {
         key = getPath(key);
 
-        var cached = instancesMap.getOrDefault(key, null);
-        if (cached != null) return cached == getDefault() ? null : (T) cached;
+        //var cached = instancesMap.getOrDefault(key, null);
+        //if (cached != null) return cached == getDefault() ? null : (T) cached;
 
         var file = getFile(key);
         var obj = loadFrom(file);

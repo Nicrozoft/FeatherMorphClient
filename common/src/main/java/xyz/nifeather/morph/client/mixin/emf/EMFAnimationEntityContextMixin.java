@@ -1,5 +1,6 @@
 package xyz.nifeather.morph.client.mixin.emf;
 
+import net.minecraft.world.entity.decoration.Mannequin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

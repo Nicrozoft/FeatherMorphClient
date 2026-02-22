@@ -3,6 +3,7 @@ package xyz.nifeather.morph.client.screens;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2f;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.graphics.IMDrawable;
 import xyz.nifeather.morph.client.graphics.MarginPadding;
@@ -16,7 +17,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.network.chat.Component;
 
 public abstract class FeatherScreen extends Screen implements IMDrawable
@@ -43,7 +43,7 @@ public abstract class FeatherScreen extends Screen implements IMDrawable
     }
 
     @Override
-    public void setSize(UVPair vector)
+    public void setSize(Vector2f vector)
     {
         FeatherMorphClientBootstrap.LOGGER.warn("setSize() for FeatherScreen is not implemented!!!");
     }

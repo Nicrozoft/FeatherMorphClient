@@ -30,6 +30,8 @@
   "gui.morphclient.select_disguise": "形态选择",
   "gui.morphclient.version_mismatch": "API版本不匹配",
   "gui.morphclient.waiting_for_server": "等待服务器响应...",
+  "gui.morphclient.saved_disguise_selection": "选择保存的形态",
+  "gui.morphclient.double_click_to_disguise": "双击以变形",
   "item.morphclient.bottle_with_disguise": "装有 %s 气息的神秘瓶子",
   "item.morphclient.disguise_tool": "变形工具",
   "item.morphclient.magic_bottle": "神秘瓶子",

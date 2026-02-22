@@ -17,6 +17,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2f;
 import xiamomc.pluginbase.Bindables.Bindable;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.EntityCache;
@@ -137,8 +138,8 @@ public class DisguiseScreen extends FeatherScreen
     {
         String identifier = newId == null
                 ? this.currentIdentifier.get() == null
-                ? FeatherMorphClientBootstrap.UNMORPH_STIRNG
-                : this.currentIdentifier.get()
+                    ? FeatherMorphClientBootstrap.UNMORPH_STIRNG
+                    : this.currentIdentifier.get()
                 : newId;
 
         if (playerDisplay != null)
@@ -154,7 +155,7 @@ public class DisguiseScreen extends FeatherScreen
         newDisplay.setParentScreenSpace(new ScreenRectangle(ScreenPosition.of(ScreenAxis.HORIZONTAL, 0, 0), this.width, this.height));
         newDisplay.setRelativeSizeAxes(Axes.Both);
         newDisplay.setAnchor(Anchor.CentreRight);
-        newDisplay.setSize(new UVPair(0.4f, 0.7f));
+        newDisplay.setSize(new Vector2f(0.4f, 0.7f));
 
         playerDisplay = newDisplay;
 
@@ -275,18 +276,18 @@ public class DisguiseScreen extends FeatherScreen
 
         buttonContainer.addRange(closeButton, selfVisibleToggle, configMenuButton);
         buttonContainer.setAnchor(Anchor.BottomRight);
-        buttonContainer.setSize(new UVPair(closeButton.getX() + closeButton.getWidth(), 20));
+        buttonContainer.setSize(new Vector2f(closeButton.getX() + closeButton.getWidth(), 20));
         buttonContainer.setMargin(new MarginPadding(5));
 
         var topHeader = new DrawableSprite(Screen.INWORLD_HEADER_SEPARATOR, false);
         topHeader.setY(this.topHeight.get() - 2);
-        topHeader.setSize(new UVPair(1, 2));
+        topHeader.setSize(new Vector2f(1, 2));
         topHeader.setRelativeSizeAxes(Axes.X);
 
         var bottomFooter = new DrawableSprite(Screen.INWORLD_FOOTER_SEPARATOR, false);
         bottomFooter.setAnchor(Anchor.BottomLeft);
         bottomFooter.setY(-bottomHeight.get() + 1);
-        bottomFooter.setSize(new UVPair(1, 2));
+        bottomFooter.setSize(new Vector2f(1, 2));
         bottomFooter.setRelativeSizeAxes(Axes.X);
 
         //顶端文本

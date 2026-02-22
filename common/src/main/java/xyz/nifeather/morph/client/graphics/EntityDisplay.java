@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2f;
 import org.slf4j.LoggerFactory;
 import xyz.nifeather.morph.client.EntityCache;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
@@ -62,7 +63,7 @@ public class EntityDisplay extends MDrawable
         loadingSpinner.setAnchor(Anchor.Centre);
         loadingSpinner.setParent(this);
         loadingSpinner.setRelativeSizeAxes(Axes.Both);
-        loadingSpinner.setSize(new UVPair(1, 1));
+        loadingSpinner.setSize(new Vector2f(1, 1));
 
         switch (initialSetupMethod)
         {
@@ -144,13 +145,18 @@ public class EntityDisplay extends MDrawable
         setupEntity();
     }
 
+    protected EntityCache entityCache()
+    {
+        return EntityCache.getGlobalCache();
+    }
+
     private void setupEntity()
     {
         try
         {
             loadingEntity.set(true);
 
-            var entityCache = EntityCache.getGlobalCache();
+            var entityCache = entityCache();
             var living = entityCache.getEntity(rawIdentifier, null);
             isLiving.set(entityCache.isLiving(rawIdentifier));
 
