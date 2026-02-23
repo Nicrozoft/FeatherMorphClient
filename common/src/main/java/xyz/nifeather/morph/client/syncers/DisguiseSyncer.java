@@ -37,6 +37,9 @@ import xyz.nifeather.morph.client.properties.*;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 import xyz.nifeather.morph.client.utilties.ClientItemUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class DisguiseSyncer extends MorphClientObject
@@ -89,8 +92,25 @@ public abstract class DisguiseSyncer extends MorphClientObject
             iMorphClientEntity.featherMorph$setIsDisguiseEntity(networkId);
     }
 
-    private void onPropertyWrite(ClientProperty<Object, Entity> property, Object o)
+    private void onPropertyWrite(ClientProperty<?, ?> property, @Nullable Object oldValue, Object newValue)
     {
+        if (property.identifier().equals(PropertyNames.ENTITY_EQUIPMENT) && oldValue != null)
+            mergeEquipment((DisguiseEquipment) oldValue, (DisguiseEquipment) newValue);
+    }
+
+    private void mergeEquipment(@NotNull DisguiseEquipment existing, DisguiseEquipment newEquipment)
+    {
+        var property = propertyHolder().getPropertyForName(PropertyNames.ENTITY_EQUIPMENT);
+        if (property == null) return;
+
+        var builder = DisguiseEquipment.builder();
+        for (EquipmentSlot slot : EquipmentSlot.values())
+        {
+            var upcoming = newEquipment.getItemOrNull(slot);
+            builder.forSlot(slot, Objects.requireNonNullElseGet(upcoming, () -> existing.getItem(slot)));
+        }
+
+        propertyHolder().set((ClientProperty<? super DisguiseEquipment, ?>) property, builder.build());
     }
 
     private AnimationHandler animHandler;

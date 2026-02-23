@@ -1,32 +1,39 @@
 package xyz.nifeather.morph.client.properties;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectLists;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import xyz.nifeather.morph.client.utilties.actions.BiConsumerActions;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiConsumer;
 
 public class ClientPropertyHolder
 {
     private final Map<ClientProperty<?, ?>, Object> propertyMap = new ConcurrentHashMap<>();
     private final Map<String, ClientProperty<?, ?>> validProperties = new ConcurrentHashMap<>();
 
-    protected final BiConsumerActions<ClientProperty<?, ?>, Object> actions = new BiConsumerActions<>();
-    public <X> void hookOnPropertyWrite(BiConsumer<ClientProperty<X, Entity>, X> consumer)
+    protected final List<IValueChangeListener<ClientProperty<?, ?>, Object>> actions = ObjectLists.synchronize(new ObjectArrayList<>());
+    public void hookOnPropertyWrite(IValueChangeListener<ClientProperty<?, ?>, Object> hook)
     {
-        actions.hook((BiConsumer) consumer);
+        actions.add(hook);
     }
 
     public void registerFromPropertyCollection(AbstractPropertyHandler properties)
     {
         validProperties.putAll(properties.getRegisteredProperties());
+    }
+
+    @Nullable
+    public ClientProperty<?, ?> getPropertyForName(String name)
+    {
+        return validProperties.getOrDefault(name, null);
     }
 
     public Map<String, String> toNetworkProperties()
@@ -120,7 +127,7 @@ public class ClientPropertyHolder
                 diffIfPossible = value;
 
             propertyMap.put(property, value);
-            this.actions.invoke(BiConsumerActions.pair(property, diffIfPossible));
+            actions.forEach(listener -> listener.invoke(property, existing, value));
         }
     }
 
