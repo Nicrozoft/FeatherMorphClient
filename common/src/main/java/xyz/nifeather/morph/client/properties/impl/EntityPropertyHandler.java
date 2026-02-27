@@ -36,9 +36,21 @@ public abstract class EntityPropertyHandler<E extends Entity> extends AbstractPr
                     .outputHandle(CommonOutputHandles::noOp)
                     .build();
 
+    public final ClientProperty<Float, Entity> STATIC_YAW =
+            ClientProperty.builder(PropertyNames.ENTITY_STATIC_YAW, 0f, Entity.class)
+                    .inputHandle(CommonInputHandles::readFloat)
+                    .outputHandle(CommonOutputHandles::noOp)
+                    .build();
+
+    public final ClientProperty<Float, Entity> STATIC_PITCH =
+            ClientProperty.builder(PropertyNames.ENTITY_STATIC_PITCH, 0f, Entity.class)
+                    .inputHandle(CommonInputHandles::readFloat)
+                    .outputHandle(CommonOutputHandles::noOp)
+                    .build();
+
     public EntityPropertyHandler()
     {
-        register(CUSTOM_NAME, CUSTOM_NAME_VISIBLE, EQUIPMENT, DISPLAY_DISGUISE_EQUIPMENT);
+        register(CUSTOM_NAME, CUSTOM_NAME_VISIBLE, EQUIPMENT, DISPLAY_DISGUISE_EQUIPMENT, STATIC_YAW, STATIC_PITCH);
     }
 
     protected <R extends Registry<V>, V> Holder<V> lookupVariantOrThrow(ResourceKey<R> registryKey, ResourceKey<V> key)

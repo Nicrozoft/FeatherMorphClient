@@ -245,4 +245,16 @@ public class CommonInputHandles
 
         return Optional.of(builder.build());
     }
+
+    public static Optional<Float> readFloat(String input)
+    {
+        try
+        {
+            return Optional.of(Float.parseFloat(input));
+        }
+        catch (NumberFormatException e)
+        {
+            return Optional.empty();
+        }
+    }
 }

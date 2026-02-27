@@ -94,8 +94,24 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     private void onPropertyWrite(ClientProperty<?, ?> property, @Nullable Object oldValue, Object newValue)
     {
-        if (property.identifier().equals(PropertyNames.ENTITY_EQUIPMENT) && oldValue != null)
-            mergeEquipment((DisguiseEquipment) oldValue, (DisguiseEquipment) newValue);
+        switch (property.identifier())
+        {
+            case PropertyNames.ENTITY_EQUIPMENT ->
+            {
+                if (oldValue == null) return;
+                mergeEquipment((DisguiseEquipment) oldValue, (DisguiseEquipment) newValue);
+            }
+
+            case PropertyNames.ENTITY_STATIC_YAW ->
+            {
+                this.lockedYaw = (Float) newValue;
+            }
+
+            case PropertyNames.ENTITY_STATIC_PITCH ->
+            {
+                this.lockedPitch = (Float) newValue;
+            }
+        }
     }
 
     private void mergeEquipment(@NotNull DisguiseEquipment existing, DisguiseEquipment newEquipment)
@@ -300,23 +316,11 @@ public abstract class DisguiseSyncer extends MorphClientObject
     {
         if (!allowTick) return;
 
-        var xRot = bindingPlayer.getXRot();
-        var xRotO = bindingPlayer.xRotO;
+        var xRot = disguiseInstance.getXRot();
+        var xRotO = disguiseInstance.xRotO;
 
-        if (disguiseInstance.getType() == EntityType.PHANTOM)
-        {
-            xRot = -xRot;
-            xRotO = -xRotO;
-        }
-
-        var yRot = bindingPlayer.getYRot();
-        var yRotO = bindingPlayer.yRotO;
-
-        if (disguiseInstance.getType() == EntityType.ENDER_DRAGON)
-        {
-            yRot = 180 + yRot;
-            yRotO = 180 + yRotO;
-        }
+        var yRot = disguiseInstance.getYRot();
+        var yRotO = disguiseInstance.yRotO;
 
         disguiseLastPositionSaving = PositionRecord.fromEntity(disguiseInstance);
 
@@ -390,33 +394,55 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     protected abstract void initialSync();
 
+    @Nullable
+    protected Float lockedYaw;
+
+    @Nullable
+    protected Float lockedPitch;
+
     protected void syncYawPitch()
     {
         var player = bindingPlayer;
 
-        // 幻翼的pitch需要倒转
-        // Don't sync pitch when sleeping position is present -- Match plugin behavior (maybe?)
-        if (disguiseInstance.getSleepingPos().isEmpty())
+        if (lockedPitch != null)
         {
-            if (disguiseInstance.getType() == EntityType.PHANTOM)
-                disguiseInstance.setXRot(-player.getXRot());
-            else
-                disguiseInstance.setXRot(player.getXRot());
+            disguiseInstance.setXRot(lockedPitch);
+        }
+        else
+        {
+            // 幻翼的pitch需要倒转
+            // Don't sync pitch when sleeping position is present -- Match plugin behavior (maybe?)
+            if (disguiseInstance.getSleepingPos().isEmpty())
+            {
+                if (disguiseInstance.getType() == EntityType.PHANTOM)
+                    disguiseInstance.setXRot(-player.getXRot());
+                else
+                    disguiseInstance.setXRot(player.getXRot());
+            }
         }
 
-        //末影龙的Yaw和玩家是反的
-        if (disguiseInstance.getType() == EntityType.ENDER_DRAGON)
-            disguiseInstance.setYRot(180 + player.getYRot());
-        else
-            disguiseInstance.setYRot(player.getYRot());
-
-        disguiseInstance.yHeadRot = player.yHeadRot;
-        disguiseInstance.yHeadRotO = player.yHeadRotO;
-
-        if (disguiseInstance.getType() == EntityType.ARMOR_STAND)
+        if (lockedYaw != null)
         {
-            disguiseInstance.yBodyRot = player.yHeadRot;
-            disguiseInstance.yBodyRotO = player.yHeadRotO;
+            disguiseInstance.setYRot(lockedYaw);
+            disguiseInstance.setYHeadRot(lockedYaw);
+            disguiseInstance.setYBodyRot(lockedYaw);
+        }
+        else
+        {
+            //末影龙的Yaw和玩家是反的
+            if (disguiseInstance.getType() == EntityType.ENDER_DRAGON)
+                disguiseInstance.setYRot(180 + player.getYRot());
+            else
+                disguiseInstance.setYRot(player.getYRot());
+
+            disguiseInstance.yHeadRot = player.yHeadRot;
+            disguiseInstance.yHeadRotO = player.yHeadRotO;
+
+            if (disguiseInstance.getType() == EntityType.ARMOR_STAND)
+            {
+                disguiseInstance.yBodyRot = player.yHeadRot;
+                disguiseInstance.yBodyRotO = player.yHeadRotO;
+            }
         }
     }
 
