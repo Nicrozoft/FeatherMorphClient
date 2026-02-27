@@ -8,6 +8,7 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -86,19 +87,12 @@ public class EntityDisplay extends MDrawable
     }
 
     @Nullable
-    private LivingEntity displayingEntity;
+    private Entity displayingEntity;
 
     @Nullable
-    public LivingEntity getDisplayingEntity()
+    public Entity getDisplayingEntity()
     {
         return displayingEntity;
-    }
-
-    private AtomicBoolean isLiving = new AtomicBoolean(true);
-
-    public boolean isLiving()
-    {
-        return isLiving.get();
     }
 
     private Component displayName;
@@ -111,7 +105,7 @@ public class EntityDisplay extends MDrawable
     private final AtomicInteger initialEntitySize = new AtomicInteger(1);
     private int entityYOffset;
 
-    private int getEntityYOffset(LivingEntity entity)
+    private int getEntityYOffset(Entity entity)
     {
         var type = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
 
@@ -122,7 +116,7 @@ public class EntityDisplay extends MDrawable
         };
     }
 
-    protected int getInitialEntitySize(LivingEntity entity)
+    protected int getInitialEntitySize(Entity entity)
     {
         var type = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
 
@@ -158,17 +152,13 @@ public class EntityDisplay extends MDrawable
 
             var entityCache = entityCache();
             var living = entityCache.getEntity(rawIdentifier, null);
-            isLiving.set(entityCache.isLiving(rawIdentifier));
 
             if (living == null)
             {
                 LivingEntity entity = null;
 
                 if (isPlayerItSelf)
-                {
                     entity = Minecraft.getInstance().player;
-                    isLiving.set(true);
-                }
 
                 //没有和此ID匹配的实体
                 if (entity == null)
@@ -194,18 +184,18 @@ public class EntityDisplay extends MDrawable
                 living = entity;
             }
 
-            LivingEntity finalLiving = living;
+            Entity finalEntity = living;
             Runnable onComplete = () ->
             {
                 loadingEntity.set(false);
 
                 allowRender = true;
 
-                this.displayingEntity = finalLiving;
-                this.displayName = finalLiving.getDisplayName();
+                this.displayingEntity = finalEntity;
+                this.displayName = finalEntity.getDisplayName();
 
-                initialEntitySize.set(getInitialEntitySize(finalLiving));
-                entityYOffset = getEntityYOffset(finalLiving);
+                initialEntitySize.set(getInitialEntitySize(finalEntity));
+                entityYOffset = getEntityYOffset(finalEntity);
 
                 if (postEntitySetup != null)
                     postEntitySetup.run();
@@ -249,7 +239,7 @@ public class EntityDisplay extends MDrawable
     @Override
     protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
     {
-        if (displayingEntity == null && isLiving())
+        if (displayingEntity == null)
         {
             if (!loadingEntity.get())
                 CompletableFuture.runAsync(this::setupEntity);
@@ -258,7 +248,7 @@ public class EntityDisplay extends MDrawable
             return;
         }
 
-        if (!allowRender || !isLiving())
+        if (!allowRender)
         {
             if (displayLoadingIfInvalid)
                 renderLoading(context);
@@ -295,12 +285,15 @@ public class EntityDisplay extends MDrawable
 
             PlayerRenderHelper.instance().skipRender = true;
 
-            InventoryScreen.renderEntityInInventoryFollowsMouse(context,
-                    xStart, yStart, xEnd, yEnd,
-                    scale * initialEntitySize.get(),
-                    0.0625f + entityYOffset,
-                    (float)mouseX, mouseY,
-                    displayingEntity);
+            if (displayingEntity instanceof LivingEntity livingEntity)
+            {
+                InventoryScreen.renderEntityInInventoryFollowsMouse(context,
+                        xStart, yStart, xEnd, yEnd,
+                        scale * initialEntitySize.get(),
+                        0.0625f + entityYOffset,
+                        (float)mouseX, mouseY,
+                        livingEntity);
+            }
 
             context.pose().translate(xStart, yStart);
 

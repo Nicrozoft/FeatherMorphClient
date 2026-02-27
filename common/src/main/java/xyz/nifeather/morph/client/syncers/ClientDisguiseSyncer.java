@@ -31,7 +31,7 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     public ClientDisguiseSyncer(AbstractClientPlayer clientPlayer,
                                 String morphId,
                                 int networkId,
-                                @NotNull LivingEntity disguiseEntity)
+                                @NotNull Entity disguiseEntity)
     {
         super(clientPlayer, morphId, networkId, disguiseEntity);
 

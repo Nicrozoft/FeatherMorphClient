@@ -8,6 +8,7 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.GuardianRenderState;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ProblemReporter;
@@ -45,10 +46,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class DisguiseSyncer extends MorphClientObject
 {
     @NotNull
-    protected final LivingEntity disguiseInstance;
+    protected final Entity disguiseInstance;
 
     @NotNull
-    public LivingEntity getDisguiseInstance()
+    public Entity getDisguiseInstance()
     {
         return disguiseInstance;
     }
@@ -79,7 +80,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     public DisguiseSyncer(@NotNull AbstractClientPlayer bindingPlayer,
                           String morphId, int networkId,
-                          @NonNull LivingEntity disguiseEntity)
+                          @NonNull Entity disguiseEntity)
     {
         this.bindingPlayer = bindingPlayer;
         this.disguiseId = morphId;
@@ -292,7 +293,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
             Vec3 motion
     )
     {
-        public static PositionRecord fromEntity(LivingEntity entity)
+        public static PositionRecord fromEntity(Entity entity)
         {
             return new PositionRecord(
                     entity.position(), entity.getXRot(), entity.getYRot(),
@@ -301,7 +302,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
             );
         }
 
-        public void applyToEntity(LivingEntity entity)
+        public void applyToEntity(Entity entity)
         {
             entity.snapTo(pos, yRot, xRot);
             entity.setOldPosAndRot(oldPos, yRotOld, xRotOld);
@@ -362,7 +363,6 @@ public abstract class DisguiseSyncer extends MorphClientObject
             disguiseLastPositionSaving.applyToEntity(disguiseInstance);
             disguiseLastPositionSaving = null;
         }
-        //disguiseInstance.snapTo(disguiseInstance.position().add(0, -4096, 0));
     }
 
     public void updateSkin(GameProfile profile)
@@ -410,9 +410,13 @@ public abstract class DisguiseSyncer extends MorphClientObject
         }
         else
         {
+            BlockPos sleepingPos = null;
+            if (disguiseInstance instanceof LivingEntity livingEntity)
+                sleepingPos = livingEntity.getSleepingPos().orElse(null);
+
             // 幻翼的pitch需要倒转
             // Don't sync pitch when sleeping position is present -- Match plugin behavior (maybe?)
-            if (disguiseInstance.getSleepingPos().isEmpty())
+            if (sleepingPos == null)
             {
                 if (disguiseInstance.getType() == EntityType.PHANTOM)
                     disguiseInstance.setXRot(-player.getXRot());
@@ -435,13 +439,16 @@ public abstract class DisguiseSyncer extends MorphClientObject
             else
                 disguiseInstance.setYRot(player.getYRot());
 
-            disguiseInstance.yHeadRot = player.yHeadRot;
-            disguiseInstance.yHeadRotO = player.yHeadRotO;
-
-            if (disguiseInstance.getType() == EntityType.ARMOR_STAND)
+            if (disguiseInstance instanceof LivingEntity livingEntity)
             {
-                disguiseInstance.yBodyRot = player.yHeadRot;
-                disguiseInstance.yBodyRotO = player.yHeadRotO;
+                livingEntity.yHeadRot = player.yHeadRot;
+                livingEntity.yHeadRotO = player.yHeadRotO;
+
+                if (livingEntity.getType() == EntityType.ARMOR_STAND)
+                {
+                    livingEntity.yBodyRot = player.yHeadRot;
+                    livingEntity.yBodyRotO = player.yHeadRotO;
+                }
             }
         }
     }
@@ -450,6 +457,9 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     public void syncEquipment()
     {
+        if (!(disguiseInstance instanceof LivingEntity livingEntity))
+            return;
+
         var shouldDisplayDisguiseEquipment = propertyHolder.getOr(PropertyNames.ENTITY_DISPLAY_DISGUISE_EQUIPMENT, false);
 
         // So that we don't read disguise equipment if we don't have to.
@@ -459,18 +469,18 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
         for (EquipmentSlot slot : EquipmentSlot.values())
         {
-            if (!disguiseInstance.canUseSlot(slot))
+            if (!livingEntity.canUseSlot(slot))
                 continue;
 
             var stack = shouldDisplayDisguiseEquipment ? disguiseEquip.getItem(slot) : bindingPlayer.getItemBySlot(slot);
-            disguiseInstance.setItemSlot(slot, stack);
+            livingEntity.setItemSlot(slot, stack);
         }
     }
 
     protected void syncPosition()
     {
         var playerPos = bindingPlayer.position();
-        disguiseInstance.setPos(playerPos.x, playerPos.y - 4096, playerPos.z);
+        disguiseInstance.setPos(playerPos.x, playerPos.y + 4096, playerPos.z);
     }
 
     private ClientLevel world;
@@ -527,6 +537,56 @@ public abstract class DisguiseSyncer extends MorphClientObject
         if (beamTarget != null && beamTarget.isRemoved())
             beamTarget = null;
 
+        if (entity instanceof LivingEntity livingEntity)
+            syncOnLivingEntity(livingEntity);
+
+        entity.setSharedFlagOnFire(bindingPlayer.isOnFire());
+
+        // Hand and sneaking
+        if (entity.getType() != EntityType.MANNEQUIN)
+            entity.setShiftKeyDown(bindingPlayer.isShiftKeyDown());
+
+        entity.setSprinting(bindingPlayer.isSprinting());
+
+        //entity.inPowderSnow = clientPlayer.inPowderSnow;
+        entity.setTicksFrozen(bindingPlayer.getTicksFrozen());
+
+        entity.setDeltaMovement(bindingPlayer.getDeltaMovement());
+
+        entity.setOnGround(bindingPlayer.onGround());
+
+        ((EntityAccessor) entity).setWasTouchingWater(bindingPlayer.isInWater());
+
+        // Glowing
+        if (bindingPlayer.isCurrentlyGlowing() != entity.isCurrentlyGlowing())
+            entity.setGlowingTag(bindingPlayer.isCurrentlyGlowing());
+
+        //同步Pose
+        entity.setPose(bindingPlayer.getPose());
+        entity.setSwimming(bindingPlayer.isSwimming());
+
+        if (bindingPlayer.isPassenger() && entity.getVehicle() != bindingPlayer)
+        {
+            if (entity instanceof IMorphClientEntity asMorphClientEntity)
+                asMorphClientEntity.featherMorph$overridePose(null);
+
+            entity.startRiding(bindingPlayer);
+        }
+        else if (!bindingPlayer.isPassenger() && entity.isPassenger())
+        {
+            entity.stopRiding();
+        }
+
+        if (entity instanceof MorphLocalPlayer player)
+            player.fishing = bindingPlayer.fishing;
+
+        entity.setInvisible(bindingPlayer.isInvisible());
+
+        markNotSyncing();
+    }
+
+    protected void syncOnLivingEntity(LivingEntity entity)
+    {
         var entitylimbAnimatorAccessor = (LimbAnimatorAccessor) entity.walkAnimation;
         var playerLimbAccessor = (LimbAnimatorAccessor) bindingPlayer.walkAnimation;
         var playerLimb = bindingPlayer.walkAnimation;
@@ -542,8 +602,6 @@ public abstract class DisguiseSyncer extends MorphClientObject
             entity.setSleepingPos(sleepPos);
         else
             entity.clearSleepingPos();
-
-        entity.setSharedFlagOnFire(bindingPlayer.isOnFire());
 
         // Health
         var healthAttribute = entity.getAttribute(Attributes.MAX_HEALTH);
@@ -573,32 +631,9 @@ public abstract class DisguiseSyncer extends MorphClientObject
         if (entity.isFallFlying() != bindingPlayer.isFallFlying())
             ((EntityAccessor) entity).callSetSharedFlag(7, bindingPlayer.isFallFlying());
 
-        // Hand and sneaking
-        if (entity.getType() != EntityType.MANNEQUIN)
-            entity.setShiftKeyDown(bindingPlayer.isShiftKeyDown());
-
         // Hurt and death
         entity.hurtTime = bindingPlayer.hurtTime;
         entity.deathTime = bindingPlayer.deathTime;
-
-        entity.setSprinting(bindingPlayer.isSprinting());
-
-        //entity.inPowderSnow = clientPlayer.inPowderSnow;
-        entity.setTicksFrozen(bindingPlayer.getTicksFrozen());
-
-        entity.setDeltaMovement(bindingPlayer.getDeltaMovement());
-
-        entity.setOnGround(bindingPlayer.onGround());
-
-        ((EntityAccessor) entity).setWasTouchingWater(bindingPlayer.isInWater());
-
-        // Glowing
-        if (bindingPlayer.isCurrentlyGlowing() != entity.isCurrentlyGlowing())
-            entity.setGlowingTag(bindingPlayer.isCurrentlyGlowing());
-
-        //同步Pose
-        entity.setPose(bindingPlayer.getPose());
-        entity.setSwimming(bindingPlayer.isSwimming());
 
         if (entity.isUsingItem() != bindingPlayer.isUsingItem())
         {
@@ -607,33 +642,14 @@ public abstract class DisguiseSyncer extends MorphClientObject
             ((LivingEntityAccessor)entity).callSetLivingEntityFlag(2, bindingPlayer.getUsedItemHand() == InteractionHand.OFF_HAND);
         }
 
-        if (bindingPlayer.isPassenger() && entity.getVehicle() != bindingPlayer)
-        {
-            if (entity instanceof IMorphClientEntity asMorphClientEntity)
-                asMorphClientEntity.featherMorph$overridePose(null);
-
-            entity.startRiding(bindingPlayer);
-        }
-        else if (!bindingPlayer.isPassenger() && entity.isPassenger())
-        {
-            entity.stopRiding();
-        }
-
         entity.setArrowCount(bindingPlayer.getArrowCount());
-
-        if (entity instanceof MorphLocalPlayer player)
-            player.fishing = bindingPlayer.fishing;
-
-        entity.setInvisible(bindingPlayer.isInvisible());
-
-        markNotSyncing();
     }
 
     //endregion
 
     //region Disposal
 
-    protected void disposeEntity(@NotNull LivingEntity disguise)
+    protected void disposeEntity(@NotNull Entity disguise)
     {
         if (disguise instanceof Guardian guardian && guardian.getActiveAttackTarget() instanceof IHasOverrideGlowing overrideGlowing)
             overrideGlowing.morphclient$overrideClientGlowing(false);

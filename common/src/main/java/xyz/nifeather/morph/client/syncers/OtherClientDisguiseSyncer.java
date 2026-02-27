@@ -1,6 +1,7 @@
 package xyz.nifeather.morph.client.syncers;
 
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 import xyz.nifeather.morph.client.EntityCache;
@@ -11,7 +12,7 @@ public class OtherClientDisguiseSyncer extends DisguiseSyncer
     public OtherClientDisguiseSyncer(AbstractClientPlayer bindingPlayer,
                                      String morphId,
                                      int networkId,
-                                     @NotNull LivingEntity disguiseEntity)
+                                     @NotNull Entity disguiseEntity)
     {
         super(bindingPlayer, morphId, networkId, disguiseEntity);
     }

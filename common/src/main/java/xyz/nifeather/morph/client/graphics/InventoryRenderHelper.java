@@ -3,6 +3,7 @@ package xyz.nifeather.morph.client.graphics;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.world.entity.LivingEntity;
 import xiamomc.pluginbase.Annotations.Initializer;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
@@ -42,11 +43,11 @@ public class InventoryRenderHelper extends MorphClientObject
 
         PlayerRenderHelper.instance().skipRender = true;
 
-        if (entity != null && (modConfig.clientViewVisible() || modConfig.alwaysShowPreviewInInventory))
+        if (entity instanceof LivingEntity living && (modConfig.clientViewVisible() || modConfig.alwaysShowPreviewInInventory))
         {
             try
             {
-                InventoryScreen.renderEntityInInventoryFollowsMouse(context, x1, y1, x2, y2, size, f, mouseX, mouseY, entity);
+                InventoryScreen.renderEntityInInventoryFollowsMouse(context, x1, y1, x2, y2, size, f, mouseX, mouseY, living);
             }
             catch (Exception e)
             {

@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -51,7 +52,7 @@ public class EntityCache
         });
     }
 
-    private final Map<String, LivingEntity> cacheMap = new ConcurrentHashMap<>();
+    private final Map<String, Entity> cacheMap = new ConcurrentHashMap<>();
 
     public void clearCache()
     {
@@ -100,13 +101,6 @@ public class EntityCache
 
     private final long lockWait = 10;
 
-    private final Map<String, Boolean> isLivingMap = new ConcurrentHashMap<>();
-
-    public boolean isLiving(String identifier)
-    {
-        return isLivingMap.getOrDefault(identifier, false);
-    }
-
     public static final String tag = "FMC_ClientView";
 
     public void dropAll()
@@ -125,14 +119,14 @@ public class EntityCache
     }
 
     @Nullable
-    public LivingEntity getEntity(String identifier, Player bindingPlayer)
+    public Entity getEntity(String identifier, Player bindingPlayer)
     {
         if (identifier == null) return null;
 
         if (disposed.get())
             throw new RuntimeException("Cannot access getEntity() for a disposed EntityCache.");
 
-        LivingEntity cache;
+        Entity cache;
 
         boolean locked;
         try
@@ -162,7 +156,7 @@ public class EntityCache
 
         if (cache != null && !cache.isRemoved()) return cache;
 
-        LivingEntity living = null;
+        net.minecraft.world.entity.Entity spawnedEntity = null;
 
         if (identifier.startsWith("minecraft:"))
         {
@@ -178,16 +172,10 @@ public class EntityCache
 
                 var instance = type == EntityType.MANNEQUIN ? new MorphLocalAvatar(world) : type.create(world, EntitySpawnReason.COMMAND);
 
-                if (!(instance instanceof LivingEntity le))
-                {
-                    isLivingMap.put(identifier, false);
-                    return null;
-                }
-
                 var uuid = ensureUUIDUnique(Mth.createInsecureUUID());
-                le.setUUID(uuid);
+                instance.setUUID(uuid);
 
-                living = le;
+                spawnedEntity = instance;
             }
             catch (Throwable t)
             {
@@ -210,7 +198,7 @@ public class EntityCache
             {
                 var localPlayer = new MorphLocalPlayer(world, profile, bindingPlayer);
                 localPlayer.updateSkin(new GameProfile(Util.NIL_UUID, splitedId[1]));
-                living = localPlayer;
+                spawnedEntity = localPlayer;
             }
             catch (Throwable t)
             {
@@ -218,11 +206,9 @@ public class EntityCache
                 t.printStackTrace();
                 return null;
             }
-
-            isLivingMap.put(identifier, true);
         }
 
-        if (living == null) return null;
+        if (spawnedEntity == null) return null;
 
         try
         {
@@ -244,10 +230,9 @@ public class EntityCache
 
         try
         {
-            living.addTag(tag);
+            spawnedEntity.addTag(tag);
 
-            isLivingMap.put(identifier, true);
-            cacheMap.put(identifier, living);
+            cacheMap.put(identifier, spawnedEntity);
         }
         finally
         {
@@ -258,7 +243,7 @@ public class EntityCache
         if (identifier.startsWith("player:"))
             LoggerFactory.getLogger("morph").info("Pushing " + identifier + " into EntityCache.");
 
-        return living;
+        return spawnedEntity;
     }
 
     /**
