@@ -1,7 +1,5 @@
 package xyz.nifeather.morph.client;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -14,7 +12,6 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -25,10 +22,8 @@ import xiamomc.pluginbase.Bindables.Bindable;
 import xiamomc.pluginbase.Exceptions.NullDependencyException;
 import xyz.nifeather.morph.client.graphics.toasts.DisguiseEntryToast;
 import xyz.nifeather.morph.client.graphics.toasts.NewDisguiseSetToast;
-import xyz.nifeather.morph.client.properties.AbstractPropertyHandler;
 import xyz.nifeather.morph.client.properties.ClientProperty;
-import xyz.nifeather.morph.client.properties.ClientPropertyHolder;
-import xyz.nifeather.morph.client.properties.PropertyHandlers;
+import xyz.nifeather.morph.client.properties.ClientDisguiseProperties;
 import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 import xyz.nifeather.morph.client.syncers.OtherClientDisguiseSyncer;
@@ -37,7 +32,6 @@ import xyz.nifeather.morph.shared.AnimationNames;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class ClientMorphManager extends MorphClientObject
@@ -454,7 +448,7 @@ public class ClientMorphManager extends MorphClientObject
         syncer.setAnimationHandler(handler);
 
         var properties = getNetworkPropertiesFor(player.getId());
-        var propertyCollection = PropertyHandlers.INSTANCE.getHandler(entity).orElse(null);
+        var propertyCollection = ClientDisguiseProperties.INSTANCE.getHandler(entity).orElse(null);
 
         if (propertyCollection != null)
             syncer.propertyHolder().registerFromPropertyCollection(propertyCollection);

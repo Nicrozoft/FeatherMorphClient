@@ -34,7 +34,7 @@ public class ClientPropertyHolder
         discardHooks.hook((BiConsumer) consumer);
     }
 
-    public void registerFromPropertyCollection(AbstractPropertyHandler properties)
+    public void registerFromPropertyCollection(AbstractPropertyCollection properties)
     {
         validProperties.putAll(properties.getRegisteredProperties());
     }

@@ -1,15 +1,11 @@
 package xyz.nifeather.morph.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.util.Util;
@@ -35,7 +31,7 @@ import xyz.nifeather.morph.client.graphics.hud.HudRenderHelper;
 import xyz.nifeather.morph.client.graphics.toasts.DisguiseEntryToast;
 import xyz.nifeather.morph.client.graphics.toasts.RequestToast;
 import xyz.nifeather.morph.client.network.ServerHandler;
-import xyz.nifeather.morph.client.properties.PropertyHandlers;
+import xyz.nifeather.morph.client.properties.ClientDisguiseProperties;
 import xyz.nifeather.morph.client.screens.WaitingForServerScreen;
 import xyz.nifeather.morph.client.screens.disguise.DisguiseScreen;
 import xyz.nifeather.morph.client.screens.emote.EmoteScreen;
@@ -160,12 +156,12 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
     private void onDisconnect(ClientPacketListener listener, Minecraft minecraft)
     {
         savedDisguiseStorage.clearCache();
-        PropertyHandlers.INSTANCE.reset();
+        ClientDisguiseProperties.INSTANCE.reset();
     }
 
     private void onJoin(ClientPacketListener listener, PacketSender sender, Minecraft minecraft)
     {
-        PropertyHandlers.INSTANCE.init();
+        ClientDisguiseProperties.INSTANCE.init();
     }
 
     private final HudRenderHelper hudRenderHelper = new HudRenderHelper();

@@ -1,19 +1,19 @@
 package xyz.nifeather.morph.client.properties.impl;
 
-import net.minecraft.world.entity.monster.zombie.Zombie;
+import net.minecraft.world.entity.monster.Zoglin;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
 
-public class ZombiePropertyhandler extends EntityPropertyCollection<Zombie>
+public class ZoglinPropertyCollection extends EntityPropertyCollection<Zoglin>
 {
-    public final ClientProperty<Boolean, Zombie> IS_BABY =
-            ClientProperty.builder(PropertyNames.ZOMBIE_IS_BABY, false, Zombie.class)
+    public final ClientProperty<Boolean, Zoglin> IS_BABY =
+            ClientProperty.builder(PropertyNames.ZOGLIN_IS_BABY, false, Zoglin.class)
                     .inputHandle(CommonInputHandles::readBoolean)
-                    .entityHandle(Zombie::setBaby)
+                    .entityHandle(Zoglin::setBaby)
                     .build();
 
-    public ZombiePropertyhandler()
+    public ZoglinPropertyCollection()
     {
         register(IS_BABY);
     }

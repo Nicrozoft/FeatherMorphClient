@@ -13,14 +13,12 @@ import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.EntityCache;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.graphics.*;
-import xyz.nifeather.morph.client.graphics.color.MaterialColors;
-import xyz.nifeather.morph.client.graphics.container.Container;
 import xyz.nifeather.morph.client.graphics.container.DrawableButtonWrapper;
 import xyz.nifeather.morph.client.graphics.container.FlowContainer;
 import xyz.nifeather.morph.client.graphics.container.TextFieldWidgetWrapper;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.ClientPropertyHolder;
-import xyz.nifeather.morph.client.properties.PropertyHandlers;
+import xyz.nifeather.morph.client.properties.ClientDisguiseProperties;
 import xyz.nifeather.morph.client.screens.FeatherScreen;
 import xyz.nifeather.morph.client.storage.struct.SavedDisguise;
 import xyz.nifeather.morph.client.syncers.OtherClientDisguiseSyncer;
@@ -270,7 +268,7 @@ public class QuickDisguiseScreen extends FeatherScreen
             var properties = saved.properties();
 
             var holder = new ClientPropertyHolder();
-            var propertyCollection = PropertyHandlers.INSTANCE.getHandler(entity).orElseThrow();
+            var propertyCollection = ClientDisguiseProperties.INSTANCE.getHandler(entity).orElseThrow();
             holder.registerFromPropertyCollection(propertyCollection);
 
             this.syncer = new OtherClientDisguiseSyncer(minecraft.player, saved.disguiseIdentifier(), -1, entity);
