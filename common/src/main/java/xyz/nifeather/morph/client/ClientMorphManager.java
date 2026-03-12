@@ -74,6 +74,7 @@ public class ClientMorphManager extends MorphClientObject
     @Resolved
     private DisguiseInstanceTracker instanceTracker;
 
+    //todo: Pure history shit, remove this after we have done implementing OutputHandle on the client.
     private final Map<Integer, Map<String, String>> storedProperties = new ConcurrentHashMap<>();
 
     public Map<String, String> getNetworkPropertiesFor(int id)
@@ -88,6 +89,14 @@ public class ClientMorphManager extends MorphClientObject
                            : new ConcurrentHashMap<>(map);
 
         storedProperties.put(id, asConcurrent);
+    }
+
+    public void discardPropertiesFor(int id, List<String> propertiesToDiscard)
+    {
+        var properties = storedProperties.getOrDefault(id, null);
+        if (properties == null) return;
+
+        propertiesToDiscard.forEach(properties::remove);
     }
 
     public void mergeNetworkPropertiesFor(int id, Map<String, String> input)

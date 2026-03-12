@@ -21,6 +21,7 @@ import xyz.nifeather.morph.client.config.ModConfigData;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.entities.IMorphLocalPlayer;
 import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
+import xyz.nifeather.morph.client.network.commands.S2CDiscardPropertiesCommand;
 import xyz.nifeather.morph.client.network.handlers.IProtocolHandler;
 import xyz.nifeather.morph.client.network.handlers.V3ProtocolHandler;
 import xyz.nifeather.morph.client.properties.ClientProperty;
@@ -80,6 +81,9 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
                 .registerS2C(S2CCommandNames.SetSneaking, S2CSetSneakingCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetSelfViewing, S2CSetSelfViewingStatusCommand::fromArguments)
                 .registerS2C(S2CCommandNames.SetModifyBoundingBox, S2CSetModifyBoundingBoxCommand::fromArguments);
+
+        // Frog Discard Properties Command
+        registries.registerS2C("discard_properties", S2CDiscardPropertiesCommand::fromArguments);
 
         // Mob Reveal
         registries.registerS2C(S2CCommandNames.SetMobReveal, S2CSetMobRevealCommand::fromArguments);
@@ -632,6 +636,19 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         {
             ((ClientProperty<Object, Entity>) p).apply(syncer.getDisguiseInstance(), v);
         });
+    }
+
+    public void onDiscardPropertiesCommand(S2CDiscardPropertiesCommand command)
+    {
+        var clientPlayer = Minecraft.getInstance().player;
+        if (clientPlayer == null)
+            return;
+
+        var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(clientPlayer.getId());
+        if (syncer == null) return;
+
+        morphManager.discardPropertiesFor(clientPlayer.getId(), command.propertyNames());
+        syncer.propertyHolder().discardProperties(command.propertyNames());
     }
 
     //endregion Impl of ServerHandler

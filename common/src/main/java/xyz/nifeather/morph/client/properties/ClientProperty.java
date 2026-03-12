@@ -9,7 +9,8 @@ public record ClientProperty<X, E>(String identifier,
                                                   Class<E> appliableClass,
                                                   IInputHandle<X> inputHandle,
                                                   IOutputHandle<X> outputHandle,
-                                                  IEntityHandle<X, E> entityHandle)
+                                                  IEntityHandle<X, E> entityHandle,
+                                                  boolean restoreDefaultsBeforeDiscard)
 {
     public Optional<X> handleInput(String input)
     {
@@ -64,6 +65,7 @@ public record ClientProperty<X, E>(String identifier,
         private IInputHandle<X> inputHandle = CommonInputHandles::noOp;
         private IOutputHandle<X> outputHandle = CommonOutputHandles::noOp;
         private IEntityHandle<X, E> entityHandle = (o, o1) -> noOp(o1, o);
+        private boolean restoreDefaultsBeforeDiscard = true;
 
         public Builder(String identifier,
                        X defaultValue, Class<X> type,
@@ -94,6 +96,12 @@ public record ClientProperty<X, E>(String identifier,
             return this;
         }
 
+        public Builder<X, E> restoreDefaultsBeforeDiscard(boolean val)
+        {
+            this.restoreDefaultsBeforeDiscard = val;
+            return this;
+        }
+
         public ClientProperty<X, E> build()
         {
             return new ClientProperty<>(
@@ -102,7 +110,8 @@ public record ClientProperty<X, E>(String identifier,
                     appliableClass,
                     inputHandle,
                     outputHandle,
-                    entityHandle
+                    entityHandle,
+                    restoreDefaultsBeforeDiscard
             );
         }
     }

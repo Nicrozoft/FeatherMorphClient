@@ -2,10 +2,8 @@ package xyz.nifeather.morph.client.properties;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.MultimapBuilder;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
@@ -20,6 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Brightness;
 import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.PlayerModelType;
@@ -27,6 +26,7 @@ import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.component.ResolvableProfile;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.mixin.accessors.ResolvableProfileAccessor;
 import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
@@ -37,10 +37,7 @@ import xyz.nifeather.morph.client.utilties.NbtHelperCopy;
 import xyz.nifeather.morph.client.utilties.NbtUtils;
 import xyz.nifeather.morph.network.utils.ProtocolEquipmentSlot;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 public class CommonInputHandles
@@ -256,5 +253,131 @@ public class CommonInputHandles
         {
             return Optional.empty();
         }
+    }
+
+    public static Optional<Vector3f> readVector3fRelaxed(String input)
+    {
+        if (input.startsWith("["))
+            return readVector3fJson(input);
+        else
+            return readVector3fHandwrite(input);
+    }
+
+    public static Optional<Vector3f> readVector3fHandwrite(String input)
+    {
+        String[] split = input.split(",");
+
+        if (split.length == 1)
+        {
+            String size = split[0];
+            float floatSize = readFloat(size).orElse(Float.NaN);
+            if (Float.isNaN(floatSize))
+                return Optional.empty();
+
+            return Optional.of(new Vector3f(floatSize));
+        }
+
+        if (split.length != 3)
+            return Optional.empty();
+
+        float x = readFloat(split[0]).orElseThrow();
+        float y = readFloat(split[1]).orElseThrow();
+        float z = readFloat(split[2]).orElseThrow();
+
+        return Optional.of(new Vector3f(x, y, z));
+    }
+
+    public static Optional<Vector3f> readVector3fJson(String input)
+    {
+        List<Float> list;
+
+        try
+        {
+            list = gson.fromJson(input, new TypeToken<List<Float>>(){});
+        }
+        catch (JsonParseException e)
+        {
+            return Optional.empty();
+        }
+
+        if (list.size() == 1)
+        {
+            var value = list.getFirst();
+            return Optional.of(new Vector3f(value));
+        }
+
+        if (list.size() != 3)
+        {
+            return Optional.empty();
+        }
+
+        float x = list.getFirst();
+        float y = list.get(1);
+        float z = list.get(2);
+
+        return Optional.of(new Vector3f(x, y, z));
+    }
+
+    public static Optional<Integer> readHexColor(String input)
+    {
+        String colorCodeString = input.replaceFirst("#", "");
+        if (colorCodeString.length() > 6)
+        {
+            return Optional.empty();
+        }
+
+        int integerColor;
+        try
+        {
+            integerColor = Integer.parseInt(colorCodeString, 16);
+        }
+        catch (NumberFormatException e)
+        {
+            return Optional.empty();
+        }
+
+        return Optional.of(integerColor);
+    }
+
+    public static Optional<Integer> readLight(String input)
+    {
+        int sky = 15;
+        int block = 15;
+
+        if (input.startsWith("["))
+        {
+            List<Integer> list;
+
+            try
+            {
+                list = gson.fromJson(input, new TypeToken<List<Integer>>(){});
+            }
+            catch (JsonParseException e)
+            {
+                return Optional.empty();
+            }
+
+            if (!list.isEmpty())
+                block = list.getFirst();
+
+            if (list.size() >= 2)
+                sky = list.get(1);
+        }
+        else
+        {
+            try
+            {
+
+                block = Integer.parseInt(input);
+            }
+            catch (NumberFormatException e)
+            {
+                return Optional.empty();
+            }
+        }
+
+        int light = Brightness.pack(block, sky);
+
+        return Optional.of(light);
     }
 }

@@ -88,9 +88,19 @@ public abstract class DisguiseSyncer extends MorphClientObject
         this.disguiseInstance = disguiseEntity;
 
         propertyHolder.hookOnPropertyWrite(this::onPropertyWrite);
+        propertyHolder.hookOnPropertyDiscard(this::onPropertyDiscard);
 
         if (disguiseEntity instanceof IMorphClientEntity iMorphClientEntity)
             iMorphClientEntity.featherMorph$setIsDisguiseEntity(networkId);
+    }
+
+    private <X, E> void onPropertyDiscard(ClientProperty<X, E> clientProperty, X oldValue)
+    {
+        if (clientProperty.restoreDefaultsBeforeDiscard())
+        {
+            clientProperty.tryCastEntity(disguiseInstance)
+                    .ifPresent(e -> clientProperty.entityHandle().handle(e, clientProperty.defaultValue()));
+        }
     }
 
     private void onPropertyWrite(ClientProperty<?, ?> property, @Nullable Object oldValue, Object newValue)
@@ -539,6 +549,12 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
         if (entity instanceof LivingEntity livingEntity)
             syncOnLivingEntity(livingEntity);
+
+        //todo: Move this out of DisguiseSyncer
+        if (entity instanceof Display.ItemDisplay itemDisplay)
+        {
+            itemDisplay.setItemStack(bindingPlayer.getMainHandItem());
+        }
 
         entity.setSharedFlagOnFire(bindingPlayer.isOnFire());
 

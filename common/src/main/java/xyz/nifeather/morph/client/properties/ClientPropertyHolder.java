@@ -1,5 +1,6 @@
 package xyz.nifeather.morph.client.properties;
 
+import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
@@ -7,12 +8,14 @@ import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.nifeather.morph.client.utilties.actions.BiConsumerActions;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 
 public class ClientPropertyHolder
 {
@@ -23,6 +26,12 @@ public class ClientPropertyHolder
     public void hookOnPropertyWrite(IValueChangeListener<ClientProperty<?, ?>, Object> hook)
     {
         actions.add(hook);
+    }
+
+    protected final BiConsumerActions<ClientProperty<?, ?>, Object> discardHooks = new BiConsumerActions<>();
+    public <X> void hookOnPropertyDiscard(BiConsumer<ClientProperty<X, ?>, X> consumer)
+    {
+        discardHooks.hook((BiConsumer) consumer);
     }
 
     public void registerFromPropertyCollection(AbstractPropertyHandler properties)
@@ -88,6 +97,19 @@ public class ClientPropertyHolder
         }
 
         return parsedResults;
+    }
+
+    public void discardProperties(List<String> names)
+    {
+        names.stream().map(id -> validProperties.getOrDefault(id, null))
+                .filter(Objects::nonNull)
+                .forEach(p ->
+                {
+                    var existing = propertyMap.remove(p);
+                    if (existing == null) return;
+
+                    discardHooks.invoke(Pair.of(p, existing));
+                });
     }
 
     public void reset()
