@@ -8,7 +8,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class CopperGolemPropertyCollection extends EntityPropertyCollection<CopperGolem>
+public class CopperGolemPropertyCollection extends LivingEntityPropertyCollection<CopperGolem>
 {
     public final ClientProperty<WeatheringCopper.WeatherState, CopperGolem> WEATHER_STATE =
             ClientProperty.builder(PropertyNames.COPPER_GOLEM_WEATHER_STATE, WeatheringCopper.WeatherState.UNAFFECTED, CopperGolem.class)

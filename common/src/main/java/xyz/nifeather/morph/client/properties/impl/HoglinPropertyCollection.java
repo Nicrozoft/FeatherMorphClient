@@ -5,7 +5,7 @@ import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
 
-public class HoglinPropertyCollection extends EntityPropertyCollection<Hoglin>
+public class HoglinPropertyCollection extends LivingEntityPropertyCollection<Hoglin>
 {
     public final ClientProperty<Boolean, Hoglin> IS_BABY = 
             ClientProperty.builder(PropertyNames.HOGLIN_IS_BABY, false, Hoglin.class)

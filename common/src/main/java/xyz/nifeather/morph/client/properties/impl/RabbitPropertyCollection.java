@@ -6,7 +6,7 @@ import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
 
-public class RabbitPropertyCollection extends EntityPropertyCollection<Rabbit>
+public class RabbitPropertyCollection extends LivingEntityPropertyCollection<Rabbit>
 {
     public final ClientProperty<Rabbit.Variant, RabbitAccessor> VARIANT =
             ClientProperty.builder(PropertyNames.RABBIT_VARIANT, Rabbit.Variant.BROWN, RabbitAccessor.class)

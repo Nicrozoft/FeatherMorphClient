@@ -11,10 +11,10 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class ChickenPropertyCollection extends EntityPropertyCollection<Chicken>
+public class ChickenPropertyCollection extends LivingEntityPropertyCollection<Chicken>
 {
     public final ClientProperty<Holder<ChickenVariant>, Chicken> VARIANT =
-            ClientProperty.builder(PropertyNames.CAT_VARIANT, lookupVariantOrThrow(Registries.CHICKEN_VARIANT, ChickenVariants.DEFAULT), Chicken.class)
+            ClientProperty.builder(PropertyNames.CHICKEN_VARIANT, lookupVariantOrThrow(Registries.CHICKEN_VARIANT, ChickenVariants.DEFAULT), Chicken.class)
                     .inputHandle(this::readChickenVariant)
                     .entityHandle(Chicken::setVariant)
                     .build();

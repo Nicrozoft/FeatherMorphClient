@@ -8,7 +8,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class AxolotlPropertyCollection extends EntityPropertyCollection<Axolotl>
+public class AxolotlPropertyCollection extends LivingEntityPropertyCollection<Axolotl>
 {
     public final ClientProperty<Axolotl.Variant, AxolotlAccessor> VARIANT =
             ClientProperty.builder(PropertyNames.AXOLOTL_VARIANT, Axolotl.Variant.LUCY, AxolotlAccessor.class)

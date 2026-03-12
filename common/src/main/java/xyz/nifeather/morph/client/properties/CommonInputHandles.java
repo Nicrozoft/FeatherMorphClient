@@ -1,14 +1,11 @@
 package xyz.nifeather.morph.client.properties;
 
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.MultimapBuilder;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
-import com.mojang.datafixers.util.Either;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.ClientAsset;
@@ -19,7 +16,6 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Brightness;
-import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.entity.player.PlayerSkin;
@@ -27,6 +23,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.component.ResolvableProfile;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
+import org.joml.Vector3i;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.mixin.accessors.ResolvableProfileAccessor;
 import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
@@ -243,6 +240,18 @@ public class CommonInputHandles
         return Optional.of(builder.build());
     }
 
+    public static Optional<Integer> readInteger(String input)
+    {
+        try
+        {
+            return Optional.of(Integer.parseInt(input));
+        }
+        catch (NumberFormatException e)
+        {
+            return Optional.empty();
+        }
+    }
+
     public static Optional<Float> readFloat(String input)
     {
         try
@@ -253,6 +262,32 @@ public class CommonInputHandles
         {
             return Optional.empty();
         }
+    }
+
+    public static Optional<Vector3i> readVector3iRelaxed(String input)
+    {
+        if (input.startsWith("["))
+            return readVector3iJson(input);
+        else
+            return readVector3iHandwrite(input);
+    }
+
+    private static Optional<Vector3i> mapVector3fTo3i(Optional<Vector3f> v3f)
+    {
+        if (v3f.isEmpty()) return Optional.empty();
+
+        var value = v3f.orElseThrow();
+        return Optional.of(new Vector3i((int)value.x, (int)value.y, (int)value.z));
+    }
+
+    private static Optional<Vector3i> readVector3iHandwrite(String input)
+    {
+        return mapVector3fTo3i(readVector3fHandwrite(input));
+    }
+
+    private static Optional<Vector3i> readVector3iJson(String input)
+    {
+        return mapVector3fTo3i(readVector3fJson(input));
     }
 
     public static Optional<Vector3f> readVector3fRelaxed(String input)
@@ -270,10 +305,7 @@ public class CommonInputHandles
         if (split.length == 1)
         {
             String size = split[0];
-            float floatSize = readFloat(size).orElse(Float.NaN);
-            if (Float.isNaN(floatSize))
-                return Optional.empty();
-
+            float floatSize = readFloat(size).orElseThrow();
             return Optional.of(new Vector3f(floatSize));
         }
 

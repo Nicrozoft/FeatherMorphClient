@@ -6,7 +6,7 @@ import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
 
-public class SheepPropertyCollection extends EntityPropertyCollection<Sheep>
+public class SheepPropertyCollection extends LivingEntityPropertyCollection<Sheep>
 {
     public final ClientProperty<DyeColor, Sheep> COLOR =
             ClientProperty.builder(PropertyNames.SHEEP_COLOR, DyeColor.BLACK, Sheep.class)

@@ -9,7 +9,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class TraderLlamaPropertyCollection extends EntityPropertyCollection<TraderLlama>
+public class TraderLlamaPropertyCollection extends LivingEntityPropertyCollection<TraderLlama>
 {
     public final ClientProperty<Llama.Variant, LlamaAccessor> COLOR =
             ClientProperty.builder(PropertyNames.LLAMA_COLOR, Llama.Variant.DEFAULT, LlamaAccessor.class)

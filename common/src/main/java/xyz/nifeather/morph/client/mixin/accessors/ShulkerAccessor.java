@@ -12,4 +12,7 @@ public interface ShulkerAccessor
 {
     @Invoker
     public void callSetVariant(Optional<DyeColor>  variant);
+
+    @Invoker
+    public void callSetRawPeekAmount(int amount);
 }

@@ -10,7 +10,7 @@ import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
 
-public class VillagerPropertyCollection extends EntityPropertyCollection<Villager>
+public class VillagerPropertyCollection extends LivingEntityPropertyCollection<Villager>
 {
     public final ClientProperty<Holder<VillagerType>, Villager> TYPE =
             ClientProperty.builder(PropertyNames.VILLAGER_TYPE, lookupVariantOrThrow(Registries.VILLAGER_TYPE, VillagerType.PLAINS), Villager.class)

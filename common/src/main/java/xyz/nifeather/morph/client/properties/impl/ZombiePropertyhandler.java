@@ -5,7 +5,7 @@ import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
 
-public class ZombiePropertyhandler extends EntityPropertyCollection<Zombie>
+public class ZombiePropertyhandler extends LivingEntityPropertyCollection<Zombie>
 {
     public final ClientProperty<Boolean, Zombie> IS_BABY =
             ClientProperty.builder(PropertyNames.ZOMBIE_IS_BABY, false, Zombie.class)

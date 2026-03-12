@@ -7,7 +7,7 @@ import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
 
-public class GuardianPropertyCollection extends EntityPropertyCollection<Guardian>
+public class GuardianPropertyCollection extends LivingEntityPropertyCollection<Guardian>
 {
     public final ClientProperty<Integer, Guardian> ATTACK_TARGET =
             ClientProperty.builder(PropertyNames.GUARDIAN_ATTACK_TARGET, 0, Guardian.class)

@@ -10,7 +10,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.UUID;
 
-public class MannequinPropertyCollection extends EntityPropertyCollection<Mannequin>
+public class MannequinPropertyCollection extends LivingEntityPropertyCollection<Mannequin>
 {
     public final ClientProperty<Component, MannequinAccessor> DESCRIPTION =
             ClientProperty.builder(PropertyNames.MANNEQUIN_NPC_DESCRIPTION, Component.empty(), Component.class, MannequinAccessor.class)

@@ -11,7 +11,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class CowPropertyCollection extends EntityPropertyCollection<Cow>
+public class CowPropertyCollection extends LivingEntityPropertyCollection<Cow>
 {
     public final ClientProperty<Holder<CowVariant>, Cow> VARIANT =
             ClientProperty.builder(PropertyNames.COW_VARIANT, lookupVariantOrThrow(Registries.COW_VARIANT, CowVariants.DEFAULT), Cow.class)

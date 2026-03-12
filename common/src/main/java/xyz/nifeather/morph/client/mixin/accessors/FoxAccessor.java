@@ -9,4 +9,7 @@ public interface FoxAccessor
 {
     @Invoker
     public void callSetVariant(Fox.Variant variant);
+
+    @Invoker
+    public void callSetSleeping(boolean sleeping);
 }

@@ -6,7 +6,7 @@ import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
 
-public class EnderDragonPropertyCollection extends EntityPropertyCollection<EnderDragon>
+public class EnderDragonPropertyCollection extends LivingEntityPropertyCollection<EnderDragon>
 {
     public final ClientProperty<Integer, EnderDragon> DRAGON_PHASE =
             ClientProperty.builder(PropertyNames.ENDER_DRAGON_DRAGON_PHASE, 0, EnderDragon.class)

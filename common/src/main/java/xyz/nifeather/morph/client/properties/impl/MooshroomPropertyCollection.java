@@ -7,7 +7,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.Optional;
 
-public class MooshroomPropertyCollection extends EntityPropertyCollection<MushroomCow>
+public class MooshroomPropertyCollection extends LivingEntityPropertyCollection<MushroomCow>
 {
     public final ClientProperty<MushroomCow.Variant, MushroomCowAccessor> VARIANT =
             ClientProperty.builder(PropertyNames.MOOSHROOM_VARIANT, MushroomCow.Variant.RED, MushroomCowAccessor.class)

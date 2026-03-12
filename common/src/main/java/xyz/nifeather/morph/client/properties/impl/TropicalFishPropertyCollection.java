@@ -7,7 +7,7 @@ import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
 
-public class TropicalFishPropertyCollection extends EntityPropertyCollection<TropicalFish>
+public class TropicalFishPropertyCollection extends LivingEntityPropertyCollection<TropicalFish>
 {
     public final ClientProperty<DyeColor, TropicalFishAccessor> BODY_COLOR =
             ClientProperty.builder(PropertyNames.TROPICAL_FISH_BODY_COLOR, DyeColor.WHITE, TropicalFishAccessor.class)
@@ -16,7 +16,7 @@ public class TropicalFishPropertyCollection extends EntityPropertyCollection<Tro
                     .build();
 
     public final ClientProperty<DyeColor, TropicalFishAccessor> PATTERN_COLOR =
-            ClientProperty.builder(PropertyNames.TROPICAL_FISH_PATTERN, DyeColor.BLACK, TropicalFishAccessor.class)
+            ClientProperty.builder(PropertyNames.TROPICAL_FISH_PATTERN_COLOR, DyeColor.BLACK, TropicalFishAccessor.class)
                     .inputHandle(CommonInputHandles::readDyeColor)
                     .entityHandle(TropicalFishAccessor::callSetPatternColor)
                     .build();

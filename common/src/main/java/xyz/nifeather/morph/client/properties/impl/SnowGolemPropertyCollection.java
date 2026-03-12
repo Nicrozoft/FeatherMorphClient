@@ -5,7 +5,7 @@ import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
 
-public class SnowGolemPropertyCollection extends EntityPropertyCollection<SnowGolem>
+public class SnowGolemPropertyCollection extends LivingEntityPropertyCollection<SnowGolem>
 {
     public final ClientProperty<Boolean, SnowGolem> HAS_PUMPKIN =
             ClientProperty.builder(PropertyNames.SNOW_GOLEM_HAS_PUMPKIN, false, SnowGolem.class)

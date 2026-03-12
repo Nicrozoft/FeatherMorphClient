@@ -50,6 +50,7 @@
     "PlayerEntityRendererMixin",
     "PlayerMixin",
     "WorldRendererMixin",
+    "accessors.SnifferAccessor",
     "accessors.DisplayAccessor",
     "accessors.AbstractHorseEntityMixin",
     "accessors.AbstractScrollAreaAccessor",

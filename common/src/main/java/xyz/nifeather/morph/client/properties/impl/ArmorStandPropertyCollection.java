@@ -14,7 +14,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 import java.util.List;
 import java.util.Optional;
 
-public class ArmorStandPropertyCollection extends EntityPropertyCollection<ArmorStand>
+public class ArmorStandPropertyCollection extends LivingEntityPropertyCollection<ArmorStand>
 {
     public final ClientProperty<Boolean, ArmorStand> SHOW_ARMS =
             ClientProperty.builder(PropertyNames.ARMOR_STAND_SHOW_ARMS, false, ArmorStand.class)

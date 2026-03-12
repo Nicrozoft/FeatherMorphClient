@@ -8,7 +8,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class ParrotPropertyCollection extends EntityPropertyCollection<Parrot>
+public class ParrotPropertyCollection extends LivingEntityPropertyCollection<Parrot>
 {
     public final ClientProperty<Parrot.Variant, ParrotAccessor> VARIANT =
             ClientProperty.builder(PropertyNames.PARROT_VARIANT, Parrot.Variant.DEFAULT, ParrotAccessor.class)

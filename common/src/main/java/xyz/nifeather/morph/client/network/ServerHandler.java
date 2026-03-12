@@ -11,6 +11,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.player.Player;
@@ -20,9 +21,9 @@ import xyz.nifeather.morph.client.config.ModConfigData;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.entities.IMorphLocalPlayer;
 import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
-import xyz.nifeather.morph.client.network.commands.S2CDiscardPropertiesCommand;
 import xyz.nifeather.morph.client.network.handlers.IProtocolHandler;
 import xyz.nifeather.morph.client.network.handlers.V3ProtocolHandler;
+import xyz.nifeather.morph.client.properties.ClientDisguiseProperties;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.utilties.NbtUtils;
 import xyz.nifeather.morph.network.commands.C2S.*;
@@ -105,7 +106,10 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
                 .registerS2C(S2CCommandNames.CRMeta, S2CCRSetMetaCommand::fromArguments);
 
         // Update Properties
-        registries.registerS2C(S2CCommandNames.UpdateProperties, S2CUpdatePropertiesCommand::fromArguments);
+        registries.registerS2C(S2CCommandNames.UpdateProperties, S2CUpdatePropertiesCommand::fromArguments)
+                .registerS2C(S2CCommandNames.DiscardProperties, S2CDiscardPropertiesCommand::fromArguments)
+                .registerS2C(S2CCommandNames.UpdateTemporaryProperties, S2CUpdateTemporaryPropertiesCommand::fromArguments)
+                .registerS2C(S2CCommandNames.DiscardTemporaryProperties, S2CDiscardTemporaryPropertiesCommand::fromArguments);
     }
 
     @Resolved
@@ -597,8 +601,8 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     @Override
     public void onAnimationCommand(S2CPlayAnimationCommand command)
     {
-        //logger.info("Update animation : " + command.getArgumentAt(0, "???"));
-        morphManager.playEmote(command.getAnimId());
+        if (serverVersion < Constants.ApiLevel.ANIMATION_DEPRECATION_AND_DISCARD_PROPERTIES_AND_TEMP_PROPERTIES.protocolVersion)
+            morphManager.playEmote(command.getAnimId());
     }
 
     @Override
@@ -636,6 +640,26 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         });
     }
 
+    @Override
+    public void onUpdateTemporaryPropertiesCommand(S2CUpdateTemporaryPropertiesCommand command)
+    {
+        var clientPlayer = Minecraft.getInstance().player;
+        if (clientPlayer == null)
+            return;
+
+        var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(clientPlayer.getId());
+        if (syncer == null) return;
+
+        var disguiseEntity = syncer.getDisguiseInstance();
+        var propertyHolder = syncer.propertyHolder();
+        propertyHolder.deserializeProperties(command.getProperties()).forEach((p, v) ->
+        {
+            var property = (ClientProperty<Object, Entity>) p;
+            propertyHolder.setTemp(property, v);
+            property.apply(disguiseEntity, v);
+        });
+    }
+
     public void onDiscardPropertiesCommand(S2CDiscardPropertiesCommand command)
     {
         var clientPlayer = Minecraft.getInstance().player;
@@ -646,7 +670,33 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
         if (syncer == null) return;
 
         morphManager.discardPropertiesFor(clientPlayer.getId(), command.propertyNames());
-        syncer.propertyHolder().discardProperties(command.propertyNames());
+
+        var propertyHolder = syncer.propertyHolder();
+        for (String name : command.propertyNames())
+        {
+            var property = propertyHolder.getProperty(name);
+            if (property != null)
+                propertyHolder.discardProperty(property);
+        }
+    }
+
+    @Override
+    public void onDiscardTemporaryPropertiesCommand(S2CDiscardTemporaryPropertiesCommand command)
+    {
+        var clientPlayer = Minecraft.getInstance().player;
+        if (clientPlayer == null)
+            return;
+
+        var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(clientPlayer.getId());
+        if (syncer == null) return;
+
+        var propertyHolder = syncer.propertyHolder();
+        for (String name : command.propertyNames())
+        {
+            var property = (ClientProperty<Object, Entity>) propertyHolder.getProperty(name);
+            if (property != null)
+                propertyHolder.discardTemporaryProperty(property);
+        }
     }
 
     //endregion Impl of ServerHandler

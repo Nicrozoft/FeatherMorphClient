@@ -10,7 +10,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class HorsePropertyCollection extends EntityPropertyCollection<Horse>
+public class HorsePropertyCollection extends LivingEntityPropertyCollection<Horse>
 {
     public final ClientProperty<Markings, HorseAccessor> STYLE =
             ClientProperty.builder(PropertyNames.HORSE_STYLE, Markings.NONE, HorseAccessor.class)

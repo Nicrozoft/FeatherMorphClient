@@ -6,7 +6,7 @@ import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
 
-public class GoatPropertyCollection extends EntityPropertyCollection<Goat>
+public class GoatPropertyCollection extends LivingEntityPropertyCollection<Goat>
 {
     public final ClientProperty<Boolean, IMorphGoat> HAS_LEFT_HORN =
             ClientProperty.builder(PropertyNames.GOAT_HAS_LEFT_HORN, false, IMorphGoat.class)

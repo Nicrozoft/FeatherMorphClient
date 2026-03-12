@@ -78,6 +78,13 @@ public class ClientDisguiseProperties
         register(EntityType.COPPER_GOLEM, new CopperGolemPropertyCollection());
 
         register(EntityType.ITEM_DISPLAY, new ItemDisplayPropertyCollection());
+
+        register(EntityType.ALLAY, new AllayPropertyCollection());
+        register(EntityType.ARMADILLO, new ArmadilloPropertyCollection());
+        register(EntityType.CREAKING, new CreakingPropertyCollection());
+        register(EntityType.PIGLIN, new PiglinPropertyCollection());
+        register(EntityType.PUFFERFISH, new PufferfishPropertyCollection());
+        register(EntityType.SNIFFER, new SnifferPropertyCollection());
     }
 
     private final FallbackPropertyCollection fallbackPropertyHandler = new FallbackPropertyCollection();

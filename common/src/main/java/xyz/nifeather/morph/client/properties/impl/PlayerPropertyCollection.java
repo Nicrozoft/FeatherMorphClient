@@ -12,7 +12,7 @@ import xyz.nifeather.morph.client.properties.PropertyNames;
 import java.util.Optional;
 import java.util.UUID;
 
-public class PlayerPropertyCollection extends EntityPropertyCollection<Player>
+public class PlayerPropertyCollection extends LivingEntityPropertyCollection<Player>
 {
     private final ClientProperty<HumanoidArm, MorphLocalPlayer> MAIN_HAND =
             ClientProperty.builder(PropertyNames.PLAYER_MAIN_HAND, HumanoidArm.RIGHT, MorphLocalPlayer.class)

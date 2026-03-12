@@ -16,6 +16,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.Horse;
+import net.minecraft.world.entity.animal.panda.Panda;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -89,13 +90,21 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
         propertyHolder.hookOnPropertyWrite(this::onPropertyWrite);
         propertyHolder.hookOnPropertyDiscard(this::onPropertyDiscard);
+        propertyHolder.hookOnTemporaryPropertyDiscard(this::onTemporaryPropertyDiscard);
 
         if (disguiseEntity instanceof IMorphClientEntity iMorphClientEntity)
             iMorphClientEntity.featherMorph$setIsDisguiseEntity(networkId);
     }
 
-    private <X, E> void onPropertyDiscard(ClientProperty<X, E> clientProperty, X oldValue)
+    private <X, E> void onTemporaryPropertyDiscard(ClientProperty<X, E> clientProperty)
     {
+        var existing = propertyHolder.getOr(clientProperty, null);
+        if (existing != null)
+        {
+            clientProperty.apply((E) disguiseInstance, existing);
+            return;
+        }
+
         if (clientProperty.restoreDefaultsBeforeDiscard())
         {
             clientProperty.tryCastEntity(disguiseInstance)
@@ -103,7 +112,22 @@ public abstract class DisguiseSyncer extends MorphClientObject
         }
     }
 
-    private void onPropertyWrite(ClientProperty<?, ?> property, @Nullable Object oldValue, Object newValue)
+    private <X, E> void onPropertyDiscard(ClientProperty<X, E> clientProperty)
+    {
+        if (clientProperty.restoreDefaultsBeforeDiscard())
+        {
+            clientProperty.tryCastEntity(disguiseInstance)
+                    .ifPresent(e -> clientProperty.entityHandle().handle(e, clientProperty.defaultValue()));
+        }
+
+        switch (clientProperty.identifier())
+        {
+            case PropertyNames.ENTITY_STATIC_YAW -> lockedYaw = null;
+            case PropertyNames.ENTITY_STATIC_PITCH -> lockedPitch = null;
+        }
+    }
+
+    private void onPropertyWrite(ClientProperty<?, ?> property, @Nullable Object oldValue, @NotNull Object newValue)
     {
         switch (property.identifier())
         {
@@ -127,7 +151,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     private void mergeEquipment(@NotNull DisguiseEquipment existing, DisguiseEquipment newEquipment)
     {
-        var property = propertyHolder().getPropertyForName(PropertyNames.ENTITY_EQUIPMENT);
+        var property = propertyHolder().getProperty(PropertyNames.ENTITY_EQUIPMENT);
         if (property == null) return;
 
         var builder = DisguiseEquipment.builder();
@@ -426,7 +450,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
             // 幻翼的pitch需要倒转
             // Don't sync pitch when sleeping position is present -- Match plugin behavior (maybe?)
-            if (sleepingPos == null)
+            if (sleepingPos == null && !(disguiseInstance instanceof Panda panda && panda.isSitting())) // Fix: Panda lock themselves pitch to zero when sitting
             {
                 if (disguiseInstance.getType() == EntityType.PHANTOM)
                     disguiseInstance.setXRot(-player.getXRot());
@@ -578,7 +602,9 @@ public abstract class DisguiseSyncer extends MorphClientObject
             entity.setGlowingTag(bindingPlayer.isCurrentlyGlowing());
 
         //同步Pose
-        entity.setPose(bindingPlayer.getPose());
+        if (!propertyHolder().contains(PropertyNames.ENTITY_STATIC_POSE))
+            entity.setPose(bindingPlayer.getPose());
+
         entity.setSwimming(bindingPlayer.isSwimming());
 
         if (bindingPlayer.isPassenger() && entity.getVehicle() != bindingPlayer)
@@ -612,12 +638,15 @@ public abstract class DisguiseSyncer extends MorphClientObject
         entitylimbAnimatorAccessor.setSpeed(playerLimb.speed());
 
         // Sleep Pos
-        var sleepPos = bindingPlayer.getSleepingPos().orElse(null);
+        if (!propertyHolder().contains(PropertyNames.LIVING_ENTITY_BED_POS))
+        {
+            var sleepPos = bindingPlayer.getSleepingPos().orElse(null);
 
-        if (sleepPos != null)
-            entity.setSleepingPos(sleepPos);
-        else
-            entity.clearSleepingPos();
+            if (sleepPos != null)
+                entity.setSleepingPos(sleepPos);
+            else
+                entity.clearSleepingPos();
+        }
 
         // Health
         var healthAttribute = entity.getAttribute(Attributes.MAX_HEALTH);
@@ -625,7 +654,8 @@ public abstract class DisguiseSyncer extends MorphClientObject
         if (healthAttribute != null)
             healthAttribute.setBaseValue(bindingPlayer.getMaxHealth());
 
-        entity.setHealth(bindingPlayer.getHealth());
+        if (!propertyHolder.contains(PropertyNames.LIVING_ENTITY_STATIC_HEALTH))
+            entity.setHealth(bindingPlayer.getHealth());
 
         // Scale
         var scaleAttribute = entity.getAttribute(Attributes.SCALE);

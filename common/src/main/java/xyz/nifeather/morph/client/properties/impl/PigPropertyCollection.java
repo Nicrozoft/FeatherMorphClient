@@ -12,7 +12,7 @@ import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
 
-public class PigPropertyCollection extends EntityPropertyCollection<Pig>
+public class PigPropertyCollection extends LivingEntityPropertyCollection<Pig>
 {
     public final ClientProperty<Holder<PigVariant>, PigAccessor> VARIANT =
             ClientProperty.builder(PropertyNames.PIG_VARIANT, Holder.direct(new PigVariant(new ModelAndTexture<>(PigVariant.ModelType.NORMAL, Identifier.parse("nonexist")), SpawnPrioritySelectors.EMPTY)), PigAccessor.class)

@@ -10,11 +10,12 @@ import net.minecraft.world.item.DyeColor;
 import xyz.nifeather.morph.client.mixin.accessors.WolfAccessor;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
+import xyz.nifeather.morph.client.properties.CommonOutputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
 
 import java.util.UUID;
 
-public class WolfPropertyCollection extends EntityPropertyCollection<Wolf>
+public class WolfPropertyCollection extends LivingEntityPropertyCollection<Wolf>
 {
     public final ClientProperty<Holder<WolfVariant>, WolfAccessor> VARIANT =
             ClientProperty.builder(PropertyNames.WOLF_VARIANT, lookupVariantOrThrow(Registries.WOLF_VARIANT, WolfVariants.ASHEN), WolfAccessor.class)
@@ -37,9 +38,16 @@ public class WolfPropertyCollection extends EntityPropertyCollection<Wolf>
                     .inputHandle(CommonInputHandles::readDyeColor)
                     .entityHandle(WolfAccessor::callSetCollarColor)
                     .build();
+    
+    public final ClientProperty<Boolean, Wolf> SITTING = 
+            ClientProperty.builder(PropertyNames.WOLF_SITTING, false, Wolf.class)
+                    .inputHandle(CommonInputHandles::readBoolean)
+                    .outputHandle(CommonOutputHandles::writeBoolean)
+                    .entityHandle(Wolf::setInSittingPose)
+                    .build();
 
     public WolfPropertyCollection()
     {
-        register(VARIANT, OWNER, COLLAR_COLOR);
+        register(VARIANT, OWNER, COLLAR_COLOR, SITTING);
     }
 }

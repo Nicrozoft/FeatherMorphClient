@@ -1,63 +1,77 @@
 package xyz.nifeather.morph.client.properties;
 
-import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectLists;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.utilties.actions.BiConsumerActions;
+import xyz.nifeather.morph.client.utilties.actions.ConsumerActions;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class ClientPropertyHolder
 {
-    private final Map<ClientProperty<?, ?>, Object> propertyMap = new ConcurrentHashMap<>();
     private final Map<String, ClientProperty<?, ?>> validProperties = new ConcurrentHashMap<>();
 
-    protected final List<IValueChangeListener<ClientProperty<?, ?>, Object>> actions = ObjectLists.synchronize(new ObjectArrayList<>());
-    public void hookOnPropertyWrite(IValueChangeListener<ClientProperty<?, ?>, Object> hook)
+    public ClientProperty<?, ?> getProperty(String propertyName)
     {
-        actions.add(hook);
+        return validProperties.getOrDefault(propertyName, null);
     }
 
-    protected final BiConsumerActions<ClientProperty<?, ?>, Object> discardHooks = new BiConsumerActions<>();
-    public <X> void hookOnPropertyDiscard(BiConsumer<ClientProperty<X, ?>, X> consumer)
+    private final Map<ClientProperty<?, ?>, Object> persistProperties = new ConcurrentHashMap<>();
+    private final Map<ClientProperty<?, ?>, Object> tempProperties =  new ConcurrentHashMap<>();
+
+    //region hooks
+
+    protected final BiConsumerActions<ClientProperty<?, ?>, Object> hooksOnTemporaryPropertyWrite = new BiConsumerActions<>();
+    public <X> void hookOnTemporaryPropertyWrite(BiConsumer<ClientProperty<X, ?>, X> consumer)
     {
-        discardHooks.hook((BiConsumer) consumer);
+        hooksOnTemporaryPropertyWrite.hook((BiConsumer) consumer);
     }
 
-    public void registerFromPropertyCollection(AbstractPropertyCollection properties)
+    protected final ConsumerActions<ClientProperty<?, ?>> hooksOnTemporaryPropertyDiscard = new ConsumerActions<>();
+    public <X> void hookOnTemporaryPropertyDiscard(Consumer<ClientProperty<X, ?>> consumer)
     {
-        validProperties.putAll(properties.getRegisteredProperties());
+        hooksOnTemporaryPropertyDiscard.hook((Consumer) consumer);
     }
 
-    @Nullable
-    public ClientProperty<?, ?> getPropertyForName(String name)
+    protected final List<IValueChangeListener<ClientProperty<?, ?>, Object>> hooksOnPropertyWrite = new ObjectArrayList<>();
+    public <X> void hookOnPropertyWrite(IValueChangeListener<ClientProperty<X, ?>, X> consumer)
     {
-        return validProperties.getOrDefault(name, null);
+        hooksOnPropertyWrite.add((IValueChangeListener) consumer);
     }
 
-    public Map<String, String> toNetworkProperties()
+    protected final ConsumerActions<ClientProperty<?, ?>> discardHooks = new ConsumerActions<>();
+    public <X> void hookOnPropertyDiscard(Consumer<ClientProperty<X, ?>> consumer)
+    {
+        discardHooks.hook((Consumer) consumer);
+    }
+
+    //endregion hooks
+
+    private Map<String, String> generateNetworkPropertiesFrom(Map<ClientProperty<?, ?>, Object> values)
     {
         Map<String, String> map = new ConcurrentHashMap<>();
 
         try
         {
-            for (Map.Entry<ClientProperty<?, ?>, Object> entry : this.propertyMap.entrySet())
+            for (Map.Entry<ClientProperty<?, ?>, Object> entry : values.entrySet())
             {
                 var property = (ClientProperty<Object, Entity>) entry.getKey();
 
+                // Skip properties that's not visible to client
+                // if (property.hideFromClient())
+                //    continue;
+
                 var value = entry.getValue();
 
-                property.handleOutput(value).ifPresent(v -> map.put(property.identifier(), v));
+                property.handleOutput(value).ifPresent(s -> map.put(property.identifier(), s));
             }
         }
         catch (Exception ignored)
@@ -65,6 +79,27 @@ public class ClientPropertyHolder
         }
 
         return map;
+    }
+
+    /**
+     * Creates network map for temp properties
+     */
+    public Map<String, String> serializeTemporaryProperties()
+    {
+        return generateNetworkPropertiesFrom(tempProperties);
+    }
+
+    /**
+     * Creates network map for non-temp properties
+     */
+    public Map<String, String> serializeNonTempProperties()
+    {
+        return generateNetworkPropertiesFrom(persistProperties);
+    }
+
+    public void registerFromPropertyCollection(AbstractPropertyCollection properties)
+    {
+        validProperties.putAll(properties.getRegisteredProperties());
     }
 
     /**
@@ -76,9 +111,10 @@ public class ClientPropertyHolder
         validProperties.put(property.identifier(), property);
     }
 
-    public Map<ClientProperty<?, ?>, Object> updateFromPropertiesInput(Map<String, String> input)
+    public Map<ClientProperty<?, ?>, Object> deserializeProperties(Map<String, String> input)
     {
         var parsedResults = new ConcurrentHashMap<ClientProperty<?, ?>, Object>();
+        //var propertiesToRemove = new ObjectArrayList<ClientProperty<?, ?>>();
 
         for (Map.Entry<String, String> entry : input.entrySet())
         {
@@ -89,44 +125,81 @@ public class ClientPropertyHolder
             if (property == null)
                 continue;
 
+            /*if (value.equals("!"))
+            {
+                propertiesToRemove.add(property);
+                continue;
+            }*/
+
             var val = property.handleInput(value).orElse(null);
             if (val == null) continue;
 
+            //property.validateInput(val, inputSource, validationSkipFlags);
             parsedResults.put(property, val);
-            this.writeGeneric(property, val);
+            //this.writeGeneric(property, val);
         }
 
         return parsedResults;
+
+        //propertiesToRemove.forEach(this::discardProperty);
+
+        /*
+        for (Map.Entry<ClientProperty<?, ?>, Object> entry : parsedResults.entrySet())
+        {
+            var property = (ClientProperty<Object, Entity>) entry.getKey();
+            var value = entry.getValue();
+
+            property.postProcessHandle().handle(value, this);
+        }*/
     }
 
-    public void discardProperties(List<String> names)
+    public Map<ClientProperty<?, ?>, Object> updateFromPropertiesInput(Map<String, String> input)
     {
-        names.stream().map(id -> validProperties.getOrDefault(id, null))
-                .filter(Objects::nonNull)
-                .forEach(p ->
-                {
-                    var existing = propertyMap.remove(p);
-                    if (existing == null) return;
+        var result = deserializeProperties(input);
+        result.forEach(this::writeGeneric);
+        return result;
+    }
 
-                    discardHooks.invoke(Pair.of(p, existing));
-                });
+    /**
+     * Discard the temporary property.
+     */
+    public void discardTemporaryProperty(ClientProperty<?, ?> property)
+    {
+        var existing = tempProperties.remove(property);
+        if (existing == null) return;
+
+        hooksOnTemporaryPropertyDiscard.invoke(property);
+    }
+
+    /**
+     * Discard the property, remove its value from this PropertyHandler
+     */
+    public void discardProperty(ClientProperty<?, ?> property)
+    {
+        var existingValue = persistProperties.remove(property);
+        var existingTemp = tempProperties.remove(property);
+
+        if (existingValue == null && existingTemp == null) // It doesn't even exist, don't trigger the action.
+            return;
+
+        discardHooks.invoke(property);
     }
 
     public void reset()
     {
-        this.validProperties.clear();
         clearProperties();
     }
 
     public void clearProperties()
     {
-        propertyMap.clear();
+        persistProperties.clear();
+        tempProperties.clear();
     }
 
     private void writeGeneric(ClientProperty<?, ?> property, Object value)
     {
-        //if (!property.type().isInstance(value))
-         //   throw new IllegalArgumentException("Incompatible value for id '%s', excepted for '%s', but got '%s'".formatted(property.id(), property.defaultVal().getClass(), value.getClass()));
+        if (!property.type().isInstance(value))
+            throw new IllegalArgumentException("Incompatible value for id '%s', excepted for '%s', but got '%s'".formatted(property.identifier(), property.type(), value.getClass()));
 
         set((ClientProperty<Object, Entity>)property, value);
     }
@@ -136,6 +209,33 @@ public class ClientPropertyHolder
      */
     public <X> void set(ClientProperty<X, ?> property, @NotNull X value) throws NullPointerException
     {
+        /*if (!validProperties.containsKey(property.identifier()))
+        {
+            FeatherMorphClientBootstrap.getInstance().getSLF4JLogger().warn("The given property '%s' is not registered in propertyHandler".formatted(property.identifier()));
+            return;
+        }*/
+
+        Objects.requireNonNull(value, "Null values are not accepted");
+
+        var existing = getOptional(property).orElse(null);
+
+        if (!value.equals(existing))
+        {
+            tempProperties.remove(property);
+            persistProperties.put(property, value);
+            this.hooksOnPropertyWrite.forEach(l -> l.invoke(property, existing, value));
+            //this.hooksOnPropertyWrite.invoke(BiConsumerActions.pair(property, diffIfPossible));
+        }
+    }
+
+    public <X> void setTemp(ClientProperty<X, ?> property, @NotNull X value) throws NullPointerException
+    {
+        /*if (!validProperties.containsKey(property.identifier()))
+        {
+            FeatherMorphClientBootstrap.getInstance().getSLF4JLogger().warn("The given property '%s' is not registered in propertyHandler".formatted(property.id()));
+            return;
+        }*/
+
         Objects.requireNonNull(value, "Null values are not accepted");
 
         var existing = getOptional(property).orElse(null);
@@ -148,25 +248,27 @@ public class ClientPropertyHolder
             else
                 diffIfPossible = value;
 
-            propertyMap.put(property, value);
-            actions.forEach(listener -> listener.invoke(property, existing, value));
+            // `setTemp` only has this differ from `set`... Maybe consider merge these two methods?
+            tempProperties.put(property, value);
+            this.hooksOnTemporaryPropertyWrite.invoke(BiConsumerActions.pair(property, diffIfPossible));
         }
     }
 
     public boolean contains(ClientProperty<?, ?> property)
     {
-        return propertyMap.containsKey(property);
+        return persistProperties.containsKey(property) || tempProperties.containsKey(property);
     }
 
     public boolean contains(String propertyName)
     {
-        return propertyMap.keySet().stream().anyMatch(sp -> sp.identifier().equals(propertyName));
+        var combinedStream = Stream.concat(persistProperties.keySet().stream(), tempProperties.keySet().stream());
+        return combinedStream.anyMatch(sp -> sp.identifier().equals(propertyName));
     }
 
-    @Nullable
+    @NotNull
     public <X> X get(ClientProperty<X, ?> property)
     {
-        return this.getOr(property, null);
+        return this.getOr(property, property.defaultValue());
     }
 
     public <X> Optional<X> getOptional(ClientProperty<X, ?> property)
@@ -178,7 +280,11 @@ public class ClientPropertyHolder
     @Contract("_, null -> _; _, !null -> !null")
     public <X> X getOr(ClientProperty<X, ?> property, X defaultVal)
     {
-        return (X) propertyMap.getOrDefault(property, defaultVal);
+        var temp = tempProperties.getOrDefault(property, null);
+        if (temp != null)
+            return (X) temp;
+
+        return (X) persistProperties.getOrDefault(property, defaultVal);
     }
 
     @Nullable
@@ -190,9 +296,15 @@ public class ClientPropertyHolder
 
         return (X) getOr((ClientProperty<Object, Entity>) property, defaultVal);
     }
+
+    public Map<ClientProperty<?, ?>, ?> getAllTemporary()
+    {
+        return new Object2ObjectArrayMap<>(tempProperties);
+    }
+
     public Map<ClientProperty<?, ?>, ?> getAll()
     {
-        return new Object2ObjectArrayMap<>(propertyMap);
+        return new Object2ObjectArrayMap<>(persistProperties);
     }
 
     /**
@@ -201,11 +313,12 @@ public class ClientPropertyHolder
     public void copyTo(ClientPropertyHolder other)
     {
         other.validProperties.putAll(this.validProperties);
-        this.propertyMap.forEach((k, v) -> other.set((ClientProperty<Object, Entity>) k, v));
+        this.persistProperties.forEach((k, v) -> other.set((ClientProperty<Object, Entity>) k, v));
+        this.tempProperties.forEach((k, v) -> other.setTemp((ClientProperty<Object, Entity>) k, v));
     }
 
     public void dispose()
     {
-        actions.clear();
+        hooksOnPropertyWrite.clear();
     }
 }

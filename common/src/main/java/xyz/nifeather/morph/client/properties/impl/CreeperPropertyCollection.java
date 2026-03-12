@@ -6,7 +6,7 @@ import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.CommonInputHandles;
 import xyz.nifeather.morph.client.properties.PropertyNames;
 
-public class CreeperPropertyCollection extends EntityPropertyCollection<Creeper>
+public class CreeperPropertyCollection extends LivingEntityPropertyCollection<Creeper>
 {
     public final ClientProperty<Boolean, IMorphCreeper> CHARGED =
             ClientProperty.builder(PropertyNames.CREEPER_CHARGED, false, IMorphCreeper.class)
