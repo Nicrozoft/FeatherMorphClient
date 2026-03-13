@@ -114,39 +114,20 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     private <X, E> void onPropertyDiscard(ClientProperty<X, E> clientProperty)
     {
-        if (clientProperty.restoreDefaultsBeforeDiscard())
-        {
-            clientProperty.tryCastEntity(disguiseInstance)
-                    .ifPresent(e -> clientProperty.entityHandle().handle(e, clientProperty.defaultValue()));
-        }
+        if (!clientProperty.restoreDefaultsBeforeDiscard())
+            return;
 
-        switch (clientProperty.identifier())
-        {
-            case PropertyNames.ENTITY_STATIC_YAW -> lockedYaw = null;
-            case PropertyNames.ENTITY_STATIC_PITCH -> lockedPitch = null;
-        }
+        clientProperty.tryCastEntity(disguiseInstance)
+                .ifPresent(e -> clientProperty.entityHandle().handle(e, clientProperty.defaultValue()));
     }
 
     private void onPropertyWrite(ClientProperty<?, ?> property, @Nullable Object oldValue, @NotNull Object newValue)
     {
-        switch (property.identifier())
-        {
-            case PropertyNames.ENTITY_EQUIPMENT ->
-            {
-                if (oldValue == null) return;
-                mergeEquipment((DisguiseEquipment) oldValue, (DisguiseEquipment) newValue);
-            }
+        if (!property.identifier().equals(PropertyNames.ENTITY_EQUIPMENT))
+            return;
 
-            case PropertyNames.ENTITY_STATIC_YAW ->
-            {
-                this.lockedYaw = (Float) newValue;
-            }
-
-            case PropertyNames.ENTITY_STATIC_PITCH ->
-            {
-                this.lockedPitch = (Float) newValue;
-            }
-        }
+        if (oldValue == null) return;
+        mergeEquipment((DisguiseEquipment) oldValue, (DisguiseEquipment) newValue);
     }
 
     private void mergeEquipment(@NotNull DisguiseEquipment existing, DisguiseEquipment newEquipment)
@@ -428,21 +409,11 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     protected abstract void initialSync();
 
-    @Nullable
-    protected Float lockedYaw;
-
-    @Nullable
-    protected Float lockedPitch;
-
     protected void syncYawPitch()
     {
         var player = bindingPlayer;
 
-        if (lockedPitch != null)
-        {
-            disguiseInstance.setXRot(lockedPitch);
-        }
-        else
+        if (!propertyHolder.contains(PropertyNames.ENTITY_STATIC_PITCH))
         {
             BlockPos sleepingPos = null;
             if (disguiseInstance instanceof LivingEntity livingEntity)
@@ -459,13 +430,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
             }
         }
 
-        if (lockedYaw != null)
-        {
-            disguiseInstance.setYRot(lockedYaw);
-            disguiseInstance.setYHeadRot(lockedYaw);
-            disguiseInstance.setYBodyRot(lockedYaw);
-        }
-        else
+        if (!propertyHolder.contains(PropertyNames.ENTITY_STATIC_YAW))
         {
             //末影龙的Yaw和玩家是反的
             if (disguiseInstance.getType() == EntityType.ENDER_DRAGON)
