@@ -13,10 +13,16 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.ClientMorphManager;
 import xyz.nifeather.morph.client.EntityCache;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
+import xyz.nifeather.morph.client.graphics.ICustomItemInHandRenderer;
 import xyz.nifeather.morph.client.network.ServerHandler;
 import xiamomc.pluginbase.Annotations.Initializer;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xiamomc.pluginbase.Bindables.Bindable;
+import xyz.nifeather.morph.client.properties.ClientDisguiseProperties;
+import xyz.nifeather.morph.client.properties.ClientProperty;
+import xyz.nifeather.morph.client.properties.DisguiseEquipment;
+import xyz.nifeather.morph.client.properties.PropertyNames;
+import xyz.nifeather.morph.client.properties.impl.LivingEntityPropertyCollection;
 
 public class ClientDisguiseSyncer extends DisguiseSyncer
 {
@@ -36,10 +42,65 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
         super(clientPlayer, morphId, networkId, disguiseEntity);
 
         currentInstance = this;
+
+        propertyHolder.hookOnPropertyWrite((p, o, n) -> localSyncerOnPropertyWrite(p, n));
+        propertyHolder.hookOnTemporaryPropertyWrite(this::localSyncerOnPropertyWrite);
+
+        propertyHolder.hookOnPropertyDiscard(this::localSyncerOnPropertyDiscard);
+        propertyHolder.hookOnTemporaryPropertyWrite(this::localSyncerOnPropertyWrite);
     }
 
-    @Resolved(shouldSolveImmediately = true)
-    private ClientMorphManager morphManager;
+    private void localSyncerOnPropertyDiscard(ClientProperty<Object, ?> property)
+    {
+        if (!property.identifier().equals(PropertyNames.ENTITY_EQUIPMENT)
+                && !property.identifier().equals(PropertyNames.ENTITY_DISPLAY_DISGUISE_EQUIPMENT))
+        {
+            return;
+        }
+
+        var renderer = Minecraft.getInstance().getEntityRenderDispatcher()
+                .getItemInHandRenderer();
+
+        if (!(renderer instanceof ICustomItemInHandRenderer customItemInHandRenderer))
+            return;
+
+        customItemInHandRenderer.morphclient$overrideMainHandItem(null);
+        customItemInHandRenderer.morphclient$overrideOffHandItem(null);
+    }
+
+    private void localSyncerOnPropertyWrite(ClientProperty<Object, ?> property, Object newVal)
+    {
+        var p = ClientDisguiseProperties.INSTANCE.getHandler(disguiseInstance).orElseThrow();
+        if (!(p instanceof LivingEntityPropertyCollection<?> properties))
+            return;
+
+        if (property.identifier().equals(PropertyNames.ENTITY_EQUIPMENT))
+        {
+            if (propertyHolder.get(properties.DISPLAY_DISGUISE_EQUIPMENT))
+                updateDisplayingItem((DisguiseEquipment) newVal);
+        }
+        else if (property.identifier().equals(PropertyNames.ENTITY_DISPLAY_DISGUISE_EQUIPMENT))
+        {
+            var display = (Boolean) newVal;
+
+            if (display)
+                updateDisplayingItem(propertyHolder.get(properties.EQUIPMENT));
+            else
+                updateDisplayingItem(null);
+        }
+    }
+
+    private void updateDisplayingItem(@Nullable DisguiseEquipment equipment)
+    {
+        var renderer = Minecraft.getInstance().getEntityRenderDispatcher()
+                .getItemInHandRenderer();
+
+        if (!(renderer instanceof ICustomItemInHandRenderer customItemInHandRenderer))
+            return;
+
+        customItemInHandRenderer.morphclient$overrideMainHandItem(equipment == null ? null : equipment.getItemInMainHand());
+        customItemInHandRenderer.morphclient$overrideOffHandItem(equipment == null ? null : equipment.getItemInOffHand());
+    }
 
     @Override
     protected void markSyncing()
@@ -91,6 +152,7 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     @Override
     protected void onDispose()
     {
+        updateDisplayingItem(null);
     }
 
     public static boolean syncing;

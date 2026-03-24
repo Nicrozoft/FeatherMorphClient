@@ -31,6 +31,7 @@
   "mixins": [
     "${mod_id}.mixins.json",
     "${mod_id}.emfcompat.mixins.json",
+    "${mod_id}.paperdoll_hack.mixins.json",
     "${mod_id}.fabric.mixins.json"
   ],
   "accessWidener": "${mod_id}.accesswidener",

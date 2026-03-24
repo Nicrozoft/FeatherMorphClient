@@ -2,6 +2,7 @@ package xyz.nifeather.morph.client.syncers;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -40,6 +41,7 @@ import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 import xyz.nifeather.morph.client.utilties.ClientItemUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -628,17 +630,6 @@ public abstract class DisguiseSyncer extends MorphClientObject
         if (scaleAttribute != null && scaleAttribute.getValue() != bindingPlayer.getAttributeValue(Attributes.SCALE))
             scaleAttribute.setBaseValue(bindingPlayer.getAttributeValue(Attributes.SCALE));
 
-        // Hand Swing
-        // Mannequin don't have swing animation
-        if (entity.getType() != EntityType.MANNEQUIN)
-        {
-            entity.swinging = bindingPlayer.swinging;
-            entity.attackAnim = bindingPlayer.attackAnim;
-            entity.oAttackAnim = bindingPlayer.oAttackAnim;
-            entity.swingTime = bindingPlayer.swingTime;
-            entity.swingingArm = bindingPlayer.swingingArm;
-        }
-
         if (entity.isFallFlying() != bindingPlayer.isFallFlying())
             ((EntityAccessor) entity).callSetSharedFlag(7, bindingPlayer.isFallFlying());
 
@@ -657,6 +648,24 @@ public abstract class DisguiseSyncer extends MorphClientObject
     }
 
     //endregion
+
+    private final List<String> maskedAnimations = new ObjectArrayList<>();
+
+    public void maskEntityAnimation(String animationName)
+    {
+        if (!maskedAnimations.contains(animationName))
+            maskedAnimations.add(animationName);
+    }
+
+    public void unmaskEntityAnimation(String animationName)
+    {
+        maskedAnimations.remove(animationName);
+    }
+
+    public boolean isEntityAnimationMasked(String animationName)
+    {
+        return maskedAnimations.contains(animationName);
+    }
 
     //region Disposal
 

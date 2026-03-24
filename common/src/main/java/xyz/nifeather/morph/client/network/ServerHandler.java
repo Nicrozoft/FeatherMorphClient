@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -20,10 +21,12 @@ import xyz.nifeather.morph.client.*;
 import xyz.nifeather.morph.client.config.ModConfigData;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.entities.IMorphLocalPlayer;
+import xyz.nifeather.morph.client.graphics.ICustomItemInHandRenderer;
 import xyz.nifeather.morph.client.network.commands.ClientSetEquipCommand;
+import xyz.nifeather.morph.client.network.commands.frog.S2CEntityAnimateCommand;
+import xyz.nifeather.morph.client.network.commands.frog.S2CUpdateEntityAnimateMaskCommand;
 import xyz.nifeather.morph.client.network.handlers.IProtocolHandler;
 import xyz.nifeather.morph.client.network.handlers.V3ProtocolHandler;
-import xyz.nifeather.morph.client.properties.ClientDisguiseProperties;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.utilties.NbtUtils;
 import xyz.nifeather.morph.network.commands.C2S.*;
@@ -110,6 +113,10 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
                 .registerS2C(S2CCommandNames.DiscardProperties, S2CDiscardPropertiesCommand::fromArguments)
                 .registerS2C(S2CCommandNames.UpdateTemporaryProperties, S2CUpdateTemporaryPropertiesCommand::fromArguments)
                 .registerS2C(S2CCommandNames.DiscardTemporaryProperties, S2CDiscardTemporaryPropertiesCommand::fromArguments);
+
+        // Entity Animate
+        registries.registerS2C("entity_animate_v0", S2CEntityAnimateCommand::fromArguments)
+                .registerS2C("frog_update_entity_animate_mask", S2CUpdateEntityAnimateMaskCommand::fromArguments);
     }
 
     @Resolved
@@ -508,6 +515,12 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
 
         var iEntity = (IMorphClientEntity) Minecraft.getInstance().player;
         iEntity.featherMorph$requestBypassDispatcherRedirect(this, !enabled);
+
+        var renderer = Minecraft.getInstance().getEntityRenderDispatcher()
+                .getItemInHandRenderer();
+
+        if (renderer instanceof ICustomItemInHandRenderer customItemInHandRenderer)
+            customItemInHandRenderer.morphclient$setShouldDisplayOverridingItem(enabled);
     }
 
     @Override
@@ -697,6 +710,40 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
             if (property != null)
                 propertyHolder.discardTemporaryProperty(property);
         }
+    }
+
+    public void onEntityAnimateCommand(S2CEntityAnimateCommand command)
+    {
+        var clientPlayer = Minecraft.getInstance().player;
+        if (clientPlayer == null)
+            return;
+
+        var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(clientPlayer.getId());
+        if (syncer == null) return;
+
+        if (!(syncer.getDisguiseInstance() instanceof LivingEntity living))
+            return;
+
+        switch (command.animateName())
+        {
+            case S2CEntityAnimateCommand.ANIM_SWING_MAINHAND -> living.swing(InteractionHand.MAIN_HAND);
+            case S2CEntityAnimateCommand.ANIM_SWING_OFFHAND -> living.swing(InteractionHand.OFF_HAND);
+        }
+    }
+
+    public void onUpdateEntityAnimateMaskCommand(S2CUpdateEntityAnimateMaskCommand command)
+    {
+        var clientPlayer = Minecraft.getInstance().player;
+        if (clientPlayer == null)
+            return;
+
+        var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(clientPlayer.getId());
+        if (syncer == null) return;
+
+        if (command.isAllowed())
+            syncer.unmaskEntityAnimation(command.animateName());
+        else
+            syncer.maskEntityAnimation(command.animateName());
     }
 
     //endregion Impl of ServerHandler
