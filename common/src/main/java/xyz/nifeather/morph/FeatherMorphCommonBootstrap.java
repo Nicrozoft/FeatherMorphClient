@@ -42,16 +42,16 @@ public class FeatherMorphCommonBootstrap
         SharedValues.allowSinglePlayerDebugging = modConfigData.singlePlayerDebugging;
 
         // 注册Payload
-        PayloadTypeRegistry.playS2C().register(V3MorphInitChannelPayload.id, V3MorphInitChannelPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(V3MorphCommandPayload.id, V3MorphCommandPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(V3MorphInitChannelPayload.id, V3MorphInitChannelPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(V3MorphCommandPayload.id, V3MorphCommandPayload.CODEC);
 
-        PayloadTypeRegistry.playS2C().register(V2MorphVersionChannelPayload.id, V2MorphVersionChannelPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(V2MorphCommandPayload.id, V2MorphCommandPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(V2MorphVersionChannelPayload.id, V2MorphVersionChannelPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(V2MorphCommandPayload.id, V2MorphCommandPayload.CODEC);
 
-        PayloadTypeRegistry.playS2C().register(V1MorphVersionChannelPayload.id, V1MorphVersionChannelPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(V1MorphCommandPayload.id, V1MorphCommandPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(V1MorphVersionChannelPayload.id, V1MorphVersionChannelPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(V1MorphCommandPayload.id, V1MorphCommandPayload.CODEC);
 
-        PayloadTypeRegistry.playS2C().register(V1V2MorphInitChannelPayload.id, V1V2MorphInitChannelPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(V1V2MorphInitChannelPayload.id, V1V2MorphInitChannelPayload.CODEC);
 
         if (SharedValues.allowSinglePlayerDebugging)
         {

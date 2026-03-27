@@ -26,13 +26,13 @@ public class LegacyServerHandler
 
     private void initNetwork()
     {
-        PayloadTypeRegistry.playC2S().register(V2MorphVersionChannelPayload.id, V2MorphVersionChannelPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(V2MorphCommandPayload.id, V2MorphCommandPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(V2MorphVersionChannelPayload.id, V2MorphVersionChannelPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(V2MorphCommandPayload.id, V2MorphCommandPayload.CODEC);
 
-        PayloadTypeRegistry.playC2S().register(V1V2MorphInitChannelPayload.id, V1V2MorphInitChannelPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(V1V2MorphInitChannelPayload.id, V1V2MorphInitChannelPayload.CODEC);
 
-        PayloadTypeRegistry.playC2S().register(V1MorphVersionChannelPayload.id, V1MorphVersionChannelPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(V1MorphCommandPayload.id, V1MorphCommandPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(V1MorphVersionChannelPayload.id, V1MorphVersionChannelPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(V1MorphCommandPayload.id, V1MorphCommandPayload.CODEC);
 
         // Receiver
 

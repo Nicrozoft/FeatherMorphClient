@@ -2,7 +2,7 @@ package xyz.nifeather.morph.client.graphics.toasts;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -53,7 +53,7 @@ public class NewDisguiseSetToast extends LinedToast
     private static final Identifier TEX = Identifier.fromNamespaceAndPath(Identifier.DEFAULT_NAMESPACE, "textures/gui/sprites/icon/info.png");
 
     @Override
-    protected void postBackgroundDrawing(GuiGraphics context, long startTime)
+    protected void postBackgroundDrawing(GuiGraphicsExtractor context, long startTime)
     {
         super.postBackgroundDrawing(context, startTime);
 

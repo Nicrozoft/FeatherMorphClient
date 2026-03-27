@@ -2,12 +2,13 @@ package xyz.nifeather.morph.shared.platform;
 
 import com.mojang.brigadier.arguments.ArgumentType;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.resources.Identifier;
@@ -29,13 +30,13 @@ public class FabricPlatformHelper implements PlatformHelper
     @Override
     public void registerWorldTickEndEvent(EndWorldTick callback)
     {
-        ClientTickEvents.END_WORLD_TICK.register(callback::onEndTick);
+        ClientTickEvents.END_LEVEL_TICK.register(callback::onEndTick);
     }
 
     @Override
     public void registerHudRenderEvent(HudRenderCallback callback)
     {
-        net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register(callback::onRender);
+        HudElementRegistry.addLast(Identifier.parse("feathermorph:hud_main"), callback::onRender);
     }
 
     @Override
@@ -47,7 +48,7 @@ public class FabricPlatformHelper implements PlatformHelper
     @Override
     public void registerWorldLoadEvent(WorldLoad callback)
     {
-        ServerWorldEvents.LOAD.register(callback::onWorldLoad);
+        ServerLevelEvents.LOAD.register(callback::onWorldLoad);
     }
 
     @Override
@@ -71,7 +72,7 @@ public class FabricPlatformHelper implements PlatformHelper
     @Override
     public KeyMapping registerPlatformKeyBinding(KeyMapping keyMapping)
     {
-        return KeyBindingHelper.registerKeyBinding(keyMapping);
+        return KeyMappingHelper.registerKeyMapping(keyMapping);
     }
 
     @Override

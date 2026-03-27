@@ -74,7 +74,7 @@ public class DisguiseSession extends ServerPluginObject
                 "Going to play animation: %s",
                 Component.translatable("emote.morphclient." + sequenceIdentifier));
 
-        player.displayClientMessage(message, false);
+        player.sendSystemMessage(message, false);
 
         return true;
     }

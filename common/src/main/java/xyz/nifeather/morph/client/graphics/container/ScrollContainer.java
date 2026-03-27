@@ -1,6 +1,6 @@
 package xyz.nifeather.morph.client.graphics.container;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import xyz.nifeather.morph.client.graphics.MDrawable;
 import xyz.nifeather.morph.client.graphics.transforms.Recorder;
 import xyz.nifeather.morph.client.graphics.transforms.Transformer;
@@ -45,7 +45,7 @@ public class ScrollContainer extends BasicContainer<MDrawable>
     }
 
     @Override
-    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
+    protected void onRender(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta)
     {
         var matrices = context.pose();
 

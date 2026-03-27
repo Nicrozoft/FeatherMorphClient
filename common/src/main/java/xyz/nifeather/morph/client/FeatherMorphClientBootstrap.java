@@ -298,7 +298,7 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
 
             var clientPlayer = client.player;
             if (clientPlayer != null)
-                clientPlayer.displayClientMessage(Component.translatable("text.morphclient." + (doRender ? "display" : "hide") + "_real_names"), false);
+                clientPlayer.sendSystemMessage(Component.translatable("text.morphclient." + (doRender ? "display" : "hide") + "_real_names"));
         }
 
         if (debugToasts)

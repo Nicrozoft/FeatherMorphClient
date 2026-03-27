@@ -3,7 +3,7 @@ package xyz.nifeather.morph.client.graphics;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -221,9 +221,9 @@ public class EntityDisplay extends MDrawable
 
     private final LoadingSpinner loadingSpinner = new LoadingSpinner();
 
-    private void renderLoading(GuiGraphics context)
+    private void renderLoading(GuiGraphicsExtractor context)
     {
-        loadingSpinner.render(context, 0, 0, 0);
+        loadingSpinner.extractRenderState(context, 0, 0, 0);
     }
 
     protected float getRenderScale()
@@ -237,7 +237,7 @@ public class EntityDisplay extends MDrawable
     }
 
     @Override
-    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
+    protected void onRender(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta)
     {
         if (displayingEntity == null)
         {
@@ -287,7 +287,7 @@ public class EntityDisplay extends MDrawable
 
             if (displayingEntity instanceof LivingEntity livingEntity)
             {
-                InventoryScreen.renderEntityInInventoryFollowsMouse(context,
+                InventoryScreen.extractEntityInInventoryFollowsMouse(context,
                         xStart, yStart, xEnd, yEnd,
                         scale * initialEntitySize.get(),
                         0.0625f + entityYOffset,

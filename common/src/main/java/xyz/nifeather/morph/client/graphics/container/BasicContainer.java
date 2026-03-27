@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
@@ -178,7 +178,7 @@ public class BasicContainer<T extends IMDrawable> extends MDrawable implements C
     //endregion ParentElement
 
     @Override
-    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
+    protected void onRender(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta)
     {
         super.onRender(context, mouseX, mouseY, delta);
 
@@ -194,12 +194,12 @@ public class BasicContainer<T extends IMDrawable> extends MDrawable implements C
         {
             this.children.forEach(d ->
             {
-                var haveDepth = d.getDepth() != 0;
+                //var haveDepth = d.getDepth() != 0;
 
                 //if (haveDepth)
                 //    matrices.translate(0, 0, -d.getDepth());
 
-                d.render(context, mouseX, mouseY, delta);
+                d.extractRenderState(context, mouseX, mouseY, delta);
 
                 //if (haveDepth)
                 //    matrices.translate(0, 0, d.getDepth());

@@ -5,7 +5,7 @@ import xyz.nifeather.morph.client.graphics.Axes;
 import xyz.nifeather.morph.client.graphics.MDrawable;
 import xyz.nifeather.morph.client.graphics.color.ColorUtils;
 import xyz.nifeather.morph.client.graphics.color.MaterialColors;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import xiamomc.pluginbase.Annotations.Initializer;
 
 public class BasicFlowContainer<T extends MDrawable> extends BasicContainer<T>
@@ -106,7 +106,7 @@ public class BasicFlowContainer<T extends MDrawable> extends BasicContainer<T>
     }
 
     @Override
-    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
+    protected void onRender(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta)
     {
         super.onRender(context, mouseX, mouseY, delta);
 

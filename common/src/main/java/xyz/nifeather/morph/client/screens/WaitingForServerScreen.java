@@ -1,7 +1,7 @@
 package xyz.nifeather.morph.client.screens;
 
 import me.shedaniel.math.Color;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
@@ -112,7 +112,7 @@ public class WaitingForServerScreen extends FeatherScreen
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta)
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta)
     {
         var color = Color.ofRGBA(0, 0, 0, backgroundDim.get());
         context.fillGradient(0, 0, this.width, this.height, color.getColor(), color.getColor());
@@ -123,21 +123,21 @@ public class WaitingForServerScreen extends FeatherScreen
         closeButton.setX(this.width / 2 - 75);
         closeButton.setY(this.height - 29);
 
-        super.render(context, mouseX, mouseY, delta);
+        super.extractRenderState(context, mouseX, mouseY, delta);
     }
 
     @Override
-    public void renderTransparentBackground(GuiGraphics context)
+    public void extractTransparentBackground(GuiGraphicsExtractor context)
     {
     }
 
     @Override
-    protected void renderMenuBackground(GuiGraphics context)
+    protected void extractMenuBackground(GuiGraphicsExtractor context)
     {
     }
 
     @Override
-    protected void renderMenuBackground(GuiGraphics context, int x, int y, int width, int height)
+    protected void extractMenuBackground(GuiGraphicsExtractor context, int x, int y, int width, int height)
     {
     }
 }

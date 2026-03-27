@@ -1,7 +1,7 @@
 package xyz.nifeather.morph.client.screens.disguise.preview;
 
 import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.graphics.EntityDisplay;
@@ -19,7 +19,7 @@ public class DisguisePreviewDisplay extends EntityDisplay
     }
 
     @Override
-    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
+    protected void onRender(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta)
     {
         var yStart = (int)getScreenSpaceY();
 

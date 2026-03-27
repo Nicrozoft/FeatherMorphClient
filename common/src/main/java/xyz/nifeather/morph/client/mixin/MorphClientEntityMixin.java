@@ -56,7 +56,7 @@ public abstract class MorphClientEntityMixin implements IMorphClientEntity
     private void morphClient$onGlowingCall(boolean glowing, CallbackInfo ci)
     {
         var thisInstance = ((Entity)(Object)this);
-        if (thisInstance.getTags().contains(EntityCache.tag))
+        if (thisInstance.entityTags().contains(EntityCache.tag))
             this.setSharedFlag(6, glowing);
     }
 

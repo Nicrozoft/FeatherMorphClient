@@ -5,7 +5,7 @@ import me.shedaniel.math.Color;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
@@ -135,12 +135,12 @@ public class DrawableText extends MDrawable
     }
 
     @Override
-    public void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
+    public void onRender(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta)
     {
         if (backgroundColor != 0)
             context.fill(-shadowExpandPixels, -shadowExpandPixels, shadowExpandPixels + renderer.width(text), shadowExpandPixels + renderer.lineHeight, backgroundColor);
 
-        context.drawString(renderer, text, 0, 0, color, drawShadow);
+        context.text(renderer, text, 0, 0, color, drawShadow);
 
         if (hovered() && getTooltip() != null)
             context.setTooltipForNextFrame(Minecraft.getInstance().font, getTooltip(), 0, 0);

@@ -1,6 +1,6 @@
 package xyz.nifeather.morph.client.graphics;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 
@@ -15,7 +15,7 @@ public class LoadingSpinner extends MDrawable
     }
 
     @Override
-    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
+    protected void onRender(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta)
     {
         //RenderSystem.enableBlend();
 

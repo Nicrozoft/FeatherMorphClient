@@ -37,7 +37,6 @@
   "client": [
     "CameraMixin",
     "ClientPlayerEntityMixin",
-    "ClientPlayerInteractionManagerMixin",
     "ClientWorldMixin",
     "CreativeInventoryMixin",
     "EntityRenderDispatcherMixin",

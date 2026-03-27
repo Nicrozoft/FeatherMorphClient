@@ -1,7 +1,7 @@
 package xyz.nifeather.morph.client.graphics;
 
 import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
@@ -27,7 +27,7 @@ public class DrawableSprite extends MDrawable
     public int textureHeight = -1;
 
     @Override
-    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
+    protected void onRender(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta)
     {
         int texWidth = Math.round(this.getRenderWidth());
         int texHeight = Math.round(this.getRenderHeight());

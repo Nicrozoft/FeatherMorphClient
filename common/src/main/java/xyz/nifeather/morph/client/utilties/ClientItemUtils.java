@@ -46,7 +46,7 @@ public class ClientItemUtils
 
     public static boolean isAir(ItemStack stack)
     {
-        return stack.getItemHolder().is(Identifier.fromNamespaceAndPath("minecraft", "air"));
+        return stack.typeHolder().is(Identifier.fromNamespaceAndPath("minecraft", "air"));
     }
 
     public static final ItemStack air = new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.fromNamespaceAndPath("minecraft", "air")));

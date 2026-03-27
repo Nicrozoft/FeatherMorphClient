@@ -1,7 +1,7 @@
 package xyz.nifeather.morph.client.screens.quickDisguise;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
@@ -72,7 +72,7 @@ public class WidgetList extends ContainerObjectSelectionList<QuickDisguiseEntry>
     }
 
     @Override
-    protected void renderListSeparators(GuiGraphics guiGraphics)
+    protected void extractListSeparators(GuiGraphicsExtractor graphics)
     {
     }
 

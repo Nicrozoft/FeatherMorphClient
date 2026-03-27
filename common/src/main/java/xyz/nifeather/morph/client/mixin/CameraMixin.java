@@ -1,9 +1,13 @@
 package xyz.nifeather.morph.client.mixin;
 
 import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -22,6 +26,9 @@ public abstract class CameraMixin
     @Shadow private Level level;
     @Shadow private float eyeHeightOld;
 
+    @Shadow
+    @Final
+    private Minecraft minecraft;
     @Unique
     private boolean featherMorph$sodiumExtraInstalled;
 
@@ -37,10 +44,11 @@ public abstract class CameraMixin
     @Unique
     private boolean featherMorph$isInstantSneak;
 
-    @Inject(method = "setup", at = @At("HEAD"))
-    private void onUpdate(Level level, Entity entity, boolean thirdPerson, boolean inverseView, float tickDelta, CallbackInfo ci)
+    @Inject(method = "update", at = @At("HEAD"))
+    private void onUpdate(DeltaTracker deltaTracker, CallbackInfo ci)
     {
-        CameraHelper.isThirdPerson.set(thirdPerson);
+        var options = minecraft.options;
+        CameraHelper.isThirdPerson.set(!options.getCameraType().isFirstPerson());
     }
 
     @Redirect(method = "tick",

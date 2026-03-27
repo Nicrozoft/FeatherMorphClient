@@ -2,7 +2,7 @@ package xyz.nifeather.morph.client.screens.disguise;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -232,7 +232,7 @@ public class DisplayWidget extends MorphClientObject implements NarratableEntry,
     private final static Font textRenderer = Minecraft.getInstance().font;
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta)
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta)
     {
         var lastHovered = this.hovered;
         this.hovered = mouseX < this.screenSpaceX + width && mouseX > this.screenSpaceX
@@ -262,7 +262,7 @@ public class DisplayWidget extends MorphClientObject implements NarratableEntry,
 
             this.backgroundContainer.setX(this.screenSpaceX);
             this.backgroundContainer.setY(this.screenSpaceY);
-            this.backgroundContainer.render(context, mouseX, mouseY, delta);
+            this.backgroundContainer.extractRenderState(context, mouseX, mouseY, delta);
 
             matrices.translate(0, 0, matrices);
 
@@ -275,7 +275,7 @@ public class DisplayWidget extends MorphClientObject implements NarratableEntry,
             displayContainer.setX(x);
             displayContainer.setY(y);
             displayContainer.setMasking(!hovered);
-            displayContainer.render(context, mX, mY, 0);
+            displayContainer.extractRenderState(context, mX, mY, 0);
         }
         catch (Exception e)
         {
@@ -285,7 +285,7 @@ public class DisplayWidget extends MorphClientObject implements NarratableEntry,
         finally
         {
             //context.depthTreeUp();
-            context.drawString(textRenderer, display,
+            context.text(textRenderer, display,
                     screenSpaceX + 10, (screenSpaceY + Math.round((height - textRenderer.lineHeight) / 2f)), 0xffffffff);
             //context.depthTreeDown();
 

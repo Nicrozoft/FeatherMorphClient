@@ -9,7 +9,7 @@ import xiamomc.pluginbase.Annotations.Initializer;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.model.geom.builders.UVPair;
@@ -93,7 +93,7 @@ public class DisguiseEntryToast extends LinedToast
     private final EntityDisplay entityDisplay;
 
     @Override
-    protected void postBackgroundDrawing(GuiGraphics context, long startTime)
+    protected void postBackgroundDrawing(GuiGraphicsExtractor context, long startTime)
     {
         var matrices = context.pose();
         super.postBackgroundDrawing(context, startTime);
@@ -114,7 +114,7 @@ public class DisguiseEntryToast extends LinedToast
 
         entityDisplay.setParentScreenSpaceX(pos.x);
         entityDisplay.setParentScreenSpaceY(pos.y);
-        entityDisplay.render(context, mX, mY, 0);
+        entityDisplay.extractRenderState(context, mX, mY, 0);
 
         // Pop back
         matrices.popMatrix();

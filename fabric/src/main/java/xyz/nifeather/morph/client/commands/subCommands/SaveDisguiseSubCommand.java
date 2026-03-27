@@ -5,7 +5,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -29,32 +29,32 @@ public class SaveDisguiseSubCommand implements IBrigadierCommand<FabricClientCom
     public void registerAsChild(ArgumentBuilder<FabricClientCommandSource, ?> parentBuilder)
     {
         parentBuilder.then(
-                ClientCommandManager.literal("saved-morphs")
+                ClientCommands.literal("saved-morphs")
                         .then(
-                                ClientCommandManager.literal("save")
+                                ClientCommands.literal("save")
                                         .then(
-                                                ClientCommandManager.argument("name", StringArgumentType.greedyString())
+                                                ClientCommands.argument("name", StringArgumentType.greedyString())
                                                         .executes(this::runSaveDisguise)
                                         )
                         )
                         .then(
-                                ClientCommandManager.literal("drop")
+                                ClientCommands.literal("drop")
                                         .then(
-                                                ClientCommandManager.argument("name", StringArgumentType.greedyString())
+                                                ClientCommands.argument("name", StringArgumentType.greedyString())
                                                         .suggests(this::suggestSavedDisguise)
                                                         .executes(this::runDropDisguise)
                                         )
                         )
                         .then(
-                                ClientCommandManager.literal("disguise")
+                                ClientCommands.literal("disguise")
                                         .then(
-                                                ClientCommandManager.argument("name", StringArgumentType.greedyString())
+                                                ClientCommands.argument("name", StringArgumentType.greedyString())
                                                         .suggests(this::suggestSavedDisguise)
                                                         .executes(this::runSelectDisguise)
                                         )
                         )
                         .then(
-                                ClientCommandManager.literal("refresh")
+                                ClientCommands.literal("refresh")
                                         .executes(this::refreshStorage)
                         )
         );

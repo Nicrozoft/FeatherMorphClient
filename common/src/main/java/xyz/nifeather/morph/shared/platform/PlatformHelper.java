@@ -5,7 +5,7 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -50,7 +50,7 @@ public interface PlatformHelper
     @FunctionalInterface
     interface HudRenderCallback
     {
-        void onRender(GuiGraphics context, DeltaTracker renderTickCounter);
+        void onRender(GuiGraphicsExtractor context, DeltaTracker renderTickCounter);
     }
 
     @FunctionalInterface

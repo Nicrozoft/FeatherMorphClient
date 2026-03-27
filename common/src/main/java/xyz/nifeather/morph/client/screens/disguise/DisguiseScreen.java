@@ -3,7 +3,7 @@ package xyz.nifeather.morph.client.screens.disguise;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.navigation.ScreenAxis;
 import net.minecraft.client.gui.navigation.ScreenPosition;
@@ -492,9 +492,9 @@ public class DisguiseScreen extends FeatherScreen
     }
 
     @Override
-    public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta)
+    public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta)
     {
-        super.renderBackground(context, mouseX, mouseY, delta);
+        super.extractBackground(context, mouseX, mouseY, delta);
 
         context.blit(RenderPipelines.GUI_TEXTURED, Screen.MENU_BACKGROUND,
                 0, 0,

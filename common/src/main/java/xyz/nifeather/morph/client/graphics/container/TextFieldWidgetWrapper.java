@@ -9,7 +9,7 @@ import xyz.nifeather.morph.client.graphics.color.MaterialColors;
 
 import java.util.function.Consumer;
 import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
@@ -46,10 +46,10 @@ public class TextFieldWidgetWrapper extends MDrawable
     }
 
     @Override
-    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
+    protected void onRender(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta)
     {
         context.pose().translate(-this.getScreenSpaceX(), -this.getScreenSpaceY(), context.pose());
-        widget.render(context, mouseX, mouseY, delta);
+        widget.extractWidgetRenderState(context, mouseX, mouseY, delta);
 
         super.onRender(context, mouseX, mouseY, delta);
     }

@@ -1,6 +1,6 @@
 package xyz.nifeather.morph.client.screens.quickDisguise;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -327,7 +327,7 @@ public class QuickDisguiseScreen extends FeatherScreen
         }
 
         @Override
-        protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
+        protected void onRender(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta)
         {
             var yStart = (int)getScreenSpaceY();
 

@@ -1,6 +1,6 @@
 package xyz.nifeather.morph.client.graphics.container;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -28,10 +28,10 @@ public class DrawableButtonWrapper extends MDrawable
     }
 
     @Override
-    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
+    protected void onRender(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta)
     {
         context.pose().translate(-this.getScreenSpaceX(), -this.getScreenSpaceY(), context.pose());
-        widget.render(context, mouseX, mouseY, delta);
+        widget.extractRenderState(context, mouseX, mouseY, delta);
 
         super.onRender(context, mouseX, mouseY, delta);
     }

@@ -3,7 +3,7 @@ package xyz.nifeather.morph.client.graphics.toasts;
 import me.shedaniel.math.Color;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.network.chat.Component;
@@ -134,15 +134,15 @@ public class LinedToast extends MorphClientObject implements Toast
 
     private final Font textRenderer = Minecraft.getInstance().font;
 
-    protected void postTextDrawing(GuiGraphics context, long startTime)
+    protected void postTextDrawing(GuiGraphicsExtractor context, long startTime)
     {
     }
 
-    protected void postBackgroundDrawing(GuiGraphics context, long startTime)
+    protected void postBackgroundDrawing(GuiGraphicsExtractor context, long startTime)
     {
     }
 
-    protected void postDraw(GuiGraphics context, long startTime)
+    protected void postDraw(GuiGraphicsExtractor context, long startTime)
     {
     }
 
@@ -186,7 +186,7 @@ public class LinedToast extends MorphClientObject implements Toast
     private final Color borderColor = ColorUtils.fromHex("#444444");
 
     @Override
-    public void render(GuiGraphics context, Font textRenderer, long startTime)
+    public void extractRenderState(GuiGraphicsExtractor context, Font textRenderer, long startTime)
     {
         if (!layoutValid.get())
             updateLayout();
@@ -227,8 +227,8 @@ public class LinedToast extends MorphClientObject implements Toast
         var textStartX = (int)getTextStartX();
         var textStartY = Math.round((this.height()) / 2f) - textRenderer.lineHeight + yPadding;
 
-        context.drawString(textRenderer, titleDisplay, textStartX, textStartY - 1, 0xffffffff);
-        context.drawString(textRenderer, descDisplay, textStartX, textStartY + textRenderer.lineHeight + 1, 0xffffffff);
+        context.text(textRenderer, titleDisplay, textStartX, textStartY - 1, 0xffffffff);
+        context.text(textRenderer, descDisplay, textStartX, textStartY + textRenderer.lineHeight + 1, 0xffffffff);
 
         postTextDrawing(context, startTime);
 
@@ -259,7 +259,7 @@ public class LinedToast extends MorphClientObject implements Toast
 
     public record OutlineBox(int x, int y, int width, int height, int color)
     {
-        public void render(GuiGraphics context)
+        public void render(GuiGraphicsExtractor context)
         {
             context.fill(x, y, x + width, y + 1, color);
             context.fill(x, y, x + 1, y + height - 1, color);

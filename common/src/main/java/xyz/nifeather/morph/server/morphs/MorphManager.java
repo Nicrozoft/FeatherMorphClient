@@ -206,20 +206,20 @@ public class MorphManager extends ServerPluginObject
 
         if (provider == null)
         {
-            player.displayClientMessage(Component.translatableWithFallback("morph.error.invalid_namespace", "Error: Invalid namespace \"%s\"", idNamespace), false);
+            player.sendSystemMessage(Component.translatableWithFallback("morph.error.invalid_namespace", "Error: Invalid namespace \"%s\"", idNamespace), false);
             return false;
         }
 
         if (!provider.isValid(identifier))
         {
-            player.displayClientMessage(Component.translatableWithFallback("morph.error.invalid_id", "Error: Identifier \"%s\" not valid for \"%s\"", identifier, idNamespace), false);
+            player.sendSystemMessage(Component.translatableWithFallback("morph.error.invalid_id", "Error: Identifier \"%s\" not valid for \"%s\"", identifier, idNamespace), false);
             return false;
         }
 
         var available = getUnlockedDisguiseIds(player);
         if (!bypassAvailableCheck && !available.contains(identifier))
         {
-            player.displayClientMessage(Component.translatableWithFallback("morph.error.not_unlocked", "Error: That disguise is not unlocked yet"), false);
+            player.sendSystemMessage(Component.translatableWithFallback("morph.error.not_unlocked", "Error: That disguise is not unlocked yet"), false);
             return false;
         }
 

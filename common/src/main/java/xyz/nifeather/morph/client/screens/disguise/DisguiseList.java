@@ -15,7 +15,7 @@ import xyz.nifeather.morph.client.graphics.MarginPadding;
 
 import java.util.List;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import xyz.nifeather.morph.client.mixin.accessors.AbstractScrollAreaAccessor;
 
@@ -130,14 +130,14 @@ public class DisguiseList extends ContainerObjectSelectionList<EntityDisplayEntr
     }
 
     @Override
-    protected int scrollBarY()
+    public int scrollBarY()
     {
         return Math.max(this.getY(), Math.round((float)this.scrollAmount() * (this.height - this.scrollerHeight()) / this.maxScrollAmount() + this.getY()));
         //return super.getScrollbarThumbY();
     }
 
     @Override
-    protected void renderListSeparators(GuiGraphics context)
+    protected void extractListSeparators(GuiGraphicsExtractor context)
     {
     }
 

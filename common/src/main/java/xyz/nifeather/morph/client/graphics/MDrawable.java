@@ -17,7 +17,7 @@ import xyz.nifeather.morph.client.utilties.MathUtils;
 import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
@@ -459,7 +459,7 @@ public abstract class MDrawable extends MorphClientObject implements IMDrawable
         this.masking = masking;
     }
 
-    protected void onRender(GuiGraphics context, int mouseX, int mouseY, float delta)
+    protected void onRender(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta)
     {
     }
 
@@ -487,7 +487,7 @@ public abstract class MDrawable extends MorphClientObject implements IMDrawable
     }
 
     @Override
-    public final void render(GuiGraphics context, int mouseX, int mouseY, float delta)
+    public final void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta)
     {
         var matrices = context.pose();
         matrices.pushMatrix();

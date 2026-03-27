@@ -12,7 +12,6 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.LayerDefinitions;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartNames;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
@@ -26,6 +25,7 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -147,8 +147,8 @@ public class PlayerRenderHelper extends MorphClientObject
         var clientPlayer = Minecraft.getInstance().player;
         assert clientPlayer != null;
 
-        clientPlayer.displayClientMessage(Component.translatable("text.morphclient.error.render_disguise1"), false);
-        clientPlayer.displayClientMessage(Component.translatable("text.morphclient.error.render_disguise2"), false);
+        clientPlayer.sendSystemMessage(Component.translatable("text.morphclient.error.render_disguise1"));
+        clientPlayer.sendSystemMessage(Component.translatable("text.morphclient.error.render_disguise2"));
     }
 
     @ApiStatus.Internal
@@ -332,7 +332,7 @@ public class PlayerRenderHelper extends MorphClientObject
         return part;
     }
 
-    private final RenderType dragonLayer = RenderTypes.entityCutoutNoCull(Identifier.parse("textures/entity/enderdragon/dragon.png"));
+    private final RenderType dragonLayer = RenderTypes.entityCutout(Identifier.parse("textures/entity/enderdragon/dragon.png"));
 
     /**
      * @return Whether rendered disguise instance
@@ -404,7 +404,7 @@ public class PlayerRenderHelper extends MorphClientObject
             matrices.translate(offset.x(), offset.y(), offset.z());
 
             light = (disguiseEntity.getType() == EntityType.ALLAY || disguiseEntity.getType() == EntityType.VEX)
-                    ? LightTexture.FULL_BRIGHT
+                    ? LightCoordsUtil.FULL_BRIGHT
                     : light;
 
             targetArm.xRot = 0;

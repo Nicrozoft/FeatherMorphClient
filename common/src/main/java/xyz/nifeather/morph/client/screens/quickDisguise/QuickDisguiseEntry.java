@@ -1,6 +1,6 @@
 package xyz.nifeather.morph.client.screens.quickDisguise;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -94,7 +94,7 @@ public class QuickDisguiseEntry extends ContainerObjectSelectionList.Entry<Quick
     }
 
     @Override
-    public void renderContent(GuiGraphics context, int mouseX, int mouseY, boolean bl, float f)
+    public void extractContent(GuiGraphicsExtractor context, int mouseX, int mouseY, boolean bl, float f)
     {
         context.pose().pushMatrix();
         context.pose().translate(this.getContentX(), this.getContentY());
@@ -117,7 +117,7 @@ public class QuickDisguiseEntry extends ContainerObjectSelectionList.Entry<Quick
             if (!(e instanceof Renderable renderable))
                 return;
 
-            renderable.render(context, mouseX, mouseY, f);
+            renderable.extractRenderState(context, mouseX, mouseY, f);
 
         });
         context.pose().popMatrix();

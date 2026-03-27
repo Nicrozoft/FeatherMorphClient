@@ -280,11 +280,6 @@ public abstract class DisguiseSyncer extends MorphClientObject
         }
 
         onTickError();
-
-        var clientPlayer = Minecraft.getInstance().player;
-        assert clientPlayer != null;
-
-        clientPlayer.displayClientMessage(Component.literal(this + "Sync Failed!"), false);
     }
 
     public void onGameTick()

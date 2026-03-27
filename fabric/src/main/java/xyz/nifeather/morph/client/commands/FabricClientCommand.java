@@ -2,7 +2,7 @@ package xyz.nifeather.morph.client.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.network.chat.Component;
 import xyz.nifeather.morph.client.commands.subCommands.SaveDisguiseSubCommand;
@@ -19,7 +19,7 @@ public class FabricClientCommand implements IBrigadierCommand<FabricClientComman
     @Override
     public void register(CommandDispatcher<FabricClientCommandSource> dispatcher)
     {
-        var cmd = ClientCommandManager.literal("morphclient")
+        var cmd = ClientCommands.literal("morphclient")
                 .executes(this::executeNoArgs);
 
         subCommands.forEach(child -> child.registerAsChild(cmd));

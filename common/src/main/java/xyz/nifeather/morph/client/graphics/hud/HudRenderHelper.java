@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import me.shedaniel.math.Color;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import xiamomc.pluginbase.Annotations.Initializer;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xiamomc.pluginbase.Bindables.Bindable;
@@ -95,7 +95,7 @@ public class HudRenderHelper extends MorphClientObject
         visible.set(rev > 0.1f);
     }
 
-    public void onRender(GuiGraphics context, DeltaTracker renderTickCounter)
+    public void onRender(GuiGraphicsExtractor context, DeltaTracker renderTickCounter)
     {
         if (manager == null || drawAlpha.get() == 0f || Minecraft.getInstance().options.hideGui) return;
 
@@ -112,7 +112,7 @@ public class HudRenderHelper extends MorphClientObject
         }
     }
 
-    public void renderBar(GuiGraphics context, DeltaTracker renderTickCounter)
+    public void renderBar(GuiGraphicsExtractor context, DeltaTracker renderTickCounter)
     {
         // 10 * 0.8
         var width = 8;
@@ -134,7 +134,7 @@ public class HudRenderHelper extends MorphClientObject
         matrices.translate(offsetX, offsetY, matrices);
 
         // 填充背景
-        //bug: GuiGraphics#submitOutline only works in screens
+        //bug: GuiGraphicsExtractor#submitOutline only works in screens
         context.fill(0, 0, width, height, backgroundColor.darker(1.3).getColor());
 
         // 填充进度

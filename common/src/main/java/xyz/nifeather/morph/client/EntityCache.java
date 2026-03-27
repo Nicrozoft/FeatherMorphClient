@@ -1,6 +1,7 @@
 package xyz.nifeather.morph.client;
 
 import com.mojang.authlib.GameProfile;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
@@ -38,7 +39,7 @@ public class EntityCache
     {
         EntityCacheUtils.addOnEntityAddHook(this, e ->
         {
-            if (e.getTags().contains(tag)) return;
+            if (e.entityTags().contains(tag)) return;
 
             var targets = cacheMap.entrySet().stream().filter(entry -> entry.getValue().getUUID().equals(e.getUUID()))
                     .toList();
@@ -102,6 +103,8 @@ public class EntityCache
     private final long lockWait = 10;
 
     public static final String tag = "FMC_ClientView";
+
+    protected static final RandomSource random = RandomSource.create();
 
     public void dropAll()
     {
@@ -172,7 +175,7 @@ public class EntityCache
 
                 var instance = type == EntityType.MANNEQUIN ? new MorphLocalAvatar(world) : type.create(world, EntitySpawnReason.COMMAND);
 
-                var uuid = ensureUUIDUnique(Mth.createInsecureUUID());
+                var uuid = ensureUUIDUnique(Mth.createInsecureUUID(random));
                 instance.setUUID(uuid);
 
                 spawnedEntity = instance;
@@ -191,7 +194,7 @@ public class EntityCache
 
             if (splitedId.length != 2) return null;
 
-            var uuid = ensureUUIDUnique(Mth.createInsecureUUID());
+            var uuid = ensureUUIDUnique(Mth.createInsecureUUID(random));
             var profile = new GameProfile(uuid, splitedId[1]);
 
             try (var world = Minecraft.getInstance().level)
@@ -265,7 +268,7 @@ public class EntityCache
             {
                 if (entity.getUUID().equals(uuid))
                 {
-                    uuid = Mth.createInsecureUUID();
+                    uuid = Mth.createInsecureUUID(random);
                     haveMatch = true;
                     break;
                 }

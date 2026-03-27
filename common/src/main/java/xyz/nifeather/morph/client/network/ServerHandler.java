@@ -255,8 +255,8 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> disconnect());
 
-        PayloadTypeRegistry.playC2S().register(V3MorphInitChannelPayload.id, V3MorphInitChannelPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(V3MorphCommandPayload.id, V3MorphCommandPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(V3MorphInitChannelPayload.id, V3MorphInitChannelPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(V3MorphCommandPayload.id, V3MorphCommandPayload.CODEC);
 
         //初始化网络
         ClientPlayNetworking.registerGlobalReceiver(V3MorphInitChannelPayload.id, (payload, context) ->

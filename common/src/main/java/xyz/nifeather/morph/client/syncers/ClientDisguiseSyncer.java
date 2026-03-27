@@ -130,8 +130,8 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
 
         FeatherMorphClientBootstrap.getInstance().updateClientView(true, false);
 
-        clientPlayer.displayClientMessage(Component.translatable("text.morphclient.error.update_disguise1").withStyle(ChatFormatting.RED), false);
-        clientPlayer.displayClientMessage(Component.translatable("text.morphclient.error.update_disguise2").withStyle(ChatFormatting.RED), false);
+        clientPlayer.sendSystemMessage(Component.translatable("text.morphclient.error.update_disguise1").withStyle(ChatFormatting.RED));
+        clientPlayer.sendOverlayMessage(Component.translatable("text.morphclient.error.update_disguise2").withStyle(ChatFormatting.RED));
     }
 
     @Nullable
