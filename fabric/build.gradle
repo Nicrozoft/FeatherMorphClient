@@ -1,25 +1,21 @@
 plugins {
     id 'multiloader-loader'
-    id 'net.fabricmc.fabric-loom-remap'
+    id 'net.fabricmc.fabric-loom'
 }
 
 def protocolVersion = protocols_use_local_build == "true" ? protocols_local_version : protocols_version
 
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
-    mappings loom.layered {
-        officialMojangMappings()
-        //parchment("org.parchmentmc.data:parchment-${parchment_minecraft}:${parchment_version}@zip")
-    }
-    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
-    modApi("me.shedaniel.cloth:cloth-config-fabric:${clothconfig_version}")
+    implementation("net.fabricmc:fabric-loader:${fabric_loader_version}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${fabric_version}")
+    api("me.shedaniel.cloth:cloth-config-fabric:${clothconfig_version}")
 
-    modImplementation("com.github.NiFeather:feathermorph-protocols:$protocolVersion")
-    modImplementation("me.shedaniel.cloth:cloth-config-fabric:${clothconfig_version}")
-    modApi("com.terraformersmc:modmenu:${modmenu_version}")
+    implementation("com.github.NiFeather:feathermorph-protocols:$protocolVersion")
+    implementation("me.shedaniel.cloth:cloth-config-fabric:${clothconfig_version}")
+    api("com.terraformersmc:modmenu:${modmenu_version}")
 
-    modImplementation("com.github.NiFeather:feathermorph-command-compat-layer:${compat_layer_version}")
+    implementation("com.github.NiFeather:feathermorph-command-compat-layer:${compat_layer_version}")
     include("com.github.NiFeather:feathermorph-command-compat-layer:${compat_layer_version}")
 
     include("com.github.NiFeather:feathermorph-protocols:${protocolVersion}")
