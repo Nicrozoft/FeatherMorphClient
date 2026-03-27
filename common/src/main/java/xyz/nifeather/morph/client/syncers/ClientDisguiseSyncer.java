@@ -47,7 +47,7 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
         propertyHolder.hookOnTemporaryPropertyWrite(this::localSyncerOnPropertyWrite);
 
         propertyHolder.hookOnPropertyDiscard(this::localSyncerOnPropertyDiscard);
-        propertyHolder.hookOnTemporaryPropertyWrite(this::localSyncerOnPropertyWrite);
+        propertyHolder.hookOnTemporaryPropertyDiscard(this::localSyncerOnPropertyDiscard);
     }
 
     private void localSyncerOnPropertyDiscard(ClientProperty<Object, ?> property)

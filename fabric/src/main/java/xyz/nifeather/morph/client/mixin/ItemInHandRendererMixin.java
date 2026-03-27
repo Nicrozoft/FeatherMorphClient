@@ -1,10 +1,12 @@
 package xyz.nifeather.morph.client.mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -59,6 +61,22 @@ public class ItemInHandRendererMixin implements ICustomItemInHandRenderer
         return (morphclient$shouldOverrideDisplayingItem && morphclient$mainHandItem != null)
                ? morphclient$mainHandItem
                : value;
+    }
+
+    @ModifyVariable(
+            method = "renderHandsWithItems",
+            at = @At("STORE"),
+            ordinal = 1
+    )
+    private float morphclient$overrideSwingTime(float value, @Local(argsOnly = true) float f)
+    {
+        if (!FeatherMorphClientBootstrap.getInstance().getModConfigData().clientViewVisible())
+            return value;
+
+        var syncer = ClientDisguiseSyncer.getCurrentInstance();
+        if (syncer == null || syncer.disposed() || !(syncer.getDisguiseInstance() instanceof LivingEntity living)) return value;
+
+        return living.getAttackAnim(f);
     }
 
     @ModifyVariable(
