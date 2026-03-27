@@ -5,7 +5,6 @@
   "refmap": "feathermorph_client.refmap.json",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "paperdoll.PaperdollRendererMixin"
   ],
   "client": [
   ],
