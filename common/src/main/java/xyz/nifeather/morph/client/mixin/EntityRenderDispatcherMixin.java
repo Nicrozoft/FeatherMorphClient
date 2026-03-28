@@ -12,8 +12,8 @@ import xyz.nifeather.morph.client.graphics.PlayerRenderHelper;
 public class EntityRenderDispatcherMixin
 {
     @WrapMethod(method = "extractEntity")
-    public EntityRenderState morphclient$overrideRender(Entity entity, float f, Operation<EntityRenderState> original)
+    public EntityRenderState morphclient$overrideRender(Entity entity, float partialTicks, Operation<EntityRenderState> original)
     {
-        return PlayerRenderHelper.instance().getState(entity, f, original);
+        return PlayerRenderHelper.instance().getState(entity, partialTicks, original);
     }
 }

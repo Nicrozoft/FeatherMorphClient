@@ -34,7 +34,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
-import org.spongepowered.asm.mixin.Unique;
 import xiamomc.pluginbase.Annotations.Initializer;
 import xiamomc.pluginbase.Exceptions.NullDependencyException;
 import xyz.nifeather.morph.client.ClientMorphManager;
@@ -79,37 +78,40 @@ public class PlayerRenderHelper extends MorphClientObject
 
     private boolean doingRender = false;
 
-    public EntityRenderState getState(Entity entity, float f, Operation<EntityRenderState> original)
+    public EntityRenderState getState(Entity entity, float partialTicks, Operation<EntityRenderState> original)
     {
         Objects.requireNonNull(entity, "Null entity!");
 
         if (doingRender)
-            return original.call(entity, f);
+            return original.call(entity, partialTicks);
 
         try
         {
-            if (PlayerRenderHelper.instance().skipRender)
-                return original.call(entity, f);
+            if (PlayerRenderHelper.instance().skipRender
+                || !(entity instanceof IMorphClientEntity iMorphClientEntity)
+                || iMorphClientEntity.featherMorph$bypassesDispatcherRedirect())
+            {
+                return original.call(entity, partialTicks);
+            }
 
-            if (!(entity instanceof IMorphClientEntity iMorphClientEntity))
-                return original.call(entity, f);
-
-            if (iMorphClientEntity.featherMorph$bypassesDispatcherRedirect())
-                return original.call(entity, f);
+            // Hide disguise entities...
+            if (iMorphClientEntity.featherMorph$isDisguiseEntity())
+            {
+                var state = original.call(entity, partialTicks);
+                state.y = -1000;
+                return state;
+            }
 
             var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(entity);
             if (syncer == null)
-                return original.call(entity, f);
-
-            var disguiseInstance = syncer.getDisguiseInstance();
-            if (disguiseInstance == null)
-                return original.call(entity, f);
+                return original.call(entity, partialTicks);
 
             doingRender = true;
 
+            // And redirect ours to the disguise entity.
             syncer.preRenderStateSetup();
-            var state = original.call(disguiseInstance, f);
-            syncer.modifyRenderState(state);
+            var state = original.call(syncer.getDisguiseInstance(), partialTicks);
+            syncer.modifyRenderState(state, partialTicks);
             syncer.postRenderStateSetup();
 
             return state;

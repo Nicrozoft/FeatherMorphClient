@@ -73,17 +73,6 @@ public abstract class PlayerMixin
         }
     }
 */
-    /**
-     * For {@link ClientDisguiseSyncer}
-     * @param ci
-     */
-    @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
-    private void featherMorph$onTick(CallbackInfo ci)
-    {
-        if (featherMorph$playerInstance.level().isClientSide())
-            EntityTickHandler.cancelIfIsDisguiseAndNotSyncing(ci, this);
-    }
-
     @Inject(method = "attack", at = @At("HEAD"))
     private void featherMorph$onAttack(Entity target, CallbackInfo ci)
     {

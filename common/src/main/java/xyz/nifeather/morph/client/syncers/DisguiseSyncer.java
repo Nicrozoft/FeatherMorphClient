@@ -6,12 +6,11 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.GuardianRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.*;
@@ -27,8 +26,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.LoggerFactory;
-import xiamomc.pluginbase.Annotations.Resolved;
-import xyz.nifeather.morph.client.DisguiseInstanceTracker;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.MorphClientObject;
 import xyz.nifeather.morph.client.entities.*;
@@ -40,9 +37,7 @@ import xyz.nifeather.morph.client.properties.*;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 import xyz.nifeather.morph.client.utilties.ClientItemUtils;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -327,22 +322,9 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     public void preRenderStateSetup()
     {
-        if (!allowTick) return;
-
-        var xRot = disguiseInstance.getXRot();
-        var xRotO = disguiseInstance.xRotO;
-
-        var yRot = disguiseInstance.getYRot();
-        var yRotO = disguiseInstance.yRotO;
-
-        disguiseLastPositionSaving = PositionRecord.fromEntity(disguiseInstance);
-
-        disguiseInstance.snapTo(bindingPlayer.position(), yRot, xRot);
-        disguiseInstance.setOldPosAndRot(bindingPlayer.oldPosition(), yRotO, xRotO);
-        disguiseInstance.setDeltaMovement(bindingPlayer.getDeltaMovement());
     }
 
-    public void modifyRenderState(EntityRenderState renderState)
+    public void modifyRenderState(EntityRenderState renderState, float partialTicks)
     {
         if (!allowTick) return;
 
@@ -355,26 +337,14 @@ public abstract class DisguiseSyncer extends MorphClientObject
         if (renderState instanceof GuardianRenderState guardianRenderState)
             guardianRenderState.eyePosition = new Vec3(bindingPlayer.xo, bindingPlayer.yo, bindingPlayer.zo);
 
-        if (renderState instanceof AvatarRenderState avatarRenderState)
-        {
-            float tickDelta = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
-            var playerState = (AvatarRenderState) Minecraft.getInstance().getEntityRenderDispatcher().extractEntity(bindingPlayer, tickDelta);
-
-            avatarRenderState.capeFlap = playerState.capeFlap;
-            avatarRenderState.capeLean = playerState.capeLean;
-            avatarRenderState.capeLean2 = playerState.capeLean2;
-        }
+        var posLerp = Mth.lerp(partialTicks, bindingPlayer.oldPosition(), bindingPlayer.position());
+        renderState.x = posLerp.x;
+        renderState.y = posLerp.y;
+        renderState.z = posLerp.z;
     }
 
     public void postRenderStateSetup()
     {
-        if (!allowTick) return;
-
-        if (disguiseLastPositionSaving != null)
-        {
-            disguiseLastPositionSaving.applyToEntity(disguiseInstance);
-            disguiseLastPositionSaving = null;
-        }
     }
 
     public void updateSkin(GameProfile profile)
@@ -400,13 +370,9 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     public abstract void syncTick();
 
-    public void onEntityRenderStateSetup(EntityRenderState renderState, IDisguiseRenderState asDisguiseRenderState)
-    {
-    }
-
     protected abstract void initialSync();
 
-    protected void syncYawPitch()
+    protected void syncRotation()
     {
         var player = bindingPlayer;
 
@@ -475,10 +441,21 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     protected void syncPosition()
     {
+        // 2026/03/28:
+        // I'm spending 3 days on why the disguise's `yBodyRot` is abnormal.
+        // But I still have no clue why `setPos` would not make entity's yBodyRot change.
+        // One possible way to *workaround* is to use `moveOrInterpolateTo` like what ClientPacketListener does.
+        // But that makes the disguise look weird when moving around.
+        // So let's just set `yBodyRot` manually and hope this won't break anything...
+        //
+        // Also 2026/03/28:
+        // Yes, calling `setYBodyRot` can break things dang it :>
         var playerPos = bindingPlayer.position();
-        disguiseInstance.setPos(playerPos.x, playerPos.y + 4096, playerPos.z);
+        var targetPos = new Vec3(playerPos.x, playerPos.y + 1, playerPos.z);
+        disguiseInstance.moveOrInterpolateTo(targetPos);
     }
 
+    private boolean isFirstTick = true;
     private ClientLevel world;
     private ClientLevel prevWorld;
     protected void baseSync()
@@ -523,12 +500,15 @@ public abstract class DisguiseSyncer extends MorphClientObject
         }
 
         markSyncing();
+
+        if (isFirstTick)
+        {
+            initialSync();
+            isFirstTick = false;
+        }
+
         syncPosition();
         syncEquipment();
-
-        // 因为我们在LivingEntity和PlayerEntity那里都加了阻止伪装实体被世界tick的mixin,
-        // 所以在这里手动调用tick
-        entity.tick();
 
         if (beamTarget != null && beamTarget.isRemoved())
             beamTarget = null;

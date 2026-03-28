@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.nifeather.morph.client.EntityTickHandler;
+import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.entities.IMorphLivingEntity;
 
 import java.util.Optional;
@@ -17,13 +17,6 @@ import java.util.Optional;
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin implements IMorphLivingEntity
 {
-    @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
-    private void featherMorph$onTick(CallbackInfo ci)
-    {
-        if (((LivingEntity) (Object) this).level().isClientSide())
-            EntityTickHandler.cancelIfIsDisguiseAndNotSyncing(ci, this);
-    }
-
     @Unique
     private int morphclient$overrideArrowCount = -1;
 
@@ -55,5 +48,12 @@ public abstract class LivingEntityMixin implements IMorphLivingEntity
     {
         if (morphclient$sleepingPos != null)
             cir.setReturnValue(Optional.of(morphclient$sleepingPos));
+    }
+
+    @Inject(method = "isPickable", at = @At("HEAD"), cancellable = true)
+    private void morphclient$isPickable(CallbackInfoReturnable<Boolean> cir)
+    {
+        if (this instanceof IMorphClientEntity iMorphClientEntity && iMorphClientEntity.featherMorph$isDisguiseEntity())
+            cir.setReturnValue(false);
     }
 }

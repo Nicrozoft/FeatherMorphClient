@@ -2,10 +2,7 @@ package xyz.nifeather.morph.client.syncers;
 
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
-import xyz.nifeather.morph.client.EntityCache;
-import xyz.nifeather.morph.client.entities.MorphLocalPlayer;
 
 public class OtherClientDisguiseSyncer extends DisguiseSyncer
 {
@@ -28,13 +25,13 @@ public class OtherClientDisguiseSyncer extends DisguiseSyncer
         if (disposed()) return;
 
         baseSync();
-        syncYawPitch();
+        syncRotation();
     }
 
     @Override
     protected void initialSync()
     {
         syncPosition();
-        syncYawPitch();
+        syncRotation();
     }
 }

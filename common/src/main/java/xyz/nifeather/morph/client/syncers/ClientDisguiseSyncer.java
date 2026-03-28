@@ -3,21 +3,13 @@ package xyz.nifeather.morph.client.syncers;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import xyz.nifeather.morph.client.ClientMorphManager;
-import xyz.nifeather.morph.client.EntityCache;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
 import xyz.nifeather.morph.client.graphics.ICustomItemInHandRenderer;
-import xyz.nifeather.morph.client.network.ServerHandler;
-import xiamomc.pluginbase.Annotations.Initializer;
-import xiamomc.pluginbase.Annotations.Resolved;
-import xiamomc.pluginbase.Bindables.Bindable;
 import xyz.nifeather.morph.client.properties.ClientDisguiseProperties;
 import xyz.nifeather.morph.client.properties.ClientProperty;
 import xyz.nifeather.morph.client.properties.DisguiseEquipment;
@@ -145,8 +137,12 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     @Override
     protected void initialSync()
     {
+        var playerPos = bindingPlayer.position();
+        var targetPos = new Vec3(playerPos.x, playerPos.y + 1, playerPos.z);
+        disguiseInstance.setPos(targetPos);
+
         syncPosition();
-        syncYawPitch();
+        syncRotation();
     }
 
     @Override
@@ -163,6 +159,6 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     public void syncTick()
     {
         baseSync();
-        syncYawPitch();
+        syncRotation();
     }
 }

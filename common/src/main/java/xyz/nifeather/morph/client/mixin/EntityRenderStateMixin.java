@@ -59,8 +59,4 @@ public class EntityRenderStateMixin implements IDisguiseRenderState
     {
         morphclient$disguiseSyncer = syncer;
     }
-
-    @Unique
-    private boolean morphclient$isClientPlayer;
-
 }

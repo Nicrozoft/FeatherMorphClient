@@ -36,7 +36,7 @@
   ],
   "client": [
     "CameraMixin",
-    "ClientPlayerEntityMixin",
+    "LocalPlayerMixin",
     "ClientWorldMixin",
     "CreativeInventoryMixin",
     "EntityRenderDispatcherMixin",
@@ -45,7 +45,6 @@
     "InventoryScreenMixin",
     "LevelRendererMixin",
     "MinecraftClientMixin",
-    "MorphClientEntityMixin",
     "PlayerEntityRendererMixin",
     "PlayerMixin",
     "WorldRendererMixin",

@@ -58,7 +58,6 @@ public class EntityRendererHelper
         // then do setup
 
         int id = renderingEntity.getId();
-        Entity masterEntity = null;
 
         // client renderer
         if (renderingEntity instanceof IMorphClientEntity iMorphEntity)
@@ -70,13 +69,11 @@ public class EntityRendererHelper
 
                 if (syncer != null)
                 {
-                    masterEntity = syncer.getBindingPlayer();
+                    var masterEntity = syncer.getBindingPlayer();
                     id = syncer.getBindingPlayer().getId();
 
                     renderState.morphclient$setDisguiseSyncer(syncer);
                     renderState.morphclient$setMasterPosition(masterEntity.position());
-
-                    syncer.onEntityRenderStateSetup((EntityRenderState)renderState, renderState);
                 }
             }
             else

@@ -17,13 +17,11 @@ import xyz.nifeather.morph.client.entities.IMorphLocalPlayer;
 import xyz.nifeather.morph.client.network.commands.frog.S2CEntityAnimateCommand;
 
 @Mixin(LocalPlayer.class)
-public class ClientPlayerEntityMixin implements IMorphLocalPlayer
+public class LocalPlayerMixin implements IMorphLocalPlayer
 {
     @Shadow
     @Nullable
     public ClientInput input;
-
-    //@Shadow private boolean wasShiftKeyDown;
 
     @Unique
     @Nullable
@@ -71,21 +69,9 @@ public class ClientPlayerEntityMixin implements IMorphLocalPlayer
             cir.setReturnValue(serverSideSneaking);
     }
 
-/*
-    @Inject(
-            method = "sendShiftKeyState",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientPacketListener;send(Lnet/minecraft/network/protocol/Packet;)V")
-    )
-    public void aa(CallbackInfo ci)
-    {
-        FeatherMorphClient.LOGGER.info("SendShift!");
-    }
-*/
-
     @Override
     public void morphclient$overrideSneaking(boolean sneaking)
     {
         morphclient$serverSneaking = sneaking;
-        //this.wasShiftKeyDown = sneaking;
     }
 }
