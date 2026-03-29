@@ -425,7 +425,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
         // Also 2026/03/28:
         // Yes, calling `setYBodyRot` can break things dang it :>
         var playerPos = bindingPlayer.position();
-        var targetPos = new Vec3(playerPos.x, playerPos.y + 1, playerPos.z);
+        var targetPos = new Vec3(playerPos.x, playerPos.y, playerPos.z);
         disguiseInstance.moveOrInterpolateTo(targetPos);
     }
 
