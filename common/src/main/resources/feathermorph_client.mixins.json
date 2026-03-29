@@ -13,6 +13,7 @@
     "FoxMixin",
     "GoatMixin",
     "LivingEntityMixin",
+    "EntityHitboxDebugRendererMixin",
     "accessors.AxolotlAccessor",
     "accessors.CatAccessor",
     "accessors.FoxAccessor",
