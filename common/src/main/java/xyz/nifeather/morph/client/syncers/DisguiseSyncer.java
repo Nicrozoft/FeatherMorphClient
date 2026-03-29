@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -141,7 +142,12 @@ public abstract class DisguiseSyncer extends MorphClientObject
             builder.forSlot(slot, Objects.requireNonNullElseGet(upcoming, () -> existing.getItem(slot)));
         }
 
-        propertyHolder().set((ClientProperty<? super DisguiseEquipment, ?>) property, builder.build());
+        var finalEquipment = builder.build();
+        propertyHolder().set((ClientProperty<? super DisguiseEquipment, ?>) property, finalEquipment);
+
+        var displayDisguiseEquip = propertyHolder().getProperty(PropertyNames.ENTITY_DISPLAY_DISGUISE_EQUIPMENT);
+        if (Boolean.TRUE.equals(propertyHolder().get(displayDisguiseEquip)) && disguiseInstance instanceof LivingEntity livingEntity)
+            finalEquipment.contents().forEach(livingEntity::setItemSlot);
     }
 
     private AnimationHandler animHandler;
@@ -283,13 +289,19 @@ public abstract class DisguiseSyncer extends MorphClientObject
     {
         if (!allowTick || disposed()) return;
 
+        var profiler = Profiler.get();
         try
         {
+            profiler.push("feathermorph:pre_entity");
             onPreEntityTick();
         }
         catch (Exception ee)
         {
             onSyncError(ee);
+        }
+        finally
+        {
+            profiler.pop();
         }
     }
 
@@ -297,13 +309,19 @@ public abstract class DisguiseSyncer extends MorphClientObject
     {
         if (!allowTick || disposed()) return;
 
+        var profiler = Profiler.get();
         try
         {
+            profiler.push("feathermorph:post_entity");
             onPostEntityTick();
         }
         catch (Exception ee)
         {
             onSyncError(ee);
+        }
+        finally
+        {
+            profiler.pop();
         }
     }
 
@@ -367,7 +385,19 @@ public abstract class DisguiseSyncer extends MorphClientObject
         localPlayer.updateSkin(profile);
     }
 
-    private static final DisguiseEquipment emptyEquipment = DisguiseEquipment.empty();
+    public void onMasterEquipmentChange(EquipmentSlot slot, ItemStack itemStack)
+    {
+        var shouldDisplayDisguiseEquipment = propertyHolder.getOr(PropertyNames.ENTITY_DISPLAY_DISGUISE_EQUIPMENT, false);
+        if (shouldDisplayDisguiseEquipment || !(disguiseInstance instanceof LivingEntity livingEntity)) return;
+
+        if (livingEntity.canUseSlot(slot))
+            livingEntity.setItemSlot(slot, itemStack);
+    }
+
+    public void updateSelectedItem(ItemStack selectedItem)
+    {
+        onMasterEquipmentChange(EquipmentSlot.MAINHAND, selectedItem);
+    }
 
     public void syncEquipment()
     {
@@ -375,18 +405,14 @@ public abstract class DisguiseSyncer extends MorphClientObject
             return;
 
         var shouldDisplayDisguiseEquipment = propertyHolder.getOr(PropertyNames.ENTITY_DISPLAY_DISGUISE_EQUIPMENT, false);
-
-        // So that we don't read disguise equipment if we don't have to.
-        var disguiseEquip = shouldDisplayDisguiseEquipment
-                            ? propertyHolder.getOr(PropertyNames.ENTITY_EQUIPMENT, emptyEquipment)
-                            : null;
+        if (shouldDisplayDisguiseEquipment) return;
 
         for (EquipmentSlot slot : EquipmentSlot.values())
         {
             if (!livingEntity.canUseSlot(slot))
                 continue;
 
-            var stack = shouldDisplayDisguiseEquipment ? disguiseEquip.getItem(slot) : bindingPlayer.getItemBySlot(slot);
+            var stack = bindingPlayer.getItemBySlot(slot);
             livingEntity.setItemSlot(slot, stack);
         }
     }
@@ -495,16 +521,26 @@ public abstract class DisguiseSyncer extends MorphClientObject
             return;
         }
 
+        var profiler = Profiler.get();
+        profiler.push("feathermorph:syncer_base_sync");
+
         markSyncing();
 
+        profiler.push("feathermorph:rotation");
         syncRotation();
-        syncEquipment();
+        profiler.pop();
 
         if (beamTarget != null && beamTarget.isRemoved())
             beamTarget = null;
 
         if (entity instanceof LivingEntity livingEntity)
+        {
+            profiler.push("feathermorph:sync_on_living_entity");
             syncOnLivingEntity(livingEntity);
+            profiler.pop();
+        }
+
+        profiler.push("feathermorph:misc_attributes");
 
         //todo: Move this out of DisguiseSyncer
         if (entity instanceof Display.ItemDisplay itemDisplay)
@@ -555,8 +591,10 @@ public abstract class DisguiseSyncer extends MorphClientObject
             player.fishing = bindingPlayer.fishing;
 
         entity.setInvisible(bindingPlayer.isInvisible());
+        profiler.pop();
 
         markNotSyncing();
+        profiler.pop();
     }
 
     protected void syncOnLivingEntity(LivingEntity entity)

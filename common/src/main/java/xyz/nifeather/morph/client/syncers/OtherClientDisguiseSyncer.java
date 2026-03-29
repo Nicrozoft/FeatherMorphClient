@@ -34,6 +34,7 @@ public class OtherClientDisguiseSyncer extends DisguiseSyncer
     @Override
     protected void initialSync()
     {
+        syncEquipment();
         syncPosition();
     }
 }

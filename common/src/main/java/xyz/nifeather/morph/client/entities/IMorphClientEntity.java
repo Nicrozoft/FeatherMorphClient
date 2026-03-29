@@ -13,6 +13,7 @@ public interface IMorphClientEntity
     public void featherMorph$setIsDisguiseEntity(int masterId, DisguiseSyncer masterSyncer);
     public boolean featherMorph$isDisguiseEntity();
     public int featherMorph$getMasterEntityId();
+    public DisguiseSyncer featherMorph$getMasterSyncer();
 
     public void featherMorph$requestBypassDispatcherRedirect(Object source, boolean bypass);
     public boolean featherMorph$bypassesDispatcherRedirect();

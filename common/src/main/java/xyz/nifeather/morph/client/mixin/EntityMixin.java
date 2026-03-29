@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.Level;
@@ -93,6 +94,12 @@ public abstract class EntityMixin implements IMorphClientEntity, IHasOverrideGlo
     public int featherMorph$getMasterEntityId()
     {
         return this.featherMorph$masterId;
+    }
+
+    @Override
+    public DisguiseSyncer featherMorph$getMasterSyncer()
+    {
+        return this.morphclient$masterSyncer;
     }
 
     //endregion IMorphClientEntity
@@ -230,12 +237,6 @@ public abstract class EntityMixin implements IMorphClientEntity, IHasOverrideGlo
     @WrapMethod(method = "tick")
     public void morphClient$onTick(Operation<Void> original)
     {
-        if (!this.featherMorph$isDisguiseEntity)
-        {
-            original.call();
-            return;
-        }
-
         var syncer = morphclient$masterSyncer;
 
         if (syncer == null)

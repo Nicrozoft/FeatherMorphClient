@@ -132,6 +132,7 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
     @Override
     protected void initialSync()
     {
+        syncEquipment();
         syncPosition();
     }
 
