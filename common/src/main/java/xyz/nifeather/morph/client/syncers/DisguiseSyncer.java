@@ -294,32 +294,6 @@ public abstract class DisguiseSyncer extends MorphClientObject
         }
     }
 
-    private record PositionRecord(
-            Vec3 pos, float xRot, float yRot,
-            Vec3 oldPos, float xRotOld, float yRotOld,
-            Vec3 motion
-    )
-    {
-        public static PositionRecord fromEntity(Entity entity)
-        {
-            return new PositionRecord(
-                    entity.position(), entity.getXRot(), entity.getYRot(),
-                    entity.oldPosition(), entity.xRotO, entity.yRotO,
-                    entity.getDeltaMovement()
-            );
-        }
-
-        public void applyToEntity(Entity entity)
-        {
-            entity.snapTo(pos, yRot, xRot);
-            entity.setOldPosAndRot(oldPos, yRotOld, xRotOld);
-            entity.setDeltaMovement(motion);
-        }
-    }
-
-    @Nullable
-    private PositionRecord disguiseLastPositionSaving;
-
     public void preRenderStateSetup()
     {
     }
