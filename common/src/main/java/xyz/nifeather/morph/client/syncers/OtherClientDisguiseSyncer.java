@@ -22,7 +22,7 @@ public class OtherClientDisguiseSyncer extends DisguiseSyncer
     @Override
     protected void onPreEntityTick()
     {
-        syncPositionRotation();
+        syncPosition();
     }
 
     @Override
@@ -34,6 +34,6 @@ public class OtherClientDisguiseSyncer extends DisguiseSyncer
     @Override
     protected void initialSync()
     {
-        syncPositionRotation();
+        syncPosition();
     }
 }

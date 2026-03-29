@@ -31,19 +31,6 @@ public class ClientWorldMixin
         fm$instanceTracker.setupSyncerIfNotExist(entity);
     }
 
-    @WrapOperation(method = "tickNonPassenger", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;tick()V"))
-    private void morphclient$onEntityTick(Entity entity, Operation<Void> original)
-    {
-        var syncer = DisguiseInstanceTracker.getInstance().findSyncerByDisguiseEntity(entity);
-        if (syncer != null)
-            syncer.preEntityTick();
-
-        original.call(entity);
-
-        if (syncer != null)
-            syncer.postEntityTick();
-    }
-
     @Inject(method = "getPushableEntities", at = @At("HEAD"), cancellable = true)
     private void morphclient$getPushableEntities(Entity pusher, AABB boundingBox,
                                                  CallbackInfoReturnable<List<Entity>> cir)

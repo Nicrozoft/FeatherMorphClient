@@ -90,7 +90,9 @@ public abstract class DisguiseSyncer extends MorphClientObject
         propertyHolder.hookOnTemporaryPropertyDiscard(this::onTemporaryPropertyDiscard);
 
         if (disguiseEntity instanceof IMorphClientEntity iMorphClientEntity)
-            iMorphClientEntity.featherMorph$setIsDisguiseEntity(networkId);
+            iMorphClientEntity.featherMorph$setIsDisguiseEntity(networkId, this);
+
+        initialize();
     }
 
     private <X, E> void onTemporaryPropertyDiscard(ClientProperty<X, E> clientProperty)
@@ -435,7 +437,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
         if (xRot != null) disguiseInstance.setXRot(xRot % 360f);
     }
 
-    protected void syncPositionRotation()
+    protected void syncPosition()
     {
         // 2026/03/28:
         // I'm spending 3 days on why the disguise's `yBodyRot` is abnormal.
@@ -450,7 +452,6 @@ public abstract class DisguiseSyncer extends MorphClientObject
         disguiseInstance.setPos(playerPos);
     }
 
-    private boolean isFirstTick = true;
     private ClientLevel world;
     private ClientLevel prevWorld;
     protected void baseSync()
@@ -495,12 +496,6 @@ public abstract class DisguiseSyncer extends MorphClientObject
         }
 
         markSyncing();
-
-        if (isFirstTick)
-        {
-            initialSync();
-            isFirstTick = false;
-        }
 
         syncRotation();
         syncEquipment();
@@ -697,6 +692,11 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     protected void postDispose()
     {
+    }
+
+    public void initialize()
+    {
+        initialSync();
     }
 
     //endregion Disposal

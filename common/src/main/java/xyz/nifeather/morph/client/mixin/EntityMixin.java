@@ -1,5 +1,7 @@
 package xyz.nifeather.morph.client.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
@@ -16,11 +18,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.nifeather.morph.client.DisguiseInstanceTracker;
 import xyz.nifeather.morph.client.EntityCache;
 import xyz.nifeather.morph.client.entities.IHasOverrideGlowing;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.network.ServerHandler;
-import xyz.nifeather.morph.client.syncers.ClientDisguiseSyncer;
+import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 import xyz.nifeather.morph.client.utilties.ClientSyncerUtils;
 import xyz.nifeather.morph.client.utilties.EntityCacheUtils;
 
@@ -69,10 +72,14 @@ public abstract class EntityMixin implements IMorphClientEntity, IHasOverrideGlo
     @Unique
     private int featherMorph$masterId = -1;
 
+    @Unique
+    private DisguiseSyncer morphclient$masterSyncer;
+
     @Override
-    public void featherMorph$setIsDisguiseEntity(int masterId)
+    public void featherMorph$setIsDisguiseEntity(int masterId, DisguiseSyncer masterSyncer)
     {
         this.featherMorph$masterId = masterId;
+        this.morphclient$masterSyncer = masterSyncer;
         this.featherMorph$isDisguiseEntity = true;
     }
 
@@ -218,6 +225,28 @@ public abstract class EntityMixin implements IMorphClientEntity, IHasOverrideGlo
     {
         if (this.morphClient$noAcceptSetPose)
             ci.cancel();
+    }
+
+    @WrapMethod(method = "tick")
+    public void morphClient$onTick(Operation<Void> original)
+    {
+        if (!this.featherMorph$isDisguiseEntity)
+        {
+            original.call();
+            return;
+        }
+
+        var syncer = morphclient$masterSyncer;
+
+        if (syncer == null)
+        {
+            original.call();
+            return;
+        }
+
+        syncer.preEntityTick();
+        original.call();
+        syncer.postEntityTick();
     }
 
     @Unique
