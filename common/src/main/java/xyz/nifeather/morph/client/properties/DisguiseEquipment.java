@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 import xyz.nifeather.morph.client.utilties.ClientItemUtils;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -28,6 +29,21 @@ public class DisguiseEquipment implements ISupportDiffs<DisguiseEquipment>
     public Map<EquipmentSlot, ItemStack> contents()
     {
         return ImmutableMap.copyOf(itemStackMap);
+    }
+
+    @Unmodifiable
+    public Map<EquipmentSlot, ItemStack> contents(boolean fillAirIfNotExist)
+    {
+        if (!fillAirIfNotExist)
+            return contents();
+
+        var map = ImmutableMap.<EquipmentSlot, ItemStack>builder();
+
+        var slots = EnumSet.allOf(EquipmentSlot.class);
+        for (EquipmentSlot slot : slots)
+            map.put(slot, getItem(slot));
+
+        return map.build();
     }
 
     /**

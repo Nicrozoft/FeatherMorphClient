@@ -35,10 +35,13 @@ import xyz.nifeather.morph.client.mixin.accessors.EntityAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LimbAnimatorAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LivingEntityAccessor;
 import xyz.nifeather.morph.client.properties.*;
+import xyz.nifeather.morph.client.properties.impl.LivingEntityPropertyCollection;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 import xyz.nifeather.morph.client.utilties.ClientItemUtils;
 
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -123,17 +126,22 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     private void onPropertyWrite(ClientProperty<?, ?> property, @Nullable Object oldValue, @NotNull Object newValue)
     {
-        if (!property.identifier().equals(PropertyNames.ENTITY_EQUIPMENT))
-            return;
-
-        if (oldValue == null) return;
-        mergeEquipment((DisguiseEquipment) oldValue, (DisguiseEquipment) newValue);
+        if (property.identifier().equals(PropertyNames.ENTITY_EQUIPMENT))
+        {
+            mergeEquipment(oldValue == null ? DisguiseEquipment.empty() : (DisguiseEquipment) oldValue, (DisguiseEquipment) newValue);
+        }
+        else if (property.identifier().equals(PropertyNames.ENTITY_DISPLAY_DISGUISE_EQUIPMENT))
+        {
+            var equipmentProperty = (ClientProperty<DisguiseEquipment, LivingEntity>) propertyHolder().getProperty(PropertyNames.ENTITY_EQUIPMENT);
+            var display = (Boolean) newValue;
+            updateDisplayingEquipment(display, propertyHolder().get(equipmentProperty).contents(false));
+        }
     }
 
     private void mergeEquipment(@NotNull DisguiseEquipment existing, DisguiseEquipment newEquipment)
     {
-        var property = propertyHolder().getProperty(PropertyNames.ENTITY_EQUIPMENT);
-        if (property == null) return;
+        var equipmentProperty = (ClientProperty<DisguiseEquipment, LivingEntity>) propertyHolder().getProperty(PropertyNames.ENTITY_EQUIPMENT);
+        if (equipmentProperty == null) return;
 
         var builder = DisguiseEquipment.builder();
         for (EquipmentSlot slot : EquipmentSlot.values())
@@ -143,11 +151,32 @@ public abstract class DisguiseSyncer extends MorphClientObject
         }
 
         var finalEquipment = builder.build();
-        propertyHolder().set((ClientProperty<? super DisguiseEquipment, ?>) property, finalEquipment);
+        propertyHolder().set(equipmentProperty, finalEquipment);
 
-        var displayDisguiseEquip = propertyHolder().getProperty(PropertyNames.ENTITY_DISPLAY_DISGUISE_EQUIPMENT);
-        if (Boolean.TRUE.equals(propertyHolder().get(displayDisguiseEquip)) && disguiseInstance instanceof LivingEntity livingEntity)
-            finalEquipment.contents().forEach(livingEntity::setItemSlot);
+        var displayDisguiseEquipProperty = propertyHolder().getProperty(PropertyNames.ENTITY_DISPLAY_DISGUISE_EQUIPMENT);
+        var displayDisguiseEquip = (Boolean) propertyHolder().get(displayDisguiseEquipProperty);
+        updateDisplayingEquipment(displayDisguiseEquip, finalEquipment.contents(false));
+    }
+
+    private void updateDisplayingEquipment(boolean displayDisguiseEquip, Map<EquipmentSlot, ItemStack> disguiseEquipment)
+    {
+        if (!(disguiseInstance instanceof LivingEntity livingEntity)) return;
+
+        if (displayDisguiseEquip)
+        {
+            disguiseEquipment.forEach(livingEntity::setItemSlot);
+        }
+        else
+        {
+            var slots = EnumSet.allOf(EquipmentSlot.class);
+            for (EquipmentSlot slot : slots)
+            {
+                if (!livingEntity.canUseSlot(slot) || !bindingPlayer.canUseSlot(slot))
+                    continue;
+
+                livingEntity.setItemSlot(slot, bindingPlayer.getItemBySlot(slot));
+            }
+        }
     }
 
     private AnimationHandler animHandler;
