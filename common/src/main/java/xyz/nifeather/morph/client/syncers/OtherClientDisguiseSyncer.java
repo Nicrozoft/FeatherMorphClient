@@ -20,18 +20,20 @@ public class OtherClientDisguiseSyncer extends DisguiseSyncer
     }
 
     @Override
-    public void syncTick()
+    protected void onPreEntityTick()
     {
-        if (disposed()) return;
+        syncPositionRotation();
+    }
 
+    @Override
+    protected void onPostEntityTick()
+    {
         baseSync();
-        syncRotation();
     }
 
     @Override
     protected void initialSync()
     {
-        syncPosition();
-        syncRotation();
+        syncPositionRotation();
     }
 }

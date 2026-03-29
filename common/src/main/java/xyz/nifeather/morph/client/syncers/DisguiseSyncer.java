@@ -277,22 +277,45 @@ public abstract class DisguiseSyncer extends MorphClientObject
         onTickError();
     }
 
-    public void onGameTick()
+    public void preEntityTick()
     {
-        if (!allowTick) return;
+        if (!allowTick || disposed()) return;
 
         try
         {
-            var clientPlayer = Minecraft.getInstance().player;
-            assert clientPlayer != null;
-
-            syncTick();
+            onPreEntityTick();
         }
-        catch (Exception e)
+        catch (Exception ee)
         {
-            onSyncError(e);
+            onSyncError(ee);
         }
     }
+
+    public void postEntityTick()
+    {
+        if (!allowTick || disposed()) return;
+
+        try
+        {
+            onPostEntityTick();
+        }
+        catch (Exception ee)
+        {
+            onSyncError(ee);
+        }
+    }
+
+    /**
+     * Called when the disguise entity finished tick.
+     */
+    protected abstract void onPostEntityTick();
+
+    /**
+     * Called when the disguise entity is about to tick.
+     */
+    protected abstract void onPreEntityTick();
+
+    protected abstract void initialSync();
 
     public void preRenderStateSetup()
     {
@@ -342,53 +365,6 @@ public abstract class DisguiseSyncer extends MorphClientObject
         localPlayer.updateSkin(profile);
     }
 
-    public abstract void syncTick();
-
-    protected abstract void initialSync();
-
-    protected void syncRotation()
-    {
-        var player = bindingPlayer;
-
-        if (!propertyHolder.contains(PropertyNames.ENTITY_STATIC_PITCH))
-        {
-            BlockPos sleepingPos = null;
-            if (disguiseInstance instanceof LivingEntity livingEntity)
-                sleepingPos = livingEntity.getSleepingPos().orElse(null);
-
-            // 幻翼的pitch需要倒转
-            // Don't sync pitch when sleeping position is present -- Match plugin behavior (maybe?)
-            if (sleepingPos == null && !(disguiseInstance instanceof Panda panda && panda.isSitting())) // Fix: Panda lock themselves pitch to zero when sitting
-            {
-                if (disguiseInstance.getType() == EntityType.PHANTOM)
-                    disguiseInstance.setXRot(-player.getXRot());
-                else
-                    disguiseInstance.setXRot(player.getXRot());
-            }
-        }
-
-        if (!propertyHolder.contains(PropertyNames.ENTITY_STATIC_YAW))
-        {
-            //末影龙的Yaw和玩家是反的
-            if (disguiseInstance.getType() == EntityType.ENDER_DRAGON)
-                disguiseInstance.setYRot(180 + player.getYRot());
-            else
-                disguiseInstance.setYRot(player.getYRot());
-
-            if (disguiseInstance instanceof LivingEntity livingEntity)
-            {
-                livingEntity.yHeadRot = player.yHeadRot;
-                livingEntity.yHeadRotO = player.yHeadRotO;
-
-                if (livingEntity.getType() == EntityType.ARMOR_STAND)
-                {
-                    livingEntity.yBodyRot = player.yHeadRot;
-                    livingEntity.yBodyRotO = player.yHeadRotO;
-                }
-            }
-        }
-    }
-
     private static final DisguiseEquipment emptyEquipment = DisguiseEquipment.empty();
 
     public void syncEquipment()
@@ -413,7 +389,53 @@ public abstract class DisguiseSyncer extends MorphClientObject
         }
     }
 
-    protected void syncPosition()
+    protected void syncRotation()
+    {
+        @Nullable Float xRot = null;
+        @Nullable Float yRot = null;
+
+        var player = bindingPlayer;
+
+        if (!propertyHolder.contains(PropertyNames.ENTITY_STATIC_PITCH))
+        {
+            BlockPos sleepingPos = null;
+            if (disguiseInstance instanceof LivingEntity livingEntity)
+                sleepingPos = livingEntity.getSleepingPos().orElse(null);
+
+            // 幻翼的pitch需要倒转
+            // Don't sync pitch when sleeping position is present -- Match plugin behavior (maybe?)
+            if (sleepingPos == null && !(disguiseInstance instanceof Panda panda && panda.isSitting())) // Fix: Panda lock themselves pitch to zero when sitting
+            {
+                xRot = (disguiseInstance.getType() == EntityType.PHANTOM)
+                       ? -player.getXRot()
+                       : player.getXRot();
+            }
+        }
+
+        if (!propertyHolder.contains(PropertyNames.ENTITY_STATIC_YAW))
+        {
+            yRot = (disguiseInstance.getType() == EntityType.ENDER_DRAGON)
+                   ? 180 + player.getYRot()
+                   : player.getYRot();
+
+            if (disguiseInstance instanceof LivingEntity livingEntity)
+            {
+                livingEntity.yHeadRot = player.yHeadRot;
+                livingEntity.yHeadRotO = player.yHeadRotO;
+
+                if (livingEntity.getType() == EntityType.ARMOR_STAND)
+                {
+                    livingEntity.yBodyRot = player.yHeadRot;
+                    livingEntity.yBodyRotO = player.yHeadRotO;
+                }
+            }
+        }
+
+        if (yRot != null) disguiseInstance.setYRot(yRot % 360f);
+        if (xRot != null) disguiseInstance.setXRot(xRot % 360f);
+    }
+
+    protected void syncPositionRotation()
     {
         // 2026/03/28:
         // I'm spending 3 days on why the disguise's `yBodyRot` is abnormal.
@@ -425,8 +447,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
         // Also 2026/03/28:
         // Yes, calling `setYBodyRot` can break things dang it :>
         var playerPos = bindingPlayer.position();
-        var targetPos = new Vec3(playerPos.x, playerPos.y, playerPos.z);
-        disguiseInstance.moveOrInterpolateTo(targetPos);
+        disguiseInstance.setPos(playerPos);
     }
 
     private boolean isFirstTick = true;
@@ -481,7 +502,7 @@ public abstract class DisguiseSyncer extends MorphClientObject
             isFirstTick = false;
         }
 
-        syncPosition();
+        syncRotation();
         syncEquipment();
 
         if (beamTarget != null && beamTarget.isRemoved())

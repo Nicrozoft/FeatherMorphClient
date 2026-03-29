@@ -216,7 +216,10 @@ public class QuickDisguiseScreen extends FeatherScreen
     {
         var syncer = this.syncer;
         if (syncer != null)
-            syncer.onGameTick();
+        {
+            syncer.preEntityTick();
+            syncer.postEntityTick();
+        }
 
         super.tick();
     }

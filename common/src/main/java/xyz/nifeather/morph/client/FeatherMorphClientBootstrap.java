@@ -174,8 +174,8 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
 
         disguiseTracker.getAllSyncer().forEach(syncer ->
         {
-            if (syncer.disposed()) syncersToRemove.add(syncer);
-            else syncer.onGameTick();
+            if (syncer.disposed())
+                syncersToRemove.add(syncer);
         });
 
         syncersToRemove.forEach(syncer -> disguiseTracker.removeSyncer(syncer));

@@ -5,7 +5,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
@@ -118,8 +117,6 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
         var clientPlayer = Minecraft.getInstance().player;
         assert clientPlayer != null;
 
-        acceptSyncing = false;
-
         FeatherMorphClientBootstrap.getInstance().updateClientView(true, false);
 
         clientPlayer.sendSystemMessage(Component.translatable("text.morphclient.error.update_disguise1").withStyle(ChatFormatting.RED));
@@ -132,17 +129,10 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
         return beamTarget;
     }
 
-    //private boolean isSpider = false;
-
     @Override
     protected void initialSync()
     {
-        var playerPos = bindingPlayer.position();
-        var targetPos = new Vec3(playerPos.x, playerPos.y + 1, playerPos.z);
-        disguiseInstance.setPos(targetPos);
-
-        syncPosition();
-        syncRotation();
+        syncPositionRotation();
     }
 
     @Override
@@ -153,12 +143,15 @@ public class ClientDisguiseSyncer extends DisguiseSyncer
 
     public static boolean syncing;
 
-    private boolean acceptSyncing;
+    @Override
+    protected void onPreEntityTick()
+    {
+        syncPositionRotation();
+    }
 
     @Override
-    public void syncTick()
+    protected void onPostEntityTick()
     {
         baseSync();
-        syncRotation();
     }
 }

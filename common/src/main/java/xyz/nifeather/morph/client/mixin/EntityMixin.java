@@ -153,18 +153,6 @@ public abstract class EntityMixin implements IMorphClientEntity, IHasOverrideGlo
         }
     }
 
-    @Unique
-    private boolean featherMorph$isDisguiseInstance()
-    {
-        var currentClientSyncer = ClientDisguiseSyncer.getCurrentInstance();
-        if (currentClientSyncer == null) return false;
-
-        var disguise = currentClientSyncer.getDisguiseInstance();
-        if (disguise == null) return false;
-
-        return disguise.equals(this);
-    }
-
     @Inject(method = "setRemoved", at = @At("RETURN"))
     private void morphClient$onRemoved(CallbackInfo ci)
     {

@@ -172,14 +172,13 @@ public class DisguiseInstanceTracker extends MorphClientObject
     public DisguiseSyncer findSyncerByDisguiseEntity(Entity entity)
     {
         var id = entity.getId();
-        var targetSyncer = this.idSyncerMap.values().stream()
-                .filter(syncer -> syncer.getDisguiseInstance() != null && syncer.getDisguiseInstance().getId() == id)
-                .findFirst()
-                .orElse(null);
 
         //logger.info("Return syncer " + targetSyncer + " for " + entity.getName().getLiteralString());
 
-        return targetSyncer;
+        return this.idSyncerMap.values().stream()
+                .filter(syncer -> syncer.getDisguiseInstance().getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 
     public void removeSyncer(DisguiseSyncer targetSyncer)
