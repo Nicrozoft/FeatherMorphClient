@@ -30,6 +30,7 @@ dependencies {
 
     api("maven.modrinth:entity-model-features:${emf_version}")
     api("maven.modrinth:entitytexturefeatures:${etf_version}")
+    api("maven.modrinth:entityculling:${entityculling_version}")
     //modApi("maven.modrinth:paperdoll:${paperdoll_version}")
 
     implementation("net.fabricmc.fabric-api:fabric-api:${fabric_version}")

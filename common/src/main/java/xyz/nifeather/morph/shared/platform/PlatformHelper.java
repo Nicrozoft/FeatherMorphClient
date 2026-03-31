@@ -47,6 +47,8 @@ public interface PlatformHelper
     <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> void registerArgumentType(
             Identifier id, Class<? extends A> clazz, ArgumentTypeInfo<A, T> serializer);
 
+    boolean isModPresent(String entityculling);
+
     @FunctionalInterface
     interface HudRenderCallback
     {

@@ -39,6 +39,7 @@ import xyz.nifeather.morph.client.screens.quickDisguise.QuickDisguiseScreen;
 import xyz.nifeather.morph.client.storage.SavedDisguiseStorage;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
 import xyz.nifeather.morph.client.syncers.animations.AnimHandlerIndex;
+import xyz.nifeather.morph.client.utilties.CompatibilityUtils;
 import xyz.nifeather.morph.network.commands.C2S.*;
 import xyz.nifeather.morph.network.commands.S2C.S2CUpdateRequestStatusCommand;
 import xyz.nifeather.morph.shared.SharedValues;
@@ -151,6 +152,8 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
         savedDisguiseStorage = new SavedDisguiseStorage();
 
         ClientPlayConnectionEvents.DISCONNECT.register(this::onDisconnect);
+
+        CompatibilityUtils.initialize();
     }
 
     private void onDisconnect(ClientPacketListener listener, Minecraft minecraft)

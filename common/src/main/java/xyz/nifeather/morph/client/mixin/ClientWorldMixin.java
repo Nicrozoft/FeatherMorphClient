@@ -1,7 +1,9 @@
 package xyz.nifeather.morph.client.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import dev.tr7zw.entityculling.versionless.access.Cullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
@@ -14,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nifeather.morph.client.DisguiseInstanceTracker;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
+import xyz.nifeather.morph.client.utilties.CompatibilityUtils;
 import xyz.nifeather.morph.client.utilties.EntityCacheUtils;
 
 import java.util.Collections;
@@ -29,6 +32,12 @@ public class ClientWorldMixin
 
         var fm$instanceTracker = DisguiseInstanceTracker.getInstance();
         fm$instanceTracker.setupSyncerIfNotExist(entity);
+    }
+
+    @Inject(method = "tickNonPassenger", at = @At("HEAD"))
+    private void morphclient$onTickNonPassenger(Entity entity, CallbackInfo ci)
+    {
+        CompatibilityUtils.makeEntityNotCulledIfPossible(entity);
     }
 
     @Inject(method = "getPushableEntities", at = @At("HEAD"), cancellable = true)

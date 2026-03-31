@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.resources.Identifier;
@@ -79,5 +80,11 @@ public class FabricPlatformHelper implements PlatformHelper
     public <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> void registerArgumentType(Identifier id, Class<? extends A> clazz, ArgumentTypeInfo<A, T> serializer)
     {
         ArgumentTypeRegistry.registerArgumentType(id, clazz, serializer);
+    }
+
+    @Override
+    public boolean isModPresent(String modid)
+    {
+        return FabricLoader.getInstance().isModLoaded(modid);
     }
 }

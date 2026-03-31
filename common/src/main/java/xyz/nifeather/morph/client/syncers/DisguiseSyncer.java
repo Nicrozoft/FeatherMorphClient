@@ -503,8 +503,11 @@ public abstract class DisguiseSyncer extends MorphClientObject
         //
         // Also 2026/03/28:
         // Yes, calling `setYBodyRot` can break things dang it :>
+        //
+        // 2026/03/31:
+        // I guess I figured out how to make the entity not get culled, so let's try teleporting to Y4096 again :D
         var playerPos = bindingPlayer.position();
-        disguiseInstance.setPos(playerPos);
+        disguiseInstance.setPos(playerPos.x, playerPos.y + 4096, playerPos.z);
     }
 
     private ClientLevel world;
