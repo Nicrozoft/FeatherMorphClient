@@ -89,17 +89,10 @@ public class PlayerRenderHelper extends MorphClientObject
         {
             if (PlayerRenderHelper.instance().skipRender
                 || !(entity instanceof IMorphClientEntity iMorphClientEntity)
-                || iMorphClientEntity.featherMorph$bypassesDispatcherRedirect())
+                || iMorphClientEntity.featherMorph$bypassesDispatcherRedirect()
+                || iMorphClientEntity.featherMorph$isDisguiseEntity())
             {
                 return original.call(entity, partialTicks);
-            }
-
-            // Hide disguise entities...
-            if (iMorphClientEntity.featherMorph$isDisguiseEntity())
-            {
-                var state = original.call(entity, partialTicks);
-                state.y = -1000;
-                return state;
             }
 
             var syncer = DisguiseInstanceTracker.getInstance().getSyncerFor(entity);
