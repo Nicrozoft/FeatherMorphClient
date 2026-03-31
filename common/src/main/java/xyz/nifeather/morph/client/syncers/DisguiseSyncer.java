@@ -365,8 +365,17 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
     protected abstract void initialSync();
 
-    public void preRenderStateSetup()
+    private Vec3 cachedEntityOldPosition;
+    private Vec3 cachedEntityPosition;
+
+    public void preRenderStateSetup(float partialTicks)
     {
+        var entityPos = disguiseInstance.position();
+        cachedEntityPosition = new Vec3(entityPos.x, entityPos.y, entityPos.z);
+        cachedEntityOldPosition = disguiseInstance.oldPosition();
+
+        disguiseInstance.setPos(bindingPlayer.position());
+        disguiseInstance.setOldPosAndRot(bindingPlayer.oldPosition(), disguiseInstance.yRotO, disguiseInstance.xRotO);
     }
 
     public void modifyRenderState(EntityRenderState renderState, float partialTicks)
@@ -381,18 +390,21 @@ public abstract class DisguiseSyncer extends MorphClientObject
 
         if (renderState instanceof GuardianRenderState guardianRenderState)
             guardianRenderState.eyePosition = new Vec3(bindingPlayer.xo, bindingPlayer.yo, bindingPlayer.zo);
-
-        var posLerp = Mth.lerp(partialTicks, bindingPlayer.oldPosition(), bindingPlayer.position());
-        renderState.x = posLerp.x;
-        renderState.y = posLerp.y;
-        renderState.z = posLerp.z;
-
-        var playerRenderer = Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(bindingPlayer);
-        renderState.lightCoords = playerRenderer.getPackedLightCoords(bindingPlayer, partialTicks);
     }
 
-    public void postRenderStateSetup()
+    public void postRenderStateSetup(float partialTicks)
     {
+        if (cachedEntityPosition != null)
+        {
+            disguiseInstance.setPos(cachedEntityPosition);
+            cachedEntityPosition = null;
+        }
+
+        if (cachedEntityOldPosition != null)
+        {
+            disguiseInstance.setOldPosAndRot(cachedEntityOldPosition, disguiseInstance.yRotO, disguiseInstance.xRotO);
+            cachedEntityOldPosition = null;
+        }
     }
 
     public void updateSkin(GameProfile profile)

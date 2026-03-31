@@ -78,7 +78,7 @@ public class PlayerRenderHelper extends MorphClientObject
 
     private boolean doingRender = false;
 
-    public EntityRenderState getState(Entity entity, float partialTicks, Operation<EntityRenderState> original)
+    public EntityRenderState useDisguiseRenderStateIfPossible(Entity entity, float partialTicks, Operation<EntityRenderState> original)
     {
         Objects.requireNonNull(entity, "Null entity!");
 
@@ -102,10 +102,10 @@ public class PlayerRenderHelper extends MorphClientObject
             doingRender = true;
 
             // And redirect ours to the disguise entity.
-            syncer.preRenderStateSetup();
+            syncer.preRenderStateSetup(partialTicks);
             var state = original.call(syncer.getDisguiseInstance(), partialTicks);
             syncer.modifyRenderState(state, partialTicks);
-            syncer.postRenderStateSetup();
+            syncer.postRenderStateSetup(partialTicks);
 
             return state;
         }
