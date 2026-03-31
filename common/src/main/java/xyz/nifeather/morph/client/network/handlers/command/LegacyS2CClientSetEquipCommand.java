@@ -26,14 +26,11 @@ public class LegacyS2CClientSetEquipCommand extends NetheriteS2CSetFakeEquipComm
 
     public static LegacyS2CClientSetEquipCommand from(String rawArguments)
     {
-        log.info("~RAW IS " + rawArguments);
-
         //temp to array
         var dat = rawArguments.split(" ", 2);
 
         if (dat.length != 2) return null;
 
-        log.info("~DECODING: " + dat[1]);
         var stack = jsonToStack(dat[1]);
         if (stack == null) return null;
 
