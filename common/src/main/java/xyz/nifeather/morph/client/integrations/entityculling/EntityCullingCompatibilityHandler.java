@@ -1,17 +1,35 @@
 package xyz.nifeather.morph.client.integrations.entityculling;
 
+import dev.tr7zw.entityculling.EntityCullingModBase;
 import dev.tr7zw.entityculling.versionless.access.Cullable;
-import net.minecraft.world.entity.Entity;
-import xyz.nifeather.morph.client.integrations.ICullingHandler;
+import xyz.nifeather.morph.client.FeatherMorphClientBootstrap;
+import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 
-public class EntityCullingCompatibilityHandler implements ICullingHandler
+public class EntityCullingCompatibilityHandler
 {
-    @Override
-    public void avoidEntityFromCulling(Entity entity)
+    public static void tryAddDynamicEntityWhitelist()
     {
-        if (!(entity instanceof Cullable cullable)) return;
+        var cullingMod = EntityCullingModBase.instance;
+        if (cullingMod == null)
+        {
+            FeatherMorphClientBootstrap.getInstance().schedule(EntityCullingCompatibilityHandler::tryAddDynamicEntityWhitelist, 20);
+            return;
+        }
 
-        cullable.setOutOfCamera(false);
-        cullable.setCulled(false);
+        cullingMod.addDynamicEntityWhitelist(e ->
+        {
+            if (!(e instanceof Cullable cullable))
+                return false;
+
+            boolean shouldSkipThisCull = e instanceof IMorphClientEntity iMorphClientEntity
+                    && iMorphClientEntity.featherMorph$isDisguiseEntity();
+
+            if (shouldSkipThisCull)
+                cullable.setOutOfCamera(false);
+
+            return shouldSkipThisCull;
+        });
+
+        FeatherMorphClientBootstrap.LOGGER.info("OK Added dynamic entity whitelist rule.");
     }
 }
