@@ -35,7 +35,6 @@ import xyz.nifeather.morph.client.mixin.accessors.EntityAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LimbAnimatorAccessor;
 import xyz.nifeather.morph.client.mixin.accessors.LivingEntityAccessor;
 import xyz.nifeather.morph.client.properties.*;
-import xyz.nifeather.morph.client.properties.impl.LivingEntityPropertyCollection;
 import xyz.nifeather.morph.client.syncers.animations.AnimationHandler;
 import xyz.nifeather.morph.client.utilties.ClientItemUtils;
 
@@ -387,6 +386,9 @@ public abstract class DisguiseSyncer extends MorphClientObject
         renderState.x = posLerp.x;
         renderState.y = posLerp.y;
         renderState.z = posLerp.z;
+
+        var playerRenderer = Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(bindingPlayer);
+        renderState.lightCoords = playerRenderer.getPackedLightCoords(bindingPlayer, partialTicks);
     }
 
     public void postRenderStateSetup()
