@@ -501,6 +501,15 @@ public class FeatherMorphClientBootstrap extends XiaMoJavaPlugin
                             modConfigData.singlePlayerDebugging = v;
                         })
                         .build()
+        ).addEntry(
+                entryBuilder.startBooleanToggle(Component.translatable("option.morphclient.protocol_compatibility_mode"), modConfigData.protocolCompatibilityMode)
+                        .setTooltip(Component.translatable("option.morphclient.protocol_compatibility_mode.tooltip"))
+                        .setDefaultValue(false)
+                        .setSaveConsumer(v ->
+                        {
+                            modConfigData.protocolCompatibilityMode = v;
+                        })
+                        .build()
         );
 
         builder.setParentScreen(parent)

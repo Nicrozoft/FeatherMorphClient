@@ -307,7 +307,7 @@ public class DisguiseScreen extends FeatherScreen
 
         handlerText.setText("H: %s".formatted(serverHandler.protocolHandler().getClass().getSimpleName()));
 
-        MutableComponent apiText = Component.literal("C %s :: S %s".formatted(serverHandler.getImplmentingApiVersion(), serverHandler.getServerApiVersion()));
+        MutableComponent apiText = Component.literal("C %s(%s) :: S %s".formatted(serverHandler.getReportingProtocol(), serverHandler.getImplmentingApiVersion(), serverHandler.getServerApiVersion()));
 
         if (!serverHandler.serverApiMatch())
         {

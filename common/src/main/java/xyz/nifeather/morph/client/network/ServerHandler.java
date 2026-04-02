@@ -184,13 +184,13 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
 
     private void tryProtocols()
     {
-        var initRecord = new ClientInitializeRecordV3(clientFeatures, getImplmentingApiVersion(), false);
+        var initRecord = new ClientInitializeRecordV3(clientFeatures, getReportingProtocol(), false);
         V3ProtocolHandler.INSTANCE.sendInitializeRequest(initRecord);
 
         this.addSchedule(() ->
         {
             if (serverReady.get()) return;
-            legacyServerHandler.sendInitializeV2(List.of(SharedValues.newProtocolIdentify), getImplmentingApiVersion());
+            legacyServerHandler.sendInitializeV2(List.of(SharedValues.newProtocolIdentify), getReportingProtocol());
         }, 20);
     }
 
@@ -198,6 +198,7 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     public void connect()
     {
         this.resetServerStatus();
+        pickReportingProtocol();
 
         setProtocolHandler(V3ProtocolHandler.INSTANCE);
         tryProtocols();
@@ -213,6 +214,20 @@ public class ServerHandler extends MorphClientObject implements BasicServerHandl
     public int getServerApiVersion()
     {
         return serverVersion;
+    }
+
+    private int reportingProtocolVersion = -1;
+
+    private void pickReportingProtocol()
+    {
+        this.reportingProtocolVersion = FeatherMorphClientBootstrap.getInstance().getModConfigData().protocolCompatibilityMode
+               ? 17
+               : getImplmentingApiVersion();
+    }
+
+    public int getReportingProtocol()
+    {
+        return reportingProtocolVersion;
     }
 
     @Override
