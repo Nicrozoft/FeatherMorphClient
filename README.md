@@ -1,3 +1,5 @@
+See [the plugin](https://github.com/NiFeather/FeatherMorph)
+
 ![cover](./assets/cover.png)
 
 <p align="right">
