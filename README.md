@@ -34,3 +34,8 @@ cd FeatherMorphClient
 ```
 
 生成的文件将位于`fabric/build/libs`或`neoforge/build/libs`中，`client-x.x.x.jar`就是构建出来的插件。
+
+### Credits
+- [Identity Mod](https://github.com/Draylar/identity): For how I learned to make client-side disguise possible.
+- [VeinMiner](https://github.com/2008Choco/VeinMiner): For the reference about how to implement *Client <-> Server* communication.
+- [osu-framework](https://github.com/ppy/osu-framework): For the Drawable, Bindable and the Dependency(`@Resolved`) system, although this project has a very poor reimplementation.
