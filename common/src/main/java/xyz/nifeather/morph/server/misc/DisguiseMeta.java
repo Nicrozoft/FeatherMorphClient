@@ -2,12 +2,17 @@ package xyz.nifeather.morph.server.misc;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.server.disguise.providers.AbstractDisguiseProvider;
+
+import java.util.Optional;
 
 public class DisguiseMeta
 {
@@ -82,11 +87,13 @@ public class DisguiseMeta
         {
             case PLAYER ->
             {
-                this.entityType = EntityType.PLAYER;
+                this.entityType = EntityTypes.PLAYER;
                 this.playerDisguiseTargetName = disguiseType.toStrippedId(rawIdentifier);
             }
 
-            case VANILLA -> this.entityType = EntityType.byString(rawIdentifier).orElseThrow();
+            case VANILLA -> this.entityType = Optional.ofNullable(Identifier.tryParse(rawIdentifier))
+                    .flatMap(BuiltInRegistries.ENTITY_TYPE::getOptional)
+                    .orElseThrow();
             default -> this.entityType = null;
         }
     }

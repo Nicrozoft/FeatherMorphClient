@@ -1,6 +1,8 @@
 package xyz.nifeather.morph.client;
 
 import com.mojang.authlib.GameProfile;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
@@ -8,6 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
@@ -17,8 +20,10 @@ import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.entities.MorphLocalAvatar;
 import xyz.nifeather.morph.client.entities.MorphLocalPlayer;
 import xyz.nifeather.morph.client.utilties.EntityCacheUtils;
+import xyz.nifeather.morph.client.utilties.EntityIdUtils;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -65,7 +70,8 @@ public class EntityCache
         try
         {
             //照理说values里不该出现null值，但这确实发生了
-            return cacheMap.values().stream().filter(l -> l.getId() == id).findFirst().orElse(null) != null;
+            //缓存里的实体由客户端自行创建，26.2 起没有网络ID，因此不能直接调用getId()
+            return cacheMap.values().stream().filter(l -> EntityIdUtils.networkIdOf(l) == id).findFirst().orElse(null) != null;
         }
         catch (Exception e)
         {
@@ -163,7 +169,8 @@ public class EntityCache
 
         if (identifier.startsWith("minecraft:"))
         {
-            var typeOptional = EntityType.byString(identifier);
+            var typeOptional = Optional.ofNullable(Identifier.tryParse(identifier))
+                    .flatMap(BuiltInRegistries.ENTITY_TYPE::getOptional);
 
             if (typeOptional.isEmpty()) return null;
 
@@ -173,7 +180,7 @@ public class EntityCache
             {
                 if (world == null) return null;
 
-                var instance = type == EntityType.MANNEQUIN ? new MorphLocalAvatar(world) : type.create(world, EntitySpawnReason.COMMAND);
+                var instance = type == EntityTypes.MANNEQUIN ? new MorphLocalAvatar(world) : type.create(world, EntitySpawnReason.COMMAND);
 
                 var uuid = ensureUUIDUnique(Mth.createInsecureUUID(random));
                 instance.setUUID(uuid);
@@ -212,6 +219,10 @@ public class EntityCache
         }
 
         if (spawnedEntity == null) return null;
+
+        // 26.2 起客户端创建的实体不再自动获得网络ID，而ID为0的实体无法被使用
+        // （getId()、equals() 和 ClientLevel#addEntity 都会抛异常），因此这里手动分配一个
+        spawnedEntity.setId(EntityIdUtils.nextClientOnlyId());
 
         try
         {

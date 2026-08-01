@@ -12,7 +12,6 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.LayerDefinitions;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartNames;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -29,6 +28,7 @@ import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.ApiStatus;
@@ -151,17 +151,17 @@ public class PlayerRenderHelper extends MorphClientObject
 
     private Camera camera()
     {
-        return Minecraft.getInstance().gameRenderer.getMainCamera();
+        return Minecraft.getInstance().gameRenderer.mainCamera();
     }
 
     /**
      * 在玩家位置渲染通向 {@link ClientDisguiseSyncer#getBeamTarget()} 的光柱
      * @param tickCounter tickCounter
      * @param matrixStack {@link PoseStack}
-     * @param vertexConsumerProvider {@link MultiBufferSource}
+     * @param submitNodeCollector {@link SubmitNodeCollector}
      * @param light 光照等级
      */
-    public void submitCrystalBeamIfPossible(DeltaTracker tickCounter, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, SubmitNodeCollector submitNodeCollector, int light)
+    public void submitCrystalBeamIfPossible(DeltaTracker tickCounter, PoseStack matrixStack, SubmitNodeCollector submitNodeCollector, int light)
     {
         DisguiseSyncer abstractSyncer = instanceTracker.getSyncerFor(Minecraft.getInstance().player);
 
@@ -398,7 +398,7 @@ public class PlayerRenderHelper extends MorphClientObject
             var offset = modelInfo.offset();
             matrices.translate(offset.x(), offset.y(), offset.z());
 
-            light = (disguiseEntity.getType() == EntityType.ALLAY || disguiseEntity.getType() == EntityType.VEX)
+            light = (disguiseEntity.getType() == EntityTypes.ALLAY || disguiseEntity.getType() == EntityTypes.VEX)
                     ? LightCoordsUtil.FULL_BRIGHT
                     : light;
 

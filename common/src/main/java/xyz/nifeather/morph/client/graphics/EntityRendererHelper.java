@@ -21,6 +21,7 @@ import xyz.nifeather.morph.client.entities.IDisguiseRenderState;
 import xyz.nifeather.morph.client.entities.IMorphClientEntity;
 import xyz.nifeather.morph.client.graphics.color.ColorUtils;
 import xyz.nifeather.morph.client.graphics.color.MaterialColors;
+import xyz.nifeather.morph.client.utilties.EntityIdUtils;
 
 import java.util.Map;
 
@@ -57,7 +58,8 @@ public class EntityRendererHelper
 
         // then do setup
 
-        int id = renderingEntity.getId();
+        // 伪装实体是客户端自行创建的，26.2 起这类实体没有网络ID，直接调用getId()会抛异常
+        int id = EntityIdUtils.networkIdOf(renderingEntity);
 
         // client renderer
         if (renderingEntity instanceof IMorphClientEntity iMorphEntity)
@@ -70,7 +72,7 @@ public class EntityRendererHelper
                 if (syncer != null)
                 {
                     var masterEntity = syncer.getBindingPlayer();
-                    id = syncer.getBindingPlayer().getId();
+                    id = EntityIdUtils.networkIdOf(masterEntity);
 
                     renderState.morphclient$setDisguiseSyncer(syncer);
                     renderState.morphclient$setMasterPosition(masterEntity.position());
@@ -145,7 +147,7 @@ public class EntityRendererHelper
         }
 
         //System.out.println("Submit! For name " + revealName);
-        collector.submitNameTag(renderPoseStack, Vec3.ZERO, 0, Component.literal(revealName).withColor(textColor), true, LightCoordsUtil.FULL_BRIGHT, 0, cameraRenderState);
+        collector.submitNameTag(renderPoseStack, Vec3.ZERO, 0, Component.literal(revealName).withColor(textColor), true, LightCoordsUtil.FULL_BRIGHT, cameraRenderState);
         renderPoseStack.popPose();
     }
 

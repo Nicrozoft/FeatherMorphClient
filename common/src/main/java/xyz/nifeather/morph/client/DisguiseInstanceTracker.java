@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nifeather.morph.client.syncers.DisguiseSyncer;
+import xyz.nifeather.morph.client.utilties.EntityIdUtils;
 import xyz.nifeather.morph.network.commands.S2C.clientrender.*;
 import xiamomc.pluginbase.Annotations.Resolved;
 
@@ -67,7 +68,7 @@ public class DisguiseInstanceTracker extends MorphClientObject
         var networkId = s2CRenderMapAddCommand.getPlayerNetworkId();
         serverTrackingDisguises.put(networkId, s2CRenderMapAddCommand.getMobId());
 
-        if (Minecraft.getInstance().player.getId() == networkId)
+        if (EntityIdUtils.networkIdOf(Minecraft.getInstance().player) == networkId)
         {
             //logger.info("Ignoring client player since we have another method.");
             return;
@@ -145,6 +146,9 @@ public class DisguiseInstanceTracker extends MorphClientObject
 
     public ConvertedMeta getMetaFor(Entity entity)
     {
+        // 尚未分配网络ID的实体不可能在表里
+        if (!EntityIdUtils.hasNetworkId(entity)) return new ConvertedMeta();
+
         return getMetaFor(entity.getId());
     }
 
@@ -171,12 +175,14 @@ public class DisguiseInstanceTracker extends MorphClientObject
     @Nullable
     public DisguiseSyncer findSyncerByDisguiseEntity(Entity entity)
     {
-        var id = entity.getId();
+        if (entity == null) return null;
 
         //logger.info("Return syncer " + targetSyncer + " for " + entity.getName().getLiteralString());
 
+        // 伪装实体是我们在客户端自行创建的，26.2 起这类实体的网络ID恒为0，
+        // 因此只能按引用判断，不能再比较getId()
         return this.idSyncerMap.values().stream()
-                .filter(syncer -> syncer.getDisguiseInstance().getId() == id)
+                .filter(syncer -> syncer.getDisguiseInstance() == entity)
                 .findFirst()
                 .orElse(null);
     }
@@ -202,6 +208,9 @@ public class DisguiseInstanceTracker extends MorphClientObject
     @Nullable
     public DisguiseSyncer getSyncerFor(Entity entity)
     {
+        // 尚未分配网络ID的实体不可能在表里
+        if (!EntityIdUtils.hasNetworkId(entity)) return null;
+
         return idSyncerMap.getOrDefault(entity.getId(), null);
     }
 
@@ -250,6 +259,9 @@ public class DisguiseInstanceTracker extends MorphClientObject
     @Nullable
     public DisguiseSyncer setupSyncerIfNotExist(Entity entity)
     {
+        // ID分配之前无法确定该实体对应哪个Syncer，等实体真正加入世界后会再走一次这里
+        if (!EntityIdUtils.hasNetworkId(entity)) return null;
+
         var networkId = entity.getId();
         if (idSyncerMap.containsKey(networkId)) return idSyncerMap.get(networkId);
 

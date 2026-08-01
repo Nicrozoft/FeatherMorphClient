@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import xiamomc.pluginbase.Annotations.Resolved;
 import xyz.nifeather.morph.server.ServerPluginObject;
@@ -38,7 +39,7 @@ public class CommonEventProcessor extends ServerPluginObject
         {
             var type = killed.getType();
 
-            if (type != EntityType.CREAKING)
+            if (type != EntityTypes.CREAKING)
                 morphManager.grantDisguiseToPlayer(player, EntityType.getKey(type).toString());
         }
     }

@@ -64,7 +64,7 @@ public class ItemInHandRendererMixin implements ICustomItemInHandRenderer
     }
 
     @ModifyVariable(
-            method = "renderHandsWithItems",
+            method = "submitHandsWithItems",
             at = @At("STORE"),
             ordinal = 1
     )

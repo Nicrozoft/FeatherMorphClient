@@ -8,6 +8,7 @@ import xyz.nifeather.morph.server.morphs.DisguiseSession;
 import xyz.nifeather.morph.server.disguise.animations.provider.VanillaAnimationProvider;
 
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -111,7 +112,9 @@ public class VanillaDisguiseProvider extends AbstractDisguiseProvider
     @Override
     public Component getDisplayName(String disguiseIdentifier)
     {
-        var entityType = EntityType.byString(disguiseIdentifier).orElse(null);
+        var entityType = Optional.ofNullable(Identifier.tryParse(disguiseIdentifier))
+                .flatMap(BuiltInRegistries.ENTITY_TYPE::getOptional)
+                .orElse(null);
         if (entityType == null)
             return Component.nullToEmpty("???(%s)".formatted(disguiseIdentifier));
 

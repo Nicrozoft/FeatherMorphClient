@@ -10,7 +10,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.players.NameAndId;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
@@ -289,9 +288,44 @@ public class MorphLocalPlayer extends RemotePlayer
     public double distanceToSqr(Vec3 vector)
     {
         // compat with 3d skin layers
-        if (vector.equals(Minecraft.getInstance().gameRenderer.getMainCamera().position()))
+        if (vector.equals(Minecraft.getInstance().gameRenderer.mainCamera().position()))
             return 0d;
 
         return super.distanceToSqr(vector);
+    }
+
+    /**
+     * 可变的二元组，用于替代 26.2 中移除的 {@code net.minecraft.util.Tuple}
+     */
+    private static class Tuple<A, B>
+    {
+        private A a;
+        private B b;
+
+        public Tuple(A a, B b)
+        {
+            this.a = a;
+            this.b = b;
+        }
+
+        public A getA()
+        {
+            return a;
+        }
+
+        public void setA(A a)
+        {
+            this.a = a;
+        }
+
+        public B getB()
+        {
+            return b;
+        }
+
+        public void setB(B b)
+        {
+            this.b = b;
+        }
     }
 }

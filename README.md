@@ -3,14 +3,14 @@ See [the plugin](https://github.com/NiFeather/FeatherMorph)
 ![cover](./assets/cover.png)
 
 <p align="right">
-  <img src="https://github.com/NiFeather/FeatherMorphClient/actions/workflows/gradle.yml/badge.svg">
+  <img src="https://github.com/Nicrozoft/FeatherMorphClient/actions/workflows/gradle.yml/badge.svg">
 </p>
 
 <!-- [Wiki](https://github.com/NiFeather/FeatherMorph/wiki) -->
 
 # (WIP) FeatherMorphClient
 
-[FeatherMorph](https://github.com/NiFeather/FeatherMorph)的客户端模组，可以提供一些增强功能。
+[FeatherMorph](https://github.com/NiFeather/FeatherMorph) 的 [客户端模组](https://github.com/NiFeather/FeatherMorphClient) 的 [高版本移植](https://github.com/Nicrozoft/FeatherMorphClient) ，可以提供一些增强功能。
 
 ### 功能
 - [x] 在客户端显示自身伪装
@@ -19,7 +19,7 @@ See [the plugin](https://github.com/NiFeather/FeatherMorph)
 - [x] 一键切换自身可见
 
 ### 依赖关系
-FeatherMorphClient至少需要下面这些依赖才能运行：
+FeatherMorphClient 至少需要下面这些依赖才能运行：
 - Fabric, Quilt 1.19.3 或 NeoForge 1.21.5
 - [Cloth Config](https://modrinth.com/mod/cloth-config)
 - [Fabric API](https://modrinth.com/mod/fabric-api) (NeoForge不需要)
@@ -27,7 +27,7 @@ FeatherMorphClient至少需要下面这些依赖才能运行：
 ### 构建
 ```bash
 #!/usr/bin/env bash
-git clone https://github.com/NiFeather/FeatherMorphClient
+git clone https://github.com/Nicrozoft/FeatherMorphClient
 cd FeatherMorphClient
 
 ./gradlew build --no-daemon
