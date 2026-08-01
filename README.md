@@ -1,11 +1,3 @@
-See [the plugin](https://github.com/NiFeather/FeatherMorph)
-
-![cover](./assets/cover.png)
-
-<p align="right">
-  <img src="https://github.com/Nicrozoft/FeatherMorphClient/actions/workflows/gradle.yml/badge.svg">
-</p>
-
 <!-- [Wiki](https://github.com/NiFeather/FeatherMorph/wiki) -->
 
 # (WIP) FeatherMorphClient
